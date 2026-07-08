@@ -1,37 +1,27 @@
 const API = (() => {
   const BASE_URL = 'https://script.google.com/macros/s/AKfycbzTqBGdFu372Z_7fXeUuXuqEgaIV-DDTU1n1SDkh6cLrnY3UAaZuXqmXzNMiAvhtCk5pg/exec';
 
-  function enviar(dados) {
-    return new Promise((resolve, reject) => {
-      const callbackName = 'callback_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
-      window[callbackName] = function(response) {
-        delete window[callbackName];
-        document.body.removeChild(script);
-        resolve(response);
-      };
-
-      const params = new URLSearchParams({
-        callback: callbackName,
-        data: JSON.stringify(dados)
-      });
-      const url = `${BASE_URL}?${params.toString()}`;
-      const script = document.createElement('script');
-      script.src = url;
-      script.onerror = function() {
-        delete window[callbackName];
-        document.body.removeChild(script);
-        reject(new Error('Erro de rede'));
-      };
-      document.body.appendChild(script);
-    });
+  async function enviar(dados, timeoutMs = 15000) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    const params = new URLSearchParams({ data: JSON.stringify(dados) });
+    const url = `${BASE_URL}?${params.toString()}`;
+    try {
+      const resp = await fetch(url, { method: 'GET', signal: controller.signal });
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      return await resp.json();
+    } catch (e) {
+      if (e.name === 'AbortError') throw new Error('Tempo esgotado ao contatar o servidor.');
+      throw e;
+    } finally {
+      clearTimeout(timer);
+    }
   }
 
   async function testarConexao() {
-    // Como JSONP não permite verificar facilmente, fazemos um GET simples sem callback
     try {
       const resp = await fetch(BASE_URL);
-      const data = await resp.json();
-      return data;
+      return await resp.json();
     } catch (e) {
       return { status: 'erro', message: 'Sem comunicação.' };
     }
