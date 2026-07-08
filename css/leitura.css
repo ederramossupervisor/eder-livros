@@ -1,0 +1,11 @@
+/* Registro de leitura */
+#tempo-calculado, #paginas-calculadas {
+  background: var(--bg-secondary);
+  padding: 0.5rem;
+  border-radius: var(--radius);
+}
+#livro-info {
+  background: var(--bg-secondary);
+  padding: 0.5rem;
+  border-radius: var(--radius);
+}

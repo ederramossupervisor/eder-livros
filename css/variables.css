@@ -1,0 +1,45 @@
+/* -------------------------------------------
+   Variáveis CSS – Temas Claro e Escuro
+------------------------------------------- */
+:root {
+  /* Cores principais */
+  --primary: #1a73e8;
+  --primary-hover: #1558b0;
+  --secondary: #5f6368;
+
+  /* Tema claro */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f9fa;
+  --bg-card: #ffffff;
+  --text-primary: #202124;
+  --text-secondary: #5f6368;
+  --border-color: #e0e0e0;
+  --shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.08);
+  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px rgba(0,0,0,0.05);
+  --navbar-bg: #ffffff;
+  --sidebar-bg: #ffffff;
+
+  --font-family: 'Inter', sans-serif;
+  --radius: 12px;
+  --transition: 0.2s ease;
+}
+
+/* Modo escuro */
+body.dark-mode {
+  --bg-primary: #121212;
+  --bg-secondary: #1e1e1e;
+  --bg-card: #2d2d2d;
+  --text-primary: #e0e0e0;
+  --text-secondary: #aaaaaa;
+  --border-color: #444444;
+  --shadow: 0 1px 3px rgba(255,255,255,0.05);
+  --navbar-bg: #1e1e1e;
+  --sidebar-bg: #1e1e1e;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  transition: background-color var(--transition), color var(--transition);
+}

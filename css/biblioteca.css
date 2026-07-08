@@ -1,0 +1,60 @@
+/* Grade de livros */
+.livro-card {
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+}
+.livro-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.12);
+}
+.livro-card .capa-wrapper {
+  position: relative;
+  width: 100%;
+  padding-top: 140%; /* proporção capa de livro */
+  background: var(--bg-secondary);
+  overflow: hidden;
+}
+.livro-card .capa-wrapper img {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.livro-card .card-body {
+  padding: 0.75rem;
+}
+.livro-card .titulo {
+  font-weight: 600;
+  font-size: 0.9rem;
+  line-height: 1.2;
+  margin-bottom: 0.25rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.livro-card .autor {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+.livro-card .progress {
+  height: 4px;
+  margin-top: 0.5rem;
+}
+.livro-card .badge-status {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  font-size: 0.7rem;
+}
+
+/* Modal */
+#modal-conteudo .capa-detalhe {
+  max-width: 150px;
+  border-radius: 8px;
+}
