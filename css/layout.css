@@ -80,3 +80,31 @@ body.app-loaded #splash-screen {
   border-radius: var(--radius);
   box-shadow: var(--shadow);
 }
+/* Garante que a barra inferior não quebre layout e permita scroll se necessário */
+.bottom-nav .container {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.bottom-nav .nav-item {
+  flex-shrink: 0;
+  font-size: 0.7rem;
+  line-height: 1.2;
+  padding: 0.25rem 0.3rem;
+  min-width: 44px; /* área mínima para toque */
+}
+
+.bottom-nav .nav-item i {
+  font-size: 1rem; /* ajusta tamanho do ícone */
+}
+
+/* Opcional: esconde o texto em telas muito pequenas (menos de 360px) */
+@media (max-width: 360px) {
+  .bottom-nav .nav-item small {
+    display: none !important;
+  }
+  .bottom-nav .nav-item i {
+    font-size: 1.2rem;
+  }
+}
