@@ -1,4 +1,7 @@
-const CACHE_NAME = 'eder-livros-v12'; // ← versão incrementada
+// Eder Livros – Service Worker v13 (cache restrito, ignora APIs)
+const CACHE_NAME = 'eder-livros-v13';
+
+// Apenas recursos estáticos que compõem o shell do app
 const ASSETS = [
   './',
   './index.html',
@@ -36,42 +39,49 @@ const ASSETS = [
   'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js'
 ];
 
-// Instalação
+// Instalação: força ativação imediata
 self.addEventListener('install', event => {
-  self.skipWaiting(); // Ativa imediatamente
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
   );
 });
 
-// Ativação
+// Ativação: limpa caches antigos e assume controle de todos os clientes
 self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then(keys => Promise.all(
-      keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
-    ))
+    caches.keys()
+      .then(keys => Promise.all(
+        keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
+      ))
+      .then(() => self.clients.claim())
   );
-  self.clients.claim(); // Assume controle das páginas abertas
 });
 
-// Fetch
+// Interceptação de rede – cache apenas para assets conhecidos
 self.addEventListener('fetch', event => {
-  // Não interceptar requisições ao Google Apps Script
-  if (event.request.url.includes('script.google.com')) {
-    return;
+  const { request } = event;
+  const url = request.url;
+
+  // Se a requisição NÃO é para um dos nossos assets estáticos, ignore completamente
+  // (deixe o navegador buscar normalmente, sem qualquer intereferência)
+  if (!ASSETS.includes(url) && !url.endsWith('.woff2') && !url.endsWith('.woff') && !url.endsWith('.ttf')) {
+    // Essa condição abrange fontes (que podem ser carregadas pelo Bootstrap/FA)
+    // e qualquer outro recurso que não esteja explicitamente listado.
+    return; // <-- não responde, o navegador fará a requisição normal
   }
 
+  // Para os assets estáticos listados, utiliza cache-first com atualização em background
   event.respondWith(
-    caches.match(event.request).then(cached => {
-      const fetchPromise = fetch(event.request)
-        .then(response => {
-          if (response && response.status === 200) {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
-          }
-          return response;
-        })
-        .catch(() => cached);
+    caches.match(request).then(cached => {
+      const fetchPromise = fetch(request).then(response => {
+        if (response && response.status === 200) {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(request, clone));
+        }
+        return response;
+      }).catch(() => cached); // fallback offline
+
       return cached || fetchPromise;
     })
   );
