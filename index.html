@@ -518,28 +518,40 @@
           <div class="row g-3">
             <div class="col-md-6">
               <div class="card">
-                <div class="card-header fw-bold">Data e horário</div>
-                <div class="card-body">
-                  <div class="mb-3">
-                    <label for="data-sessao" class="form-label">Data *</label>
-                    <input type="date" id="data-sessao" class="form-control" required>
-                  </div>
-                  <div class="row g-2">
-                    <div class="col-6">
-                      <label for="hora-inicio" class="form-label">Hora início</label>
-                      <input type="time" id="hora-inicio" class="form-control">
-                    </div>
-                    <div class="col-6">
-                      <label for="hora-fim" class="form-label">Hora fim</label>
-                      <input type="time" id="hora-fim" class="form-control">
-                    </div>
-                  </div>
-                  <div id="tempo-calculado" class="mt-2 small text-success d-none">
-                    <i class="fas fa-clock"></i> Tempo calculado: <span id="tempo-minutos">0</span> min
-                  </div>
-                </div>
-              </div>
-            </div>
+  <div class="card-header fw-bold">Data e horário</div>
+  <div class="card-body">
+    <div class="mb-3">
+      <label for="data-sessao" class="form-label">Data *</label>
+      <input type="date" id="data-sessao" class="form-control" required>
+    </div>
+
+    <!-- Cronômetro -->
+    <div class="text-center mb-3">
+      <span id="cronometro-display" class="fs-4 fw-bold text-primary">00:00</span>
+      <div class="mt-2">
+        <button id="btn-iniciar" class="btn btn-success btn-sm"><i class="fas fa-play"></i> Iniciar</button>
+        <button id="btn-pausar" class="btn btn-warning btn-sm d-none"><i class="fas fa-pause"></i> Pausar</button>
+        <button id="btn-retomar" class="btn btn-info btn-sm d-none"><i class="fas fa-play"></i> Retomar</button>
+        <button id="btn-finalizar" class="btn btn-danger btn-sm d-none"><i class="fas fa-stop"></i> Finalizar</button>
+      </div>
+    </div>
+
+    <!-- Campos de hora (ainda editáveis manualmente) -->
+    <div class="row g-2">
+      <div class="col-6">
+        <label for="hora-inicio" class="form-label">Hora início</label>
+        <input type="time" id="hora-inicio" class="form-control">
+      </div>
+      <div class="col-6">
+        <label for="hora-fim" class="form-label">Hora fim</label>
+        <input type="time" id="hora-fim" class="form-control">
+      </div>
+    </div>
+    <div id="tempo-calculado" class="mt-2 small text-success d-none">
+      <i class="fas fa-clock"></i> Tempo calculado: <span id="tempo-minutos">0</span> min
+    </div>
+  </div>
+</div>
             <div class="col-md-6">
               <div class="card">
                 <div class="card-header fw-bold">Páginas</div>
