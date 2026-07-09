@@ -137,3 +137,26 @@ body.app-loaded #splash-screen {
   background-color: var(--primary-light);
   color: var(--primary);
 }
+.card {
+  border: none;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  transition: box-shadow var(--transition), transform var(--transition);
+  background-color: var(--bg-card);
+}
+.card:hover {
+  box-shadow: var(--shadow-lg);
+}
+.card-header {
+  background-color: transparent;
+  border-bottom: 1px solid var(--border-color);
+  font-weight: 600;
+}
+.progress {
+  border-radius: 10px;
+  background-color: var(--bg-secondary);
+  height: 10px;
+}
+.progress-bar {
+  border-radius: 10px;
+}
