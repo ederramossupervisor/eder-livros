@@ -13,14 +13,10 @@ const Estatisticas = (() => {
         preencherResumo(dados);
         criarInsights(dados.insights);
 
-        // Aguarda a página ficar visível (importante após troca de aba)
+        // Pequeno delay para garantir que a página esteja completamente visível
         setTimeout(() => {
-          // Garante altura mínima nos canvas
-          document.querySelectorAll('canvas').forEach(canvas => {
-            if (!canvas.hasAttribute('height') || canvas.height < 200) {
-              canvas.style.height = '250px';
-            }
-          });
+          // Prepara os canvas com tamanho explícito
+          prepararCanvas();
 
           try { criarGraficoFinalizadosMes(dados.finalizadosPorMes); } catch(e) { console.warn(e); }
           try { criarGraficoPaginasDia(dados.paginasPorDia); } catch(e) { console.warn(e); }
@@ -28,13 +24,19 @@ const Estatisticas = (() => {
           try { criarGraficoDiaSemana(dados.tempoPorDiaSemana); } catch(e) { console.warn(e); }
           try { criarHeatmap(dados.heatmap); } catch(e) { console.warn(e); }
 
-          // Força cada gráfico a se redimensionar após estarem prontos
+          // Redimensiona todos os gráficos após um instante
           setTimeout(() => {
             Object.values(graficos).forEach(chart => {
-              if (chart && typeof chart.resize === 'function') chart.resize();
+              if (chart && chart.canvas) {
+                chart.resize();
+              }
             });
-          }, 200);
-        }, 150);
+            // Log de diagnóstico final
+            document.querySelectorAll('canvas').forEach(c => {
+              console.log(`📏 Final ${c.id}: ${c.clientWidth}x${c.clientHeight}`);
+            });
+          }, 250);
+        }, 200);
 
         preencherTopAutores(dados.topAutores);
         preencherTopEditoras(dados.topEditoras);
@@ -48,34 +50,26 @@ const Estatisticas = (() => {
     console.log('✅ Módulo Estatísticas pronto.');
   }
 
-  function preencherResumo(d) {
-    setText('stat-total-livros', d.totalLivros);
-    setText('stat-total-paginas', d.totalPaginas);
-    setText('stat-total-horas', d.totalHoras);
-    setText('stat-velocidade', d.velocidadeMedia);
+  /* Garante que os canvas tenham tamanho antes da criação */
+  function prepararCanvas() {
+    const ids = [
+      'grafico-finalizados-mes',
+      'grafico-paginas-dia',
+      'grafico-generos',
+      'grafico-dia-semana'
+    ];
+    ids.forEach(id => {
+      const canvas = document.getElementById(id);
+      if (canvas) {
+        canvas.style.width = '100%';
+        canvas.style.height = '250px';
+        canvas.width = canvas.clientWidth || 400;
+        canvas.height = 250;
+      }
+    });
   }
 
-  function setText(id, value) {
-    const el = document.getElementById(id);
-    if (el) el.textContent = value;
-  }
-
-  function criarInsights(lista) {
-    const ul = document.getElementById('insights-list');
-    if (!ul) return;
-    ul.innerHTML = '';
-    if (lista && lista.length) {
-      lista.forEach(texto => {
-        const li = document.createElement('li');
-        li.className = 'list-group-item';
-        li.innerHTML = `<i class="fas fa-check-circle text-success me-2"></i>${texto}`;
-        ul.appendChild(li);
-      });
-    } else {
-      ul.innerHTML = '<li class="list-group-item text-muted">Nenhum insight disponível.</li>';
-    }
-  }
-
+  /* ========== FUNÇÕES DE CRIAÇÃO DOS GRÁFICOS (mantidas) ========== */
   function criarGraficoFinalizadosMes(dados) {
     const canvas = document.getElementById('grafico-finalizados-mes');
     console.log('📊 Gráfico finalizados/mês:', dados.labels, dados.valores);
@@ -226,6 +220,34 @@ const Estatisticas = (() => {
       });
     } else {
       ul.innerHTML = '<li class="list-group-item text-muted">Nenhum dado</li>';
+    }
+  }
+
+  function preencherResumo(d) {
+    setText('stat-total-livros', d.totalLivros);
+    setText('stat-total-paginas', d.totalPaginas);
+    setText('stat-total-horas', d.totalHoras);
+    setText('stat-velocidade', d.velocidadeMedia);
+  }
+
+  function setText(id, value) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
+  }
+
+  function criarInsights(lista) {
+    const ul = document.getElementById('insights-list');
+    if (!ul) return;
+    ul.innerHTML = '';
+    if (lista && lista.length) {
+      lista.forEach(texto => {
+        const li = document.createElement('li');
+        li.className = 'list-group-item';
+        li.innerHTML = `<i class="fas fa-check-circle text-success me-2"></i>${texto}`;
+        ul.appendChild(li);
+      });
+    } else {
+      ul.innerHTML = '<li class="list-group-item text-muted">Nenhum insight disponível.</li>';
     }
   }
 
