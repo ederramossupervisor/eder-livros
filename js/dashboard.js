@@ -24,30 +24,30 @@ const Dashboard = (() => {
   }
 
   function preencherCards(d) {
-  // Livro atual
-  if (d.livroAtual) {
-    document.getElementById('livro-atual-titulo').textContent = d.livroAtual.titulo;
-    var progresso = d.livroAtual.totalPag > 0 ? Math.round((d.livroAtual.pagLidas / d.livroAtual.totalPag) * 100) : 0;
-    document.getElementById('livro-atual-progresso').textContent = `${d.livroAtual.pagLidas || 0} de ${d.livroAtual.totalPag} páginas (${progresso}%)`;
-    if (d.livroAtual.urlCapa) {
-      document.getElementById('livro-atual-capa').innerHTML = `<img src="${d.livroAtual.urlCapa}" alt="Capa">`;
+    // Livro atual
+    if (d.livroAtual) {
+      document.getElementById('livro-atual-titulo').textContent = d.livroAtual.titulo;
+      var progresso = d.livroAtual.totalPag > 0 ? Math.round((d.livroAtual.pagLidas / d.livroAtual.totalPag) * 100) : 0;
+      document.getElementById('livro-atual-progresso').textContent = `${d.livroAtual.pagLidas || 0} de ${d.livroAtual.totalPag} páginas (${progresso}%)`;
+      if (d.livroAtual.urlCapa) {
+        document.getElementById('livro-atual-capa').innerHTML = `<img src="${d.livroAtual.urlCapa}" alt="Capa">`;
+      }
     }
+
+    document.getElementById('card-livros-mes').textContent = d.livrosFinalizadosAno; // simplificado
+    document.getElementById('card-livros-ano').textContent = d.livrosFinalizadosAno;
+    document.getElementById('card-paginas-hoje').textContent = d.paginasHoje;
+    document.getElementById('card-paginas-semana').textContent = d.paginasSemana;
+    document.getElementById('card-horas').textContent = d.horasTotal;
+    document.getElementById('card-sequencia').textContent = d.sequenciaAtual + ' dias';
+
+    // Meta
+    document.getElementById('meta-texto').textContent = `${d.livrosFinalizadosAno} de ${d.metaLivros} livros (${d.percentualMeta}%)`;
+    var barra = document.getElementById('barra-meta');
+    barra.style.width = d.percentualMeta + '%';
+    barra.textContent = d.percentualMeta + '%';
+    barra.setAttribute('aria-valuenow', d.percentualMeta);
   }
-
-  document.getElementById('card-livros-mes').textContent = d.livrosFinalizadosMes;  // <-- corrigido
-  document.getElementById('card-livros-ano').textContent = d.livrosFinalizadosAno;
-  document.getElementById('card-paginas-hoje').textContent = d.paginasHoje;
-  document.getElementById('card-paginas-semana').textContent = d.paginasSemana;
-  document.getElementById('card-horas').textContent = d.horasTotal;
-  document.getElementById('card-sequencia').textContent = d.sequenciaAtual + ' dias';
-
-  // Meta
-  document.getElementById('meta-texto').textContent = `${d.livrosFinalizadosAno} de ${d.metaLivros} livros (${d.percentualMeta}%)`;
-  var barra = document.getElementById('barra-meta');
-  barra.style.width = d.percentualMeta + '%';
-  barra.textContent = d.percentualMeta + '%';
-  barra.setAttribute('aria-valuenow', d.percentualMeta);
-}
 
   function criarGrafico(dados) {
     if (chartInstance) chartInstance.destroy();

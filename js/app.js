@@ -1,15 +1,10 @@
-// Controlador principal da aplicação — Eder Livros
+// Controlador principal da aplicação
 document.addEventListener('DOMContentLoaded', () => {
-
-  // Exibe a splash screen por um curto período e depois a remove suavemente
+  // Remove splash screen após carregamento
+  document.body.classList.add('app-loaded');
   setTimeout(() => {
-    document.body.classList.add('app-loaded');
     const splash = document.getElementById('splash-screen');
-    if (splash) {
-      splash.addEventListener('transitionend', () => {
-        if (splash.parentNode) splash.remove();
-      });
-    }
+    if (splash) splash.remove();
   }, 800);
 
   // Inicializa módulos básicos
@@ -48,7 +43,7 @@ function initNavegacao() {
       }
     });
 
-    // Inicializa módulos específicos conforme a página
+    // Inicializa módulos específicos
     switch (pageName) {
       case 'dashboard':
         if (typeof Dashboard !== 'undefined' && Dashboard.init) {
@@ -72,34 +67,35 @@ function initNavegacao() {
         break;
       case 'estatisticas':
         if (typeof Estatisticas !== 'undefined' && Estatisticas.init) {
-          Estatisticas.init();
+            Estatisticas.init();
         }
         break;
       case 'metas':
         if (typeof Metas !== 'undefined' && Metas.init) {
-          Metas.init();
+            Metas.init();
         }
         break;
       case 'anotacoes':
         if (typeof Anotacoes !== 'undefined' && Anotacoes.init) {
-          Anotacoes.init();
+            Anotacoes.init();
         }
         break;
-      case 'desejos':
+      case 'desejos':                         
         if (typeof DesejosEmprestimos !== 'undefined' && DesejosEmprestimos.init) {
           DesejosEmprestimos.init();
         }
         break;
+
       case 'exportar':
         if (typeof Exportar !== 'undefined' && Exportar.init) {
-          Exportar.init();
+            Exportar.init();
         }
         break;
       case 'configuracoes':
         if (typeof Configuracoes !== 'undefined' && Configuracoes.init) {
-          Configuracoes.init();
+            Configuracoes.init();
         }
-        break;
+        break;  
       // Futuros módulos podem ser adicionados aqui
     }
   }

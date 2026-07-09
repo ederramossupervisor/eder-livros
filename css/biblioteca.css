@@ -58,18 +58,3 @@
   max-width: 150px;
   border-radius: 8px;
 }
-.livro-card .titulo {
-  font-weight: 600;
-  font-size: 0.85rem;
-  line-height: 1.3;
-}
-.livro-card {
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius);
-}
-
-.livro-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 16px 28px rgba(0,0,0,0.15);
-}

@@ -1,3 +1,7 @@
+/**
+ * Módulo de cadastro e importação de livros
+ * Depende de: API, Util
+ */
 const Livros = (() => {
   const form = document.getElementById('book-form');
   const searchInput = document.getElementById('search-input');
@@ -7,11 +11,9 @@ const Livros = (() => {
   const coverPreview = document.getElementById('cover-preview');
   const urlCapa = document.getElementById('urlCapa');
   const loadCoverBtn = document.getElementById('load-cover-btn');
-  const uploadInput = document.getElementById('upload-capa');
 
   let searchResults = [];
   let editandoLivroID = null;
-  let imagemBase64 = null;   // NOVO: armazena a imagem em base64
 
   function init() {
     if (!form) {
@@ -40,48 +42,35 @@ const Livros = (() => {
       }
     });
 
-    // NOVO: evento de upload de imagem com redimensionamento
-uploadInput.addEventListener('change', (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  redimensionarImagem(file, 800, (base64) => {
-    imagemBase64 = base64;
-    mostrarCapa(imagemBase64);
-    urlCapa.value = '';
-  });
-});
-
     criarBotaoCancelarEdicao();
     console.log('✅ Módulo Livros pronto.');
   }
 
   function criarBotaoCancelarEdicao() {
-  if (!document.getElementById('cancel-edit-btn')) {
-    const btnCancel = document.createElement('button');
-    btnCancel.type = 'button';
-    btnCancel.id = 'cancel-edit-btn';
-    btnCancel.className = 'btn btn-outline-warning ms-2 d-none';
-    btnCancel.textContent = 'Cancelar Edição';
-    btnCancel.addEventListener('click', cancelarEdicao);
-    
-    // Tenta inserir no grupo de botões, se não encontrar, coloca após o formulário
-    const botoesDiv = document.querySelector('#book-form .d-flex');
-    if (botoesDiv) {
-      botoesDiv.prepend(btnCancel);
-    } else {
-      // fallback: insere antes do botão de submit
-      const btnSubmit = form.querySelector('button[type="submit"]');
-      if (btnSubmit && btnSubmit.parentNode) {
-        btnSubmit.parentNode.insertBefore(btnCancel, btnSubmit);
-      } else {
-        // último recurso: adiciona ao final do formulário
-        form.appendChild(btnCancel);
+    if (!document.getElementById('cancel-edit-btn')) {
+      const btnCancel = document.createElement('button');
+      btnCancel.type = 'button';
+      btnCancel.id = 'cancel-edit-btn';
+      btnCancel.className = 'btn btn-outline-warning ms-2 d-none';
+      btnCancel.textContent = 'Cancelar Edição';
+      btnCancel.addEventListener('click', cancelarEdicao);
+      // Inserir no grupo de botões do formulário (antes do botão Salvar)
+      const botoesDiv = document.querySelector('#book-form .d-flex');
+      if (botoesDiv) {
+        botoesDiv.prepend(btnCancel);
       }
     }
   }
-}
 
-  /* ========== FUNÇÕES DE BUSCA (inalteradas) ========== */
+  // Garante que init() seja chamada independentemente do momento de carregamento
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+
+  /* ========== FUNÇÕES DE BUSCA ========== */
+
   async function buscarLivro() {
     const query = searchInput.value.trim();
     if (!query) {
@@ -145,7 +134,7 @@ uploadInput.addEventListener('change', (e) => {
   }
 
   async function buscarGoogleBooks(query) {
-    const API_KEY = '';
+    const API_KEY = ''; // <-- Insira sua chave se desejar usar Google Books
     if (!API_KEY) {
       console.log('→ Google Books ignorado (sem chave API).');
       return null;
@@ -253,12 +242,6 @@ uploadInput.addEventListener('change', (e) => {
     if (livro.URLCapa || livro.ImagemCapa) {
       mostrarCapa(livro.URLCapa || livro.ImagemCapa);
     }
-    document.getElementById('data-inicio').value = (livro.DataInício || '').substring(0, 10);
-    document.getElementById('data-termino').value = (livro.DataTérmino || '').substring(0, 10);
-
-    // Limpa upload anterior (a imagem existente está na URL)
-    imagemBase64 = null;
-    uploadInput.value = '';
   }
 
   function mostrarCapa(url) {
@@ -268,87 +251,62 @@ uploadInput.addEventListener('change', (e) => {
   }
 
   async function salvarLivro(e) {
-  e.preventDefault();
+    e.preventDefault();
 
-  if (!form.checkValidity()) {
-    form.classList.add('was-validated');
-    Util.toast('Preencha os campos obrigatórios (Título e Autor).', 'warning');
-    return;
-  }
+    if (!form.checkValidity()) {
+      form.classList.add('was-validated');
+      Util.toast('Preencha os campos obrigatórios (Título e Autor).', 'warning');
+      return;
+    }
 
-  const book = {
-    titulo: document.getElementById('titulo').value,
-    subtitulo: document.getElementById('subtitulo').value,
-    autor: document.getElementById('autor').value,
-    editora: document.getElementById('editora').value,
-    ano: document.getElementById('ano').value,
-    edicao: document.getElementById('edicao').value,
-    isbn: document.getElementById('isbn').value,
-    idioma: document.getElementById('idioma').value,
-    numeroPaginas: document.getElementById('numeroPaginas').value,
-    formato: document.getElementById('formato').value,
-    genero: document.getElementById('genero').value,
-    subgenero: document.getElementById('subgenero').value,
-    status: document.getElementById('status').value,
-    nota: document.getElementById('nota').value,
-    favorito: document.getElementById('favorito').checked,
-    preco: document.getElementById('preco').value,
-    tags: document.getElementById('tags').value,
-    observacoes: document.getElementById('observacoes').value,
-    urlCapa: urlCapa.value,
-    imagemBase64: imagemBase64 || '',
-    dataInicio: document.getElementById('data-inicio').value,
-    dataTermino: document.getElementById('data-termino').value
-  };
+    const book = {
+      titulo: document.getElementById('titulo').value,
+      subtitulo: document.getElementById('subtitulo').value,
+      autor: document.getElementById('autor').value,
+      editora: document.getElementById('editora').value,
+      ano: document.getElementById('ano').value,
+      edicao: document.getElementById('edicao').value,
+      isbn: document.getElementById('isbn').value,
+      idioma: document.getElementById('idioma').value,
+      numeroPaginas: document.getElementById('numeroPaginas').value,
+      formato: document.getElementById('formato').value,
+      genero: document.getElementById('genero').value,
+      subgenero: document.getElementById('subgenero').value,
+      status: document.getElementById('status').value,
+      nota: document.getElementById('nota').value,
+      favorito: document.getElementById('favorito').checked,
+      preco: document.getElementById('preco').value,
+      tags: document.getElementById('tags').value,
+      observacoes: document.getElementById('observacoes').value,
+      urlCapa: urlCapa.value,
+      imagemCapa: urlCapa.value
+    };
 
-  const btnSubmit = form.querySelector('button[type="submit"]');
-  btnSubmit.disabled = true;
-  btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Salvando...';
+    const btnSubmit = form.querySelector('button[type="submit"]');
+    btnSubmit.disabled = true;
+    btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Salvando...';
 
-  try {
-    // Guardamos se é edição antes de qualquer limpeza
-    const isEdicao = !!editandoLivroID;
-    let resposta;
-
-    if (editandoLivroID) {
-      if (book.imagemBase64) {
-        // Upload com imagem usa POST direto (fire-and-forget)
-        await API.enviarComImagem({ acao: 'updateBook', id: editandoLivroID, book });
-        resposta = { status: 'ok' }; // assumimos sucesso
-      } else {
+    try {
+      let resposta;
+      if (editandoLivroID) {
         resposta = await API.enviar({ acao: 'updateBook', id: editandoLivroID, book });
-      }
-    } else {
-      if (book.imagemBase64) {
-        await API.enviarComImagem({ acao: 'addBook', book });
-        resposta = { status: 'ok' };
       } else {
         resposta = await API.enviar({ acao: 'addBook', book });
       }
-    }
-
-    if (resposta && resposta.status === 'ok') {
-      Util.toast(isEdicao ? 'Livro atualizado!' : 'Livro adicionado!', 'success');
-      limparFormulario();
-      cancelarEdicao();
-
-      if (isEdicao) {
-        const linkBiblioteca = document.querySelector('.nav-link[data-page="biblioteca"]');
-        if (linkBiblioteca) linkBiblioteca.click();
+      if (resposta && resposta.status === 'ok') {
+        Util.toast(editandoLivroID ? 'Livro atualizado!' : 'Livro adicionado!', 'success');
+        limparFormulario();
+        cancelarEdicao();
+      } else {
+        throw new Error(resposta?.erro || 'Falha no servidor');
       }
-    } else {
-      const msg = resposta?.mensagem || resposta?.erro || 'Falha no servidor';
-      throw new Error(msg);
+    } catch (erro) {
+      Util.toast('Erro ao salvar: ' + erro.message, 'danger');
     }
-  } catch (erro) {
-    Util.toast('Erro ao salvar: ' + erro.message, 'danger');
-  } finally {
+
     btnSubmit.disabled = false;
-    btnSubmit.innerHTML = editandoLivroID
-      ? '<i class="fas fa-save me-1"></i> Atualizar Livro'
-      : '<i class="fas fa-save me-1"></i> Salvar Livro';
+    btnSubmit.innerHTML = editandoLivroID ? '<i class="fas fa-save me-1"></i> Atualizar Livro' : '<i class="fas fa-save me-1"></i> Salvar Livro';
   }
-}
 
   function limparFormulario() {
     form.reset();
@@ -356,62 +314,52 @@ uploadInput.addEventListener('change', (e) => {
     coverPreview.innerHTML = '<span class="text-muted">Pré-visualização</span>';
     searchResults = [];
     resultsDiv.classList.add('d-none');
-    imagemBase64 = null;
-    uploadInput.value = '';
   }
 
-function cancelarEdicao() {
-  editandoLivroID = null;
+  function cancelarEdicao() {
+    editandoLivroID = null;
+    document.getElementById('cancel-edit-btn').classList.add('d-none');
+    const btnSubmit = form.querySelector('button[type="submit"]');
+    btnSubmit.innerHTML = '<i class="fas fa-save me-1"></i> Salvar Livro';
+    limparFormulario();
+  }
+
+  // Função pública para ser chamada da biblioteca
+function editarLivro(livro) {
+  // Garante que o formulário está disponível (a página de adicionar pode não estar ativa)
+  const formEl = document.getElementById('book-form');
+  if (!formEl) {
+    Util.toast('Erro: formulário de livro não encontrado.', 'danger');
+    return;
+  }
+
+  // Cria o botão cancelar se não existir
+  if (!document.getElementById('cancel-edit-btn')) {
+    criarBotaoCancelarEdicao();
+  }
+
+  // Preenche os campos com os dados do livro
+  preencherFormularioCompleto(livro);
+  editandoLivroID = livro.ID;
+
+  // Altera o texto do botão de submit
+  const btnSubmit = formEl.querySelector('button[type="submit"]');
+  if (btnSubmit) {
+    btnSubmit.innerHTML = '<i class="fas fa-save me-1"></i> Atualizar Livro';
+  }
+
+  // Exibe o botão cancelar
   const cancelBtn = document.getElementById('cancel-edit-btn');
   if (cancelBtn) {
-    cancelBtn.classList.add('d-none');
+    cancelBtn.classList.remove('d-none');
   }
-  const btnSubmit = form.querySelector('button[type="submit"]');
-  if (btnSubmit) {
-    btnSubmit.innerHTML = '<i class="fas fa-save me-1"></i> Salvar Livro';
-  }
-  limparFormulario();
+
+  // Navega para a página "Adicionar"
+  document.querySelectorAll('.nav-link[data-page="adicionar"]').forEach(l => l.click());
+
+  // Scroll para o formulário
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
-function redimensionarImagem(file, maxWidth, callback) {
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    const img = new Image();
-    img.onload = function() {
-      const canvas = document.createElement('canvas');
-      let width = img.width;
-      let height = img.height;
-      if (width > maxWidth) {
-        height = (height * maxWidth) / width;
-        width = maxWidth;
-      }
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, width, height);
-      callback(canvas.toDataURL('image/jpeg', 0.8)); // qualidade 80%
-    };
-    img.src = e.target.result;
-  };
-  reader.readAsDataURL(file);
-}
-  function editarLivro(livro) {
-    const formEl = document.getElementById('book-form');
-    if (!formEl) {
-      Util.toast('Erro: formulário de livro não encontrado.', 'danger');
-      return;
-    }
-    if (!document.getElementById('cancel-edit-btn')) {
-      criarBotaoCancelarEdicao();
-    }
-    preencherFormularioCompleto(livro);
-    editandoLivroID = livro.ID;
-    const btnSubmit = formEl.querySelector('button[type="submit"]');
-    if (btnSubmit) btnSubmit.innerHTML = '<i class="fas fa-save me-1"></i> Atualizar Livro';
-    const cancelBtn = document.getElementById('cancel-edit-btn');
-    if (cancelBtn) cancelBtn.classList.remove('d-none');
-    document.querySelectorAll('.nav-link[data-page="adicionar"]').forEach(l => l.click());
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
 
   return { init, editarLivro, cancelarEdicao };
 })();

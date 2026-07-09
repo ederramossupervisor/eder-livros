@@ -91,18 +91,16 @@ const Leitura = (() => {
   }
 
   function calcularPaginas() {
-  const pi = parseInt(pagInicial.value) || 0;
-  const pf = parseInt(pagFinal.value) || 0;
-  if (pf > pi) {
-    let lidas = pf - pi;
-    if (pi > 0) lidas += 1;
-    lidas = Math.max(0, lidas);
-    pagLidasSpan.textContent = lidas;
-    pagLidasDiv.classList.remove('d-none');
-  } else {
-    pagLidasDiv.classList.add('d-none');
+    const pi = parseInt(pagInicial.value) || 0;
+    const pf = parseInt(pagFinal.value) || 0;
+    const lidas = Math.max(0, pf - pi);
+    if (pf > pi) {
+      pagLidasSpan.textContent = lidas;
+      pagLidasDiv.classList.remove('d-none');
+    } else {
+      pagLidasDiv.classList.add('d-none');
+    }
   }
-}
 
   async function salvarSessao(e) {
     e.preventDefault();
@@ -147,20 +145,8 @@ const Leitura = (() => {
         limparFormulario();
         editandoSessaoID = null;
         btnSubmit.innerHTML = '<i class="fas fa-save me-1"></i> Registrar Sessão';
-        
-        console.log('🔄 Chamando carregarHistorico...');
-        carregarHistorico().then(() => {
-          console.log('✅ carregarHistorico finalizado');
-        }).catch(e => {
-          console.error('❌ Erro em carregarHistorico:', e);
-        });
-      
-        console.log('🔄 Chamando carregarLivros...');
-        carregarLivros().then(() => {
-          console.log('✅ carregarLivros finalizado');
-        }).catch(e => {
-          console.error('❌ Erro em carregarLivros:', e);
-        });
+        carregarHistorico(); // atualiza lista
+        carregarLivros(); // atualiza páginas lidas no dropdown
       } else {
         throw new Error(resposta?.erro || 'Falha no servidor');
       }
