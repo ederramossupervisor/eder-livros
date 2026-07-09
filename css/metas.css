@@ -33,3 +33,12 @@
 .card-title {
   font-size: 0.9rem;
 }
+.conquista-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: default;
+}
+
+.conquista-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 18px rgba(0,0,0,0.1);
+}
