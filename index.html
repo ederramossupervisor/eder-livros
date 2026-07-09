@@ -423,14 +423,23 @@
                   <div id="cover-preview" class="mb-3 border rounded p-3 bg-light d-flex align-items-center justify-content-center" style="min-height: 250px;">
                     <span class="text-muted">Pré-visualização</span>
                   </div>
+              
+                  <!-- Upload de imagem -->
+                  <div class="mb-3">
+                    <label for="upload-capa" class="btn btn-outline-primary">
+                      <i class="fas fa-camera me-1"></i> Tirar foto / Escolher arquivo
+                    </label>
+                    <input type="file" id="upload-capa" accept="image/*" capture="environment" style="display: none;">
+                    <small class="d-block text-muted mt-1">Ou cole o link direto da imagem abaixo</small>
+                  </div>
+              
+                  <!-- URL alternativa -->
                   <div class="input-group mb-3">
                     <input type="url" id="urlCapa" class="form-control" placeholder="URL da imagem de capa">
                     <button class="btn btn-outline-secondary" type="button" id="load-cover-btn"><i class="fas fa-sync-alt"></i></button>
                   </div>
-                  <small class="text-muted">Ou cole o link direto da imagem</small>
                 </div>
               </div>
-
               <div class="card mb-3">
                 <div class="card-header fw-bold">Detalhes pessoais</div>
                 <div class="card-body">
