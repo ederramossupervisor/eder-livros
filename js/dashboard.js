@@ -23,47 +23,51 @@ const Dashboard = (() => {
     }
   }
 
-  function preencherCards(d) {
+function preencherCards(d) {
+  // Remove qualquer dropdown existente antes de criar um novo
+  const oldSelect = document.getElementById('livro-atual-select');
+  if (oldSelect) oldSelect.remove();
+
   // Livro atual
-  const container = document.getElementById('livro-atual-card');
   if (d.livroAtual) {
     const progresso = d.livroAtual.totalPag > 0 ? Math.round((d.livroAtual.pagLidas / d.livroAtual.totalPag) * 100) : 0;
     document.getElementById('livro-atual-titulo').textContent = d.livroAtual.titulo;
     document.getElementById('livro-atual-progresso').textContent = `${d.livroAtual.pagLidas || 0} de ${d.livroAtual.totalPag} páginas (${progresso}%)`;
     if (d.livroAtual.urlCapa) {
       document.getElementById('livro-atual-capa').innerHTML = `<img src="${d.livroAtual.urlCapa}" alt="Capa">`;
+    } else {
+      document.getElementById('livro-atual-capa').innerHTML = '';
     }
 
     // Se houver mais de um livro sendo lido, adiciona seletor
     if (d.livrosLendo && d.livrosLendo.length > 1) {
-      let selectHtml = `<select id="livro-atual-select" class="form-select form-select-sm ms-3" style="max-width:250px;">`;
+      const select = document.createElement('select');
+      select.id = 'livro-atual-select';
+      select.className = 'form-select form-select-sm ms-3';
+      select.style.maxWidth = '250px';
+
       d.livrosLendo.forEach(livro => {
-        const selected = livro.ID === d.livroAtual.ID ? 'selected' : '';
-        selectHtml += `<option value="${livro.ID}" ${selected}>${livro.titulo}</option>`;
+        const option = document.createElement('option');
+        option.value = livro.ID;
+        option.textContent = livro.titulo;
+        if (livro.ID === d.livroAtual.ID) option.selected = true;
+        select.appendChild(option);
       });
-      selectHtml += '</select>';
-      // Insere o dropdown após o título (dentro do div que contém o título)
-      const tituloContainer = document.getElementById('livro-atual-titulo').parentNode;
-      tituloContainer.insertAdjacentHTML('beforeend', selectHtml);
-      
-      // Evento para salvar a escolha
-      document.getElementById('livro-atual-select').addEventListener('change', async (e) => {
+
+      // Adiciona o listener uma única vez
+      select.addEventListener('change', async (e) => {
         const novoID = e.target.value;
         await API.enviar({ acao: 'setLivroAtual', livroID: novoID });
-        // Recarrega o dashboard para refletir a mudança
         Dashboard.init();
       });
-    } else {
-      // Remove dropdown se existir (em caso de recarregamento)
-      const oldSelect = document.getElementById('livro-atual-select');
-      if (oldSelect) oldSelect.remove();
+
+      const tituloContainer = document.getElementById('livro-atual-titulo').parentNode;
+      tituloContainer.appendChild(select);
     }
   } else {
     document.getElementById('livro-atual-titulo').textContent = 'Nenhum livro em andamento';
     document.getElementById('livro-atual-progresso').textContent = '';
     document.getElementById('livro-atual-capa').innerHTML = '';
-    const oldSelect = document.getElementById('livro-atual-select');
-    if (oldSelect) oldSelect.remove();
   }
 
   // Cards de números
@@ -81,7 +85,6 @@ const Dashboard = (() => {
   barra.textContent = d.percentualMeta + '%';
   barra.setAttribute('aria-valuenow', d.percentualMeta);
 }
-
   function criarGrafico(dados) {
     if (chartInstance) chartInstance.destroy();
     const ctx = document.getElementById('grafico-semanal').getContext('2d');
