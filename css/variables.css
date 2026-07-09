@@ -3,38 +3,44 @@
 ------------------------------------------- */
 :root {
   /* Cores principais */
-  --primary: #1a73e8;
-  --primary-hover: #1558b0;
-  --secondary: #5f6368;
+  --primary: #6366f1;         /* indigo mais moderno */
+  --primary-hover: #4f46e5;
+  --primary-light: #eef2ff;
+  --secondary: #64748b;
 
   /* Tema claro */
   --bg-primary: #ffffff;
-  --bg-secondary: #f8f9fa;
+  --bg-secondary: #f8fafc;
   --bg-card: #ffffff;
-  --text-primary: #202124;
-  --text-secondary: #5f6368;
-  --border-color: #e0e0e0;
-  --shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.08);
-  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px rgba(0,0,0,0.05);
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --border-color: #e2e8f0;
+  --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.05), 0 2px 4px rgba(0,0,0,0.04);
+  --shadow-lg: 0 10px 25px rgba(0,0,0,0.08), 0 4px 6px rgba(0,0,0,0.04);
   --navbar-bg: #ffffff;
   --sidebar-bg: #ffffff;
+  --card-hover-shadow: 0 12px 30px rgba(99,102,241,0.12), 0 4px 8px rgba(0,0,0,0.06);
 
-  --font-family: 'Inter', sans-serif;
-  --radius: 12px;
-  --transition: 0.2s ease;
+  --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  --radius: 14px;
+  --radius-sm: 8px;
+  --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Modo escuro */
 body.dark-mode {
-  --bg-primary: #121212;
-  --bg-secondary: #1e1e1e;
-  --bg-card: #2d2d2d;
-  --text-primary: #e0e0e0;
-  --text-secondary: #aaaaaa;
-  --border-color: #444444;
-  --shadow: 0 1px 3px rgba(255,255,255,0.05);
-  --navbar-bg: #1e1e1e;
-  --sidebar-bg: #1e1e1e;
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-card: #1e293b;
+  --text-primary: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --border-color: #334155;
+  --shadow: 0 1px 3px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.4);
+  --shadow-lg: 0 10px 25px rgba(0,0,0,0.5);
+  --navbar-bg: #1e293b;
+  --sidebar-bg: #1e293b;
+  --card-hover-shadow: 0 12px 30px rgba(99,102,241,0.25);
 }
 
 body {
@@ -42,4 +48,5 @@ body {
   background-color: var(--bg-secondary);
   color: var(--text-primary);
   transition: background-color var(--transition), color var(--transition);
+  -webkit-font-smoothing: antialiased;
 }
