@@ -108,3 +108,54 @@ body.app-loaded #splash-screen {
     font-size: 1.2rem;
   }
 }
+/* Sidebar */
+.sidebar {
+  background-color: var(--sidebar-bg);
+  border-right: 1px solid var(--border-color);
+}
+
+.sidebar .nav-link {
+  color: var(--text-secondary);
+}
+.sidebar .nav-link.active,
+.sidebar .nav-link:hover {
+  background-color: var(--primary);
+  color: #fff;
+}
+
+/* Bottom nav */
+.bottom-nav {
+  background-color: var(--navbar-bg);
+  border-top: 1px solid var(--border-color);
+}
+.bottom-nav .nav-item {
+  color: var(--text-secondary);
+}
+.bottom-nav .nav-item.active {
+  color: var(--primary);
+}
+
+/* Cards */
+.card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow);
+}
+
+/* Botões primários */
+.btn-primary {
+  background-color: var(--primary);
+  border-color: var(--primary);
+}
+.btn-primary:hover {
+  background-color: var(--primary-hover);
+  border-color: var(--primary-hover);
+}
+
+/* Links e badges */
+a {
+  color: var(--primary);
+}
+.badge.bg-primary {
+  background-color: var(--primary) !important;
+}
