@@ -79,20 +79,23 @@ const Metas = (() => {
 
       // Mapeamento de ícones (emojis) para cada conquista
       const icones = {
-        'Primeiro livro': '📖',
-        'Leitor iniciante': '📚',
-        'Leitor dedicado': '🏅',
-        'Devorador de livros': '🔥',
-        'Página 1000': '📄',
-        'Página 5000': '📑',
-        'Maratona de 7 dias': '🗓️',
-        'Maratona de 30 dias': '📅',
-        'Livro gigante': '🐘',
-        'Favorito': '⭐',
-        'Leitor global': '🌍'
-        // Novas conquistas adicionadas abaixo, basta inserir aqui
-      };
-
+  'Primeiro livro': '📖',
+  'Leitor iniciante': '📚',
+  'Leitor dedicado': '🏅',
+  'Devorador de livros': '🔥',
+  'Página 1000': '📄',
+  'Página 5000': '📑',
+  'Maratona de 7 dias': '🗓️',
+  'Maratona de 30 dias': '📅',
+  'Livro gigante': '🐘',
+  'Favorito': '⭐',
+  'Leitor global': '🌍',
+  'Leitor noturno': '🌙',
+  'Colecionador de clássicos': '🏛️',
+  'Diversidade literária': '🌈',
+  'Anotador': '✍️',
+  'Viajante literário': '🗺️'
+};
       const nomesObtidos = (Array.isArray(resp) ? resp : []).map(c => c.Nome);
 
       Object.keys(icones).forEach(nome => {
