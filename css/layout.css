@@ -108,3 +108,32 @@ body.app-loaded #splash-screen {
     font-size: 1.2rem;
   }
 }
+/* Barra superior mobile */
+.mobile-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+  background-color: var(--bg-primary);
+  border-bottom: 1px solid var(--border-color);
+}
+/* Ajuste do conteúdo principal para dar espaço à navbar mobile */
+@media (max-width: 767px) {
+  .content-area {
+    padding-top: 0;
+    padding-bottom: 70px;
+  }
+}
+/* Offcanvas */
+.offcanvas {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+.offcanvas .nav-link {
+  color: var(--text-secondary);
+  padding: 10px 15px;
+  border-radius: var(--radius-sm);
+}
+.offcanvas .nav-link:hover {
+  background-color: var(--primary-light);
+  color: var(--primary);
+}
