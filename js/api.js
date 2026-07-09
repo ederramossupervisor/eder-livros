@@ -2,9 +2,33 @@ const API = (() => {
   const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzTqBGdFu372Z_7fXeUuXuqEgaIV-DDTU1n1SDkh6cLrnY3UAaZuXqmXzNMiAvhtCk5pg/exec';
 
   /**
-   * Envia dados via JSONP (GET com callback) – para ações normais.
+   * Envia dados via fetch GET (preferencial) – evita CORS, não depende de proxy.
    */
-  function enviar(dados) {
+  async function enviarFetch(dados, timeoutMs = 20000) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    const params = new URLSearchParams({ data: JSON.stringify(dados) });
+    const url = `${SCRIPT_URL}?${params.toString()}`;
+
+    try {
+      const resp = await fetch(url, {
+        method: 'GET',
+        signal: controller.signal
+      });
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      return await resp.json();
+    } catch (e) {
+      if (e.name === 'AbortError') throw new Error('Tempo esgotado ao contatar o servidor.');
+      throw e;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  /**
+   * Fallback JSONP (usado apenas se fetch falhar)
+   */
+  function enviarJSONP(dados) {
     return new Promise((resolve, reject) => {
       const callbackName = 'cb_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
       let timeoutId = setTimeout(() => {
@@ -46,7 +70,6 @@ const API = (() => {
 
   /**
    * Envia dados com imagem (POST direto, sem ler resposta) – usado apenas para upload de capa.
-   * Retorna verdadeiro se a requisição foi enviada (não garante sucesso, mas evita CORS).
    */
   function enviarComImagem(dados) {
     return fetch(SCRIPT_URL, {
@@ -54,14 +77,23 @@ const API = (() => {
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify(dados),
     })
-    .then(response => {
-      // Não tentamos ler o corpo (evita CORS). Consideramos sucesso se não houver erro de rede.
-      return true;
-    })
+    .then(response => true)
     .catch(error => {
       console.error('Erro no POST da imagem:', error);
       throw error;
     });
+  }
+
+  /**
+   * Função principal: tenta fetch GET e, em caso de erro, recorre ao JSONP.
+   */
+  async function enviar(dados) {
+    try {
+      return await enviarFetch(dados);
+    } catch (err) {
+      console.warn('Fetch falhou, tentando JSONP...', err);
+      return await enviarJSONP(dados);
+    }
   }
 
   async function testarConexao() {
