@@ -159,3 +159,14 @@ a {
 .badge.bg-primary {
   background-color: var(--primary) !important;
 }
+/* Sidebar */
+.sidebar .nav-link {
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* Bottom nav */
+.bottom-nav .nav-item small {
+  font-size: 0.65rem;
+  font-weight: 500;
+}
