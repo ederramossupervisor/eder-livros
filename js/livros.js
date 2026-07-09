@@ -300,7 +300,8 @@ uploadInput.addEventListener('change', (e) => {
       dataInicio: document.getElementById('data-inicio').value,
       dataTermino: document.getElementById('data-termino').value
     };
-
+console.log('📤 Enviando livro:', book.titulo);
+console.log('📸 imagemBase64 presente?', !!book.imagemBase64, 'tamanho:', book.imagemBase64?.length);
     const btnSubmit = form.querySelector('button[type="submit"]');
     btnSubmit.disabled = true;
     btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Salvando...';
