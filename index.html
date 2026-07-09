@@ -44,62 +44,64 @@
 
   <!-- Barra de navegação inferior (mobile-first) -->
   <nav class="bottom-nav d-md-none fixed-bottom bg-white shadow-lg">
-  <div class="container d-flex justify-content-around py-1">
-    <a href="#" class="nav-item text-center active px-1" data-page="dashboard">
-      <i class="fas fa-home fa-sm"></i>
-      <small class="d-block text-nowrap">Home</small>
-    </a>
-    <a href="#" class="nav-item text-center px-1" data-page="biblioteca">
-      <i class="fas fa-book fa-sm"></i>
-      <small class="d-block text-nowrap">Biblioteca</small>
-    </a>
-    <a href="#" class="nav-item text-center px-1" data-page="adicionar">
-      <i class="fas fa-plus-circle fa-sm"></i>
-      <small class="d-block text-nowrap">Adicionar</small>
-    </a>
-    <a href="#" class="nav-item text-center px-1" data-page="leitura">
-      <i class="fas fa-clock fa-sm"></i>
-      <small class="d-block text-nowrap">Sessões</small>
-    </a>
-    <a href="#" class="nav-item text-center px-1" data-page="desejos">
-      <i class="fas fa-heart fa-sm"></i>
-      <small class="d-block text-nowrap">Desejos</small>
-    </a>
-  </div>
-</nav>
+    <div class="container d-flex justify-content-around py-1">
+      <a href="#" class="nav-item text-center active px-1" data-page="dashboard">
+        <i class="fas fa-home fa-sm"></i>
+        <small class="d-block text-nowrap">Home</small>
+      </a>
+      <a href="#" class="nav-item text-center px-1" data-page="biblioteca">
+        <i class="fas fa-book fa-sm"></i>
+        <small class="d-block text-nowrap">Biblioteca</small>
+      </a>
+      <a href="#" class="nav-item text-center px-1" data-page="adicionar">
+        <i class="fas fa-plus-circle fa-sm"></i>
+        <small class="d-block text-nowrap">Adicionar</small>
+      </a>
+      <a href="#" class="nav-item text-center px-1" data-page="leitura">
+        <i class="fas fa-clock fa-sm"></i>
+        <small class="d-block text-nowrap">Sessões</small>
+      </a>
+      <a href="#" class="nav-item text-center px-1" data-page="desejos">
+        <i class="fas fa-heart fa-sm"></i>
+        <small class="d-block text-nowrap">Desejos</small>
+      </a>
+    </div>
+  </nav>
+
   <!-- Offcanvas Menu Mobile -->
-<div class="offcanvas offcanvas-start d-md-none" tabindex="-1" id="mobileMenu" aria-labelledby="mobileMenuLabel">
-  <div class="offcanvas-header">
-    <h5 class="offcanvas-title" id="mobileMenuLabel">
-      <img src="img/icons/logo.png" alt="Eder Livros" width="32" height="32" class="me-2"> Eder Livros
-    </h5>
-    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Fechar"></button>
+  <div class="offcanvas offcanvas-start d-md-none" tabindex="-1" id="mobileMenu" aria-labelledby="mobileMenuLabel">
+    <div class="offcanvas-header">
+      <h5 class="offcanvas-title" id="mobileMenuLabel">
+        <img src="img/icons/logo.png" alt="Eder Livros" width="32" height="32" class="me-2"> Eder Livros
+      </h5>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Fechar"></button>
+    </div>
+    <div class="offcanvas-body">
+      <nav class="nav flex-column">
+        <a href="#" class="nav-link" data-page="estatisticas"><i class="fas fa-chart-pie me-2"></i> Estatísticas</a>
+        <a href="#" class="nav-link" data-page="metas"><i class="fas fa-bullseye me-2"></i> Metas</a>
+        <a href="#" class="nav-link" data-page="anotacoes"><i class="fas fa-sticky-note me-2"></i> Anotações</a>
+        <a href="#" class="nav-link" data-page="desejos"><i class="fas fa-heart me-2"></i> Desejos</a>
+        <a href="#" class="nav-link" data-page="exportar"><i class="fas fa-download me-2"></i> Exportar</a>
+        <a href="#" class="nav-link" data-page="configuracoes"><i class="fas fa-cog me-2"></i> Configurações</a>
+      </nav>
+      <hr>
+      <button id="theme-toggle-mobile" class="btn btn-outline-secondary w-100">
+        <i class="fas fa-moon"></i> <span class="ms-1">Modo escuro</span>
+      </button>
+    </div>
   </div>
-  <div class="offcanvas-body">
-    <nav class="nav flex-column">
-      <a href="#" class="nav-link" data-page="estatisticas"><i class="fas fa-chart-pie me-2"></i> Estatísticas</a>
-      <a href="#" class="nav-link" data-page="metas"><i class="fas fa-bullseye me-2"></i> Metas</a>
-      <a href="#" class="nav-link" data-page="anotacoes"><i class="fas fa-sticky-note me-2"></i> Anotações</a>
-      <a href="#" class="nav-link" data-page="desejos"><i class="fas fa-heart me-2"></i> Desejos</a>
-      <a href="#" class="nav-link" data-page="exportar"><i class="fas fa-download me-2"></i> Exportar</a>
-      <a href="#" class="nav-link" data-page="configuracoes"><i class="fas fa-cog me-2"></i> Configurações</a>
-    </nav>
-    <hr>
-    <button id="theme-toggle-mobile" class="btn btn-outline-secondary w-100">
-      <i class="fas fa-moon"></i> <span class="ms-1">Modo escuro</span>
-    </button>
-  </div>
-</div>
+
   <!-- Barra superior mobile -->
-<nav class="mobile-navbar d-md-none bg-white shadow-sm px-3 py-2 d-flex justify-content-between align-items-center">
-  <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="offcanvas" data-bs-target="#mobileMenu">
-    <i class="fas fa-bars"></i>
-  </button>
-  <span class="fw-bold">Eder Livros</span>
-  <button id="theme-toggle-mobile-top" class="btn btn-outline-secondary btn-sm">
-    <i class="fas fa-moon"></i>
-  </button>
-</nav>
+  <nav class="mobile-navbar d-md-none bg-white shadow-sm px-3 py-2 d-flex justify-content-between align-items-center">
+    <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="offcanvas" data-bs-target="#mobileMenu">
+      <i class="fas fa-bars"></i>
+    </button>
+    <span class="fw-bold">Eder Livros</span>
+    <button id="theme-toggle-mobile-top" class="btn btn-outline-secondary btn-sm">
+      <i class="fas fa-moon"></i>
+    </button>
+  </nav>
 
   <!-- Sidebar (desktop) -->
   <aside class="sidebar d-none d-md-flex flex-column bg-white shadow-sm">
@@ -230,66 +232,66 @@
 
     <!-- ==================== PÁGINA: Biblioteca ==================== -->
     <div id="page-biblioteca" class="page">
-  <div class="container py-4">
-    <h1 class="mb-4">Minha Biblioteca</h1>
+      <div class="container py-4">
+        <h1 class="mb-4">Minha Biblioteca</h1>
 
-    <!-- Barra de ferramentas -->
-    <div class="row g-2 mb-3">
-      <div class="col-md-6">
-        <div class="input-group">
-          <span class="input-group-text"><i class="fas fa-search"></i></span>
-          <input type="text" id="biblioteca-search" class="form-control" placeholder="Pesquisar...">
-        </div>
-      </div>
-      <div class="col-md-2">
-        <select id="filtro-status" class="form-select">
-          <option value="">Todos os status</option>
-          <option value="Lendo">Lendo</option>
-          <option value="Quero ler">Quero ler</option>
-          <option value="Finalizado">Finalizado</option>
-          <option value="Abandonado">Abandonado</option>
-          <option value="Relendo">Relendo</option>
-        </select>
-      </div>
-      <div class="col-md-2">
-        <select id="filtro-genero" class="form-select">
-          <option value="">Todos os gêneros</option>
-        </select>
-      </div>
-      <div class="col-md-2">
-        <select id="ordenacao" class="form-select">
-          <option value="titulo">Título</option>
-          <option value="autor">Autor</option>
-          <option value="data">Data de cadastro</option>
-          <option value="paginas">Nº de páginas</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- Contador -->
-    <p class="text-muted mb-3" id="biblioteca-contador">Carregando...</p>
-
-    <!-- Grade de livros -->
-    <div id="biblioteca-grid" class="row g-3">
-      <!-- Preenchido dinamicamente -->
-    </div>
-
-    <!-- Modal de detalhes -->
-    <div class="modal fade" id="livro-modal" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="modal-titulo">Detalhes do Livro</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        <!-- Barra de ferramentas -->
+        <div class="row g-2 mb-3">
+          <div class="col-md-6">
+            <div class="input-group">
+              <span class="input-group-text"><i class="fas fa-search"></i></span>
+              <input type="text" id="biblioteca-search" class="form-control" placeholder="Pesquisar...">
+            </div>
           </div>
-          <div class="modal-body" id="modal-conteudo">
-            <!-- Preenchido dinamicamente -->
+          <div class="col-md-2">
+            <select id="filtro-status" class="form-select">
+              <option value="">Todos os status</option>
+              <option value="Lendo">Lendo</option>
+              <option value="Quero ler">Quero ler</option>
+              <option value="Finalizado">Finalizado</option>
+              <option value="Abandonado">Abandonado</option>
+              <option value="Relendo">Relendo</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <select id="filtro-genero" class="form-select">
+              <option value="">Todos os gêneros</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <select id="ordenacao" class="form-select">
+              <option value="titulo">Título</option>
+              <option value="autor">Autor</option>
+              <option value="data">Data de cadastro</option>
+              <option value="paginas">Nº de páginas</option>
+            </select>
           </div>
         </div>
+
+        <!-- Contador -->
+        <p class="text-muted mb-3" id="biblioteca-contador">Carregando...</p>
+
+        <!-- Grade de livros -->
+        <div id="biblioteca-grid" class="row g-3">
+          <!-- Preenchido dinamicamente -->
+        </div>
+
+        <!-- Modal de detalhes -->
+        <div class="modal fade" id="livro-modal" tabindex="-1" aria-hidden="true">
+          <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="modal-titulo">Detalhes do Livro</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+              </div>
+              <div class="modal-body" id="modal-conteudo">
+                <!-- Preenchido dinamicamente -->
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-</div>
 
     <!-- ==================== PÁGINA: Adicionar Livro ==================== -->
     <div id="page-adicionar" class="page">
@@ -359,15 +361,16 @@
                       <label for="numeroPaginas" class="form-label">Páginas</label>
                       <input type="number" id="numeroPaginas" class="form-control" min="1">
                     </div>
-                    <div class="row g-2">
-                      <div class="col-md-6">
-                        <label for="data-inicio" class="form-label">Data de início</label>
-                        <input type="date" id="data-inicio" class="form-control">
-                      </div>
-                      <div class="col-md-6">
-                        <label for="data-termino" class="form-label">Data de término</label>
-                        <input type="date" id="data-termino" class="form-control">
-                      </div>
+                  </div>
+                  <!-- CORREÇÃO: row separado para datas (não mais aninhado) -->
+                  <div class="row g-2 mt-2">
+                    <div class="col-md-6">
+                      <label for="data-inicio" class="form-label">Data de início</label>
+                      <input type="date" id="data-inicio" class="form-control">
+                    </div>
+                    <div class="col-md-6">
+                      <label for="data-termino" class="form-label">Data de término</label>
+                      <input type="date" id="data-termino" class="form-control">
                     </div>
                   </div>
                 </div>
@@ -381,35 +384,35 @@
                       <label for="genero" class="form-label">Gênero</label>
                       <input type="text" id="genero" class="form-control" list="generos-sugestoes">
                       <datalist id="generos-sugestoes">
-                      <option value="Romance">
-                      <option value="Conto">
-                      <option value="Novela">
-                      <option value="Crônica">
-                      <option value="Poesia">
-                      <option value="Teatro">
-                      <option value="Ficção Científica">
-                      <option value="Fantasia">
-                      <option value="Terror">
-                      <option value="Mistério">
-                      <option value="Suspense">
-                      <option value="Policial">
-                      <option value="Aventura">
-                      <option value="Drama">
-                      <option value="Humor">
-                      <option value="Romance Romântico">
-                      <option value="Ficção Histórica">
-                      <option value="Infantil">
-                      <option value="Juvenil">
-                      <option value="HQ">
-                      <option value="Mangá">
-                      <option value="Graphic Novel">
-                      <option value="Biografia">
-                      <option value="Autobiografia">
-                      <option value="Memórias">
-                      <option value="Diário">
-                      <option value="Ensaio">
-                      <option value="Não Ficção">
-                    </datalist>
+                        <option value="Romance">
+                        <option value="Conto">
+                        <option value="Novela">
+                        <option value="Crônica">
+                        <option value="Poesia">
+                        <option value="Teatro">
+                        <option value="Ficção Científica">
+                        <option value="Fantasia">
+                        <option value="Terror">
+                        <option value="Mistério">
+                        <option value="Suspense">
+                        <option value="Policial">
+                        <option value="Aventura">
+                        <option value="Drama">
+                        <option value="Humor">
+                        <option value="Romance Romântico">
+                        <option value="Ficção Histórica">
+                        <option value="Infantil">
+                        <option value="Juvenil">
+                        <option value="HQ">
+                        <option value="Mangá">
+                        <option value="Graphic Novel">
+                        <option value="Biografia">
+                        <option value="Autobiografia">
+                        <option value="Memórias">
+                        <option value="Diário">
+                        <option value="Ensaio">
+                        <option value="Não Ficção">
+                      </datalist>
                     </div>
                     <div class="col-md-6">
                       <label for="subgenero" class="form-label">Subgênero</label>
@@ -441,19 +444,19 @@
 
             <!-- Coluna direita -->
             <div class="col-md-6">
-            <div class="card mb-3">
-              <div class="card-header fw-bold">Capa e extras</div>
-              <div class="card-body text-center">
-                <div id="cover-preview" class="mb-3 border rounded p-3 bg-light d-flex align-items-center justify-content-center" style="min-height: 250px;">
-                  <span class="text-muted">Pré-visualização</span>
+              <div class="card mb-3">
+                <div class="card-header fw-bold">Capa e extras</div>
+                <div class="card-body text-center">
+                  <div id="cover-preview" class="mb-3 border rounded p-3 bg-light d-flex align-items-center justify-content-center" style="min-height: 250px;">
+                    <span class="text-muted">Pré-visualização</span>
+                  </div>
+                  <div class="input-group mb-3">
+                    <input type="url" id="urlCapa" class="form-control" placeholder="URL da imagem de capa">
+                    <button class="btn btn-outline-secondary" type="button" id="load-cover-btn"><i class="fas fa-sync-alt"></i></button>
+                  </div>
+                  <small class="text-muted">Cole o link direto da imagem</small>
                 </div>
-                <div class="input-group mb-3">
-                  <input type="url" id="urlCapa" class="form-control" placeholder="URL da imagem de capa">
-                  <button class="btn btn-outline-secondary" type="button" id="load-cover-btn"><i class="fas fa-sync-alt"></i></button>
-                </div>
-                <small class="text-muted">Cole o link direto da imagem</small>
               </div>
-            </div>
 
               <div class="card mb-3">
                 <div class="card-header fw-bold">Detalhes pessoais</div>
@@ -518,40 +521,41 @@
           <div class="row g-3">
             <div class="col-md-6">
               <div class="card">
-  <div class="card-header fw-bold">Data e horário</div>
-  <div class="card-body">
-    <div class="mb-3">
-      <label for="data-sessao" class="form-label">Data *</label>
-      <input type="date" id="data-sessao" class="form-control" required>
-    </div>
+                <div class="card-header fw-bold">Data e horário</div>
+                <div class="card-body">
+                  <div class="mb-3">
+                    <label for="data-sessao" class="form-label">Data *</label>
+                    <input type="date" id="data-sessao" class="form-control" required>
+                  </div>
 
-    <!-- Cronômetro -->
-    <div class="text-center mb-3">
-      <span id="cronometro-display" class="fs-4 fw-bold text-primary">00:00</span>
-      <div class="mt-2">
-        <button id="btn-iniciar" class="btn btn-success btn-sm"><i class="fas fa-play"></i> Iniciar</button>
-        <button id="btn-pausar" class="btn btn-warning btn-sm d-none"><i class="fas fa-pause"></i> Pausar</button>
-        <button id="btn-retomar" class="btn btn-info btn-sm d-none"><i class="fas fa-play"></i> Retomar</button>
-        <button id="btn-finalizar" class="btn btn-danger btn-sm d-none"><i class="fas fa-stop"></i> Finalizar</button>
-      </div>
-    </div>
+                  <!-- Cronômetro -->
+                  <div class="text-center mb-3">
+                    <span id="cronometro-display" class="fs-4 fw-bold text-primary">00:00</span>
+                    <div class="mt-2">
+                      <button id="btn-iniciar" class="btn btn-success btn-sm"><i class="fas fa-play"></i> Iniciar</button>
+                      <button id="btn-pausar" class="btn btn-warning btn-sm d-none"><i class="fas fa-pause"></i> Pausar</button>
+                      <button id="btn-retomar" class="btn btn-info btn-sm d-none"><i class="fas fa-play"></i> Retomar</button>
+                      <button id="btn-finalizar" class="btn btn-danger btn-sm d-none"><i class="fas fa-stop"></i> Finalizar</button>
+                    </div>
+                  </div>
 
-    <!-- Campos de hora (ainda editáveis manualmente) -->
-    <div class="row g-2">
-      <div class="col-6">
-        <label for="hora-inicio" class="form-label">Hora início</label>
-        <input type="time" id="hora-inicio" class="form-control">
-      </div>
-      <div class="col-6">
-        <label for="hora-fim" class="form-label">Hora fim</label>
-        <input type="time" id="hora-fim" class="form-control">
-      </div>
-    </div>
-    <div id="tempo-calculado" class="mt-2 small text-success d-none">
-      <i class="fas fa-clock"></i> Tempo calculado: <span id="tempo-minutos">0</span> min
-    </div>
-  </div>
-</div>
+                  <!-- Campos de hora (ainda editáveis manualmente) -->
+                  <div class="row g-2">
+                    <div class="col-6">
+                      <label for="hora-inicio" class="form-label">Hora início</label>
+                      <input type="time" id="hora-inicio" class="form-control">
+                    </div>
+                    <div class="col-6">
+                      <label for="hora-fim" class="form-label">Hora fim</label>
+                      <input type="time" id="hora-fim" class="form-control">
+                    </div>
+                  </div>
+                  <div id="tempo-calculado" class="mt-2 small text-success d-none">
+                    <i class="fas fa-clock"></i> Tempo calculado: <span id="tempo-minutos">0</span> min
+                  </div>
+                </div>
+              </div>
+            </div>
             <div class="col-md-6">
               <div class="card">
                 <div class="card-header fw-bold">Páginas</div>
@@ -617,605 +621,610 @@
           </div>
         </form>
         <div class="mt-5">
-        <h5>Histórico de Sessões</h5>
-        <div id="historico-sessoes"></div>
+          <h5>Histórico de Sessões</h5>
+          <div id="historico-sessoes"></div>
         </div>
       </div>
     </div>
 
     <!-- ==================== PÁGINAS PLACEHOLDER ==================== -->
     <div id="page-estatisticas" class="page">
-  <div class="container py-4">
-    <h1 class="mb-4">Estatísticas</h1>
+      <div class="container py-4">
+        <h1 class="mb-4">Estatísticas</h1>
 
-    <!-- Cards resumo -->
-    <div class="row g-3 mb-4">
-      <div class="col-6 col-md-3">
-        <div class="card text-center shadow-sm">
-          <div class="card-body">
-            <i class="fas fa-book fa-2x text-primary mb-2"></i>
-            <h5 id="stat-total-livros">0</h5>
-            <small>Total de livros</small>
-          </div>
-        </div>
-      </div>
-      <div class="col-6 col-md-3">
-        <div class="card text-center shadow-sm">
-          <div class="card-body">
-            <i class="fas fa-file-alt fa-2x text-success mb-2"></i>
-            <h5 id="stat-total-paginas">0</h5>
-            <small>Páginas lidas</small>
-          </div>
-        </div>
-      </div>
-      <div class="col-6 col-md-3">
-        <div class="card text-center shadow-sm">
-          <div class="card-body">
-            <i class="fas fa-clock fa-2x text-warning mb-2"></i>
-            <h5 id="stat-total-horas">0</h5>
-            <small>Horas de leitura</small>
-          </div>
-        </div>
-      </div>
-      <div class="col-6 col-md-3">
-        <div class="card text-center shadow-sm">
-          <div class="card-body">
-            <i class="fas fa-tachometer-alt fa-2x text-danger mb-2"></i>
-            <h5 id="stat-velocidade">0</h5>
-            <small>Páginas/hora</small>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Insights -->
-    <div class="card mb-4 shadow-sm">
-      <div class="card-header fw-bold"><i class="fas fa-lightbulb text-warning me-2"></i>Insights</div>
-      <div class="card-body" id="insights-container">
-        <ul class="list-group list-group-flush" id="insights-list"></ul>
-      </div>
-    </div>
-
-    <!-- Gráficos -->
-    <div class="row g-3">
-      <div class="col-lg-6">
-        <div class="card shadow-sm">
-          <div class="card-body">
-            <h5>Livros finalizados por mês</h5>
-            <canvas id="grafico-finalizados-mes" height="200"></canvas>
-          </div>
-        </div>
-      </div>
-      <div class="col-lg-6">
-        <div class="card shadow-sm">
-          <div class="card-body">
-            <h5>Páginas lidas (últimos 30 dias)</h5>
-            <canvas id="grafico-paginas-dia" height="200"></canvas>
-          </div>
-        </div>
-      </div>
-      <div class="col-lg-6">
-        <div class="card shadow-sm">
-          <div class="card-body">
-            <h5>Distribuição por gênero</h5>
-            <canvas id="grafico-generos" height="200"></canvas>
-          </div>
-        </div>
-      </div>
-      <div class="col-lg-6">
-        <div class="card shadow-sm">
-          <div class="card-body">
-            <h5>Tempo de leitura por dia da semana</h5>
-            <canvas id="grafico-dia-semana" height="200"></canvas>
-          </div>
-        </div>
-      </div>
-      <div class="col-12">
-        <div class="card shadow-sm">
-          <div class="card-body">
-            <h5>Heatmap de leitura (últimos meses)</h5>
-            <div id="heatmap-container" class="d-flex flex-wrap gap-1 justify-content-center"></div>
-            <div class="d-flex justify-content-center mt-2">
-              <small class="me-2">Menos</small>
-              <div class="d-flex gap-1 align-items-center">
-                <span style="width:12px;height:12px;background:#ebedf0;border-radius:2px;"></span>
-                <span style="width:12px;height:12px;background:#9be9a8;border-radius:2px;"></span>
-                <span style="width:12px;height:12px;background:#40c463;border-radius:2px;"></span>
-                <span style="width:12px;height:12px;background:#30a14e;border-radius:2px;"></span>
-                <span style="width:12px;height:12px;background:#216e39;border-radius:2px;"></span>
-              </div>
-              <small class="ms-2">Mais</small>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-6">
-        <div class="card shadow-sm">
-          <div class="card-body">
-            <h5>Top Autores</h5>
-            <ul class="list-group" id="top-autores"></ul>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-6">
-        <div class="card shadow-sm">
-          <div class="card-body">
-            <h5>Top Editoras</h5>
-            <ul class="list-group" id="top-editoras"></ul>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-<div id="page-metas" class="page">
-  <div class="container py-4">
-    <h1 class="mb-4">Metas e Conquistas</h1>
-
-    <!-- Metas -->
-    <div class="card mb-4 shadow-sm">
-      <div class="card-header fw-bold"><i class="fas fa-bullseye me-2"></i>Definir Metas</div>
-      <div class="card-body">
-        <form id="metas-form">
-          <div class="row g-3">
-            <div class="col-md-4">
-              <label for="meta-ano" class="form-label">Ano</label>
-              <input type="number" id="meta-ano" class="form-control" min="2020" max="2100" required>
-            </div>
-            <div class="col-md-4">
-              <label for="meta-livros" class="form-label">Meta de livros</label>
-              <input type="number" id="meta-livros" class="form-control" min="0">
-            </div>
-            <div class="col-md-4">
-              <label for="meta-paginas" class="form-label">Meta de páginas</label>
-              <input type="number" id="meta-paginas" class="form-control" min="0">
-            </div>
-            <div class="col-md-4">
-              <label for="meta-mensal" class="form-label">Meta mensal (páginas)</label>
-              <input type="number" id="meta-mensal" class="form-control" min="0">
-            </div>
-            <div class="col-md-4">
-              <label for="meta-semanal" class="form-label">Meta semanal (páginas)</label>
-              <input type="number" id="meta-semanal" class="form-control" min="0">
-            </div>
-            <div class="col-md-4">
-              <label for="meta-diaria" class="form-label">Meta diária (páginas)</label>
-              <input type="number" id="meta-diaria" class="form-control" min="0">
-            </div>
-          </div>
-          <button type="submit" class="btn btn-primary mt-3"><i class="fas fa-save me-1"></i>Salvar Metas</button>
-        </form>
-      </div>
-    </div>
-
-    <!-- Progresso -->
-    <div class="row g-3 mb-4" id="progresso-container">
-      <div class="col-md-6">
-        <div class="card shadow-sm">
-          <div class="card-body">
-            <h5>Progresso anual de livros</h5>
-            <div class="progress mb-2">
-              <div class="progress-bar bg-success" id="prog-livros" role="progressbar" style="width:0%">0%</div>
-            </div>
-            <span id="texto-prog-livros">0 de 0 livros</span>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-6">
-        <div class="card shadow-sm">
-          <div class="card-body">
-            <h5>Progresso anual de páginas</h5>
-            <div class="progress mb-2">
-              <div class="progress-bar bg-info" id="prog-paginas" role="progressbar" style="width:0%">0%</div>
-            </div>
-            <span id="texto-prog-paginas">0 de 0 páginas</span>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-12">
-        <div class="card shadow-sm">
-          <div class="card-body">
-            <h5>Meta mensal</h5>
-            <p id="info-meta-mensal">Faltam 0 páginas para bater a meta mensal. Leia 0 páginas por dia.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Conquistas -->
-    <div class="card shadow-sm">
-      <div class="card-header fw-bold d-flex justify-content-between align-items-center">
-        <span><i class="fas fa-trophy me-2"></i>Conquistas</span>
-        <button class="btn btn-sm btn-outline-primary" id="verificar-conquistas-btn">Verificar novas</button>
-      </div>
-      <div class="card-body">
-        <div class="row g-3" id="conquistas-grid">
-          <!-- Carregado dinamicamente -->
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-    <div id="page-anotacoes" class="page">
-  <div class="container py-4">
-    <!-- Abas: Anotações | Citações -->
-    <ul class="nav nav-tabs mb-4" id="anotacoesTabs" role="tablist">
-      <li class="nav-item" role="presentation">
-        <button class="nav-link active" id="anotacoes-tab" data-bs-toggle="tab" data-bs-target="#anotacoes-painel" type="button" role="tab">Anotações</button>
-      </li>
-      <li class="nav-item" role="presentation">
-        <button class="nav-link" id="citacoes-tab" data-bs-toggle="tab" data-bs-target="#citacoes-painel" type="button" role="tab">Citações</button>
-      </li>
-    </ul>
-
-    <div class="tab-content">
-      <!-- Painel de Anotações -->
-      <div class="tab-pane fade show active" id="anotacoes-painel" role="tabpanel">
-        <div class="row g-3">
-          <div class="col-md-5">
-            <div class="card shadow-sm">
-              <div class="card-header fw-bold">Nova anotação</div>
+        <!-- Cards resumo -->
+        <div class="row g-3 mb-4">
+          <div class="col-6 col-md-3">
+            <div class="card text-center shadow-sm">
               <div class="card-body">
-                <form id="form-anotacao">
-                  <div class="mb-3">
-                    <label for="anot-livro" class="form-label">Livro</label>
-                    <select id="anot-livro" class="form-select" required></select>
-                  </div>
-                  <div class="row g-2">
-                    <div class="col-6">
-                      <label for="anot-capitulo" class="form-label">Capítulo</label>
-                      <input type="text" id="anot-capitulo" class="form-control">
-                    </div>
-                    <div class="col-6">
-                      <label for="anot-pagina" class="form-label">Página</label>
-                      <input type="number" id="anot-pagina" class="form-control">
-                    </div>
-                  </div>
-                  <div class="mb-3 mt-2">
-                    <label for="anot-categoria" class="form-label">Categoria</label>
-                    <select id="anot-categoria" class="form-select">
-                      <option value="Geral">Geral</option>
-                      <option value="Reflexão">Reflexão</option>
-                      <option value="Personagem">Personagem</option>
-                      <option value="Enredo">Enredo</option>
-                      <option value="Citação">Citação</option>
-                    </select>
-                  </div>
-                  <div class="mb-3">
-                    <label for="anot-resumo" class="form-label">Resumo</label>
-                    <textarea id="anot-resumo" class="form-control" rows="2"></textarea>
-                  </div>
-                  <div class="mb-3">
-                    <label for="anot-trecho" class="form-label">Trecho</label>
-                    <textarea id="anot-trecho" class="form-control" rows="2"></textarea>
-                  </div>
-                  <div class="mb-3">
-                    <label for="anot-comentario" class="form-label">Comentário</label>
-                    <textarea id="anot-comentario" class="form-control" rows="2"></textarea>
-                  </div>
-                  <button type="submit" class="btn btn-primary">Salvar</button>
-                </form>
+                <i class="fas fa-book fa-2x text-primary mb-2"></i>
+                <h5 id="stat-total-livros">0</h5>
+                <small>Total de livros</small>
               </div>
             </div>
           </div>
-          <div class="col-md-7">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <h5>Minhas anotações</h5>
-              <select id="filtro-livro-anot" class="form-select w-auto">
-                <option value="">Todos os livros</option>
-              </select>
+          <div class="col-6 col-md-3">
+            <div class="card text-center shadow-sm">
+              <div class="card-body">
+                <i class="fas fa-file-alt fa-2x text-success mb-2"></i>
+                <h5 id="stat-total-paginas">0</h5>
+                <small>Páginas lidas</small>
+              </div>
             </div>
-            <div id="lista-anotacoes">
-              <!-- Preenchido dinamicamente -->
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="card text-center shadow-sm">
+              <div class="card-body">
+                <i class="fas fa-clock fa-2x text-warning mb-2"></i>
+                <h5 id="stat-total-horas">0</h5>
+                <small>Horas de leitura</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="card text-center shadow-sm">
+              <div class="card-body">
+                <i class="fas fa-tachometer-alt fa-2x text-danger mb-2"></i>
+                <h5 id="stat-velocidade">0</h5>
+                <small>Páginas/hora</small>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Painel de Citações -->
-      <div class="tab-pane fade" id="citacoes-painel" role="tabpanel">
+        <!-- Insights -->
+        <div class="card mb-4 shadow-sm">
+          <div class="card-header fw-bold"><i class="fas fa-lightbulb text-warning me-2"></i>Insights</div>
+          <div class="card-body" id="insights-container">
+            <ul class="list-group list-group-flush" id="insights-list"></ul>
+          </div>
+        </div>
+
+        <!-- Gráficos -->
         <div class="row g-3">
-          <div class="col-md-5">
+          <div class="col-lg-6">
             <div class="card shadow-sm">
-              <div class="card-header fw-bold">Nova citação</div>
               <div class="card-body">
-                <form id="form-citacao">
-                  <div class="mb-3">
-                    <label for="cit-livro" class="form-label">Livro</label>
-                    <select id="cit-livro" class="form-select" required></select>
-                  </div>
-                  <div class="mb-3">
-                    <label for="cit-trecho" class="form-label">Trecho *</label>
-                    <textarea id="cit-trecho" class="form-control" rows="4" required></textarea>
-                  </div>
-                  <div class="row g-2">
-                    <div class="col-6">
-                      <label for="cit-pagina" class="form-label">Página</label>
-                      <input type="number" id="cit-pagina" class="form-control">
-                    </div>
-                    <div class="col-6">
-                      <label for="cit-comentario" class="form-label">Comentário</label>
-                      <input type="text" id="cit-comentario" class="form-control">
-                    </div>
-                  </div>
-                  <button type="submit" class="btn btn-primary mt-3">Salvar</button>
-                </form>
+                <h5>Livros finalizados por mês</h5>
+                <canvas id="grafico-finalizados-mes" height="200"></canvas>
               </div>
             </div>
           </div>
-          <div class="col-md-7">
-            <h5>Minhas citações</h5>
-            <div id="lista-citacoes">
-              <!-- Preenchido dinamicamente -->
+          <div class="col-lg-6">
+            <div class="card shadow-sm">
+              <div class="card-body">
+                <h5>Páginas lidas (últimos 30 dias)</h5>
+                <canvas id="grafico-paginas-dia" height="200"></canvas>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-6">
+            <div class="card shadow-sm">
+              <div class="card-body">
+                <h5>Distribuição por gênero</h5>
+                <canvas id="grafico-generos" height="200"></canvas>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-6">
+            <div class="card shadow-sm">
+              <div class="card-body">
+                <h5>Tempo de leitura por dia da semana</h5>
+                <canvas id="grafico-dia-semana" height="200"></canvas>
+              </div>
+            </div>
+          </div>
+          <div class="col-12">
+            <div class="card shadow-sm">
+              <div class="card-body">
+                <h5>Heatmap de leitura (últimos meses)</h5>
+                <div id="heatmap-container" class="d-flex flex-wrap gap-1 justify-content-center"></div>
+                <div class="d-flex justify-content-center mt-2">
+                  <small class="me-2">Menos</small>
+                  <div class="d-flex gap-1 align-items-center">
+                    <span style="width:12px;height:12px;background:#ebedf0;border-radius:2px;"></span>
+                    <span style="width:12px;height:12px;background:#9be9a8;border-radius:2px;"></span>
+                    <span style="width:12px;height:12px;background:#40c463;border-radius:2px;"></span>
+                    <span style="width:12px;height:12px;background:#30a14e;border-radius:2px;"></span>
+                    <span style="width:12px;height:12px;background:#216e39;border-radius:2px;"></span>
+                  </div>
+                  <small class="ms-2">Mais</small>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card shadow-sm">
+              <div class="card-body">
+                <h5>Top Autores</h5>
+                <ul class="list-group" id="top-autores"></ul>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card shadow-sm">
+              <div class="card-body">
+                <h5>Top Editoras</h5>
+                <ul class="list-group" id="top-editoras"></ul>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
-</div>
-<div id="page-desejos" class="page">
-  <div class="container py-4">
-    <ul class="nav nav-tabs mb-4" id="desejosTabs" role="tablist">
-      <li class="nav-item" role="presentation">
-        <button class="nav-link active" id="wishlist-tab" data-bs-toggle="tab" data-bs-target="#wishlist-painel" type="button" role="tab">Lista de Desejos</button>
-      </li>
-      <li class="nav-item" role="presentation">
-        <button class="nav-link" id="emprestimos-tab" data-bs-toggle="tab" data-bs-target="#emprestimos-painel" type="button" role="tab">Empréstimos</button>
-      </li>
-    </ul>
 
-    <div class="tab-content">
-      <!-- Painel Desejos -->
-      <div class="tab-pane fade show active" id="wishlist-painel" role="tabpanel">
-        <div class="row g-3">
-          <div class="col-md-5">
-            <div class="card shadow-sm">
-              <div class="card-header fw-bold">Adicionar à Lista de Desejos</div>
-              <div class="card-body">
-                <form id="form-desejo">
-                  <div class="mb-3">
-                    <label for="desejo-titulo" class="form-label">Título *</label>
-                    <input type="text" id="desejo-titulo" class="form-control" required>
-                  </div>
-                  <div class="mb-3">
-                    <label for="desejo-autor" class="form-label">Autor</label>
-                    <input type="text" id="desejo-autor" class="form-control">
-                  </div>
-                  <div class="row g-2">
-                    <div class="col-6">
-                      <label for="desejo-prioridade" class="form-label">Prioridade</label>
-                      <select id="desejo-prioridade" class="form-select">
-                        <option value="Alta">Alta</option>
-                        <option value="Média" selected>Média</option>
-                        <option value="Baixa">Baixa</option>
-                      </select>
-                    </div>
-                    <div class="col-6">
-                      <label for="desejo-preco" class="form-label">Preço</label>
-                      <input type="text" id="desejo-preco" class="form-control" placeholder="R$">
-                    </div>
-                  </div>
-                  <div class="mt-2 mb-3">
-                    <label for="desejo-link" class="form-label">Link</label>
-                    <input type="url" id="desejo-link" class="form-control">
-                  </div>
-                  <div class="mb-3">
-                    <label for="desejo-onde-comprar" class="form-label">Onde comprar</label>
-                    <input type="text" id="desejo-onde-comprar" class="form-control" placeholder="Amazon, Livraria...">
-                  </div>
-                  <div class="mb-3">
-                    <label for="desejo-obs" class="form-label">Observações</label>
-                    <textarea id="desejo-obs" class="form-control" rows="2"></textarea>
-                  </div>
-                  <button type="submit" class="btn btn-primary">Adicionar Desejo</button>
-                </form>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-7">
-            <h5>Meus Desejos</h5>
-            <div id="lista-desejos">
-              <!-- Preenchido dinamicamente -->
-            </div>
-          </div>
-        </div>
-      </div>
+    <div id="page-metas" class="page">
+      <div class="container py-4">
+        <h1 class="mb-4">Metas e Conquistas</h1>
 
-      <!-- Painel Empréstimos -->
-      <div class="tab-pane fade" id="emprestimos-painel" role="tabpanel">
-        <div class="row g-3">
-          <div class="col-md-5">
-            <div class="card shadow-sm">
-              <div class="card-header fw-bold">Registrar Empréstimo</div>
-              <div class="card-body">
-                <form id="form-emprestimo">
-                  <div class="mb-3">
-                    <label for="emprestimo-livro" class="form-label">Livro *</label>
-                    <select id="emprestimo-livro" class="form-select" required>
-                      <option value="">Selecione um livro da sua biblioteca...</option>
-                    </select>
-                  </div>
-                  <div class="mb-3">
-                    <label for="emprestimo-para" class="form-label">Para quem *</label>
-                    <input type="text" id="emprestimo-para" class="form-control" required>
-                  </div>
-                  <div class="row g-2">
-                    <div class="col-6">
-                      <label for="emprestimo-data" class="form-label">Data do empréstimo</label>
-                      <input type="date" id="emprestimo-data" class="form-control">
-                    </div>
-                    <div class="col-6">
-                      <label for="emprestimo-previsao" class="form-label">Previsão de devolução</label>
-                      <input type="date" id="emprestimo-previsao" class="form-control">
-                    </div>
-                  </div>
-                  <button type="submit" class="btn btn-primary mt-3">Registrar</button>
-                </form>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-7">
-            <h5>Empréstimos</h5>
-            <div id="lista-emprestimos">
-              <!-- Preenchido dinamicamente -->
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-<div id="page-exportar" class="page">
-  <div class="container py-4">
-    <h1 class="mb-4">Exportar Dados e Relatórios</h1>
-
-    <div class="row g-4">
-      <!-- Exportação de dados brutos -->
-      <div class="col-lg-6">
-        <div class="card shadow-sm">
-          <div class="card-header fw-bold"><i class="fas fa-download me-2"></i>Exportar Dados</div>
+        <!-- Metas -->
+        <div class="card mb-4 shadow-sm">
+          <div class="card-header fw-bold"><i class="fas fa-bullseye me-2"></i>Definir Metas</div>
           <div class="card-body">
-            <form id="form-exportar">
-              <div class="mb-3">
-                <label class="form-label">Tipo de dados</label>
-                <select id="export-tipo" class="form-select">
-                  <option value="livros">Livros</option>
-                  <option value="sessoes">Sessões de leitura</option>
-                  <option value="anotacoes">Anotações</option>
-                  <option value="citacoes">Citações</option>
-                  <option value="tudo">Todos os dados (JSON)</option>
-                </select>
+            <form id="metas-form">
+              <div class="row g-3">
+                <div class="col-md-4">
+                  <label for="meta-ano" class="form-label">Ano</label>
+                  <input type="number" id="meta-ano" class="form-control" min="2020" max="2100" required>
+                </div>
+                <div class="col-md-4">
+                  <label for="meta-livros" class="form-label">Meta de livros</label>
+                  <input type="number" id="meta-livros" class="form-control" min="0">
+                </div>
+                <div class="col-md-4">
+                  <label for="meta-paginas" class="form-label">Meta de páginas</label>
+                  <input type="number" id="meta-paginas" class="form-control" min="0">
+                </div>
+                <div class="col-md-4">
+                  <label for="meta-mensal" class="form-label">Meta mensal (páginas)</label>
+                  <input type="number" id="meta-mensal" class="form-control" min="0">
+                </div>
+                <div class="col-md-4">
+                  <label for="meta-semanal" class="form-label">Meta semanal (páginas)</label>
+                  <input type="number" id="meta-semanal" class="form-control" min="0">
+                </div>
+                <div class="col-md-4">
+                  <label for="meta-diaria" class="form-label">Meta diária (páginas)</label>
+                  <input type="number" id="meta-diaria" class="form-control" min="0">
+                </div>
               </div>
-              <div class="mb-3">
-                <label class="form-label">Formato</label>
-                <select id="export-formato" class="form-select">
-                  <option value="csv">CSV</option>
-                  <option value="json">JSON</option>
-                  <option value="markdown">Markdown</option>
-                  <option value="txt">TXT</option>
-                </select>
-              </div>
-              <button type="submit" class="btn btn-primary"><i class="fas fa-file-export me-1"></i>Baixar Arquivo</button>
+              <button type="submit" class="btn btn-primary mt-3"><i class="fas fa-save me-1"></i>Salvar Metas</button>
             </form>
           </div>
         </div>
-      </div>
 
-      <!-- Relatório -->
-      <div class="col-lg-6">
-        <div class="card shadow-sm">
-          <div class="card-header fw-bold"><i class="fas fa-chart-bar me-2"></i>Relatório de Leitura</div>
-          <div class="card-body">
-            <div class="mb-3">
-              <label class="form-label">Período</label>
-              <select id="relatorio-periodo" class="form-select">
-                <option value="mensal">Mensal (atual)</option>
-                <option value="anual">Anual (atual)</option>
-              </select>
+        <!-- Progresso -->
+        <div class="row g-3 mb-4" id="progresso-container">
+          <div class="col-md-6">
+            <div class="card shadow-sm">
+              <div class="card-body">
+                <h5>Progresso anual de livros</h5>
+                <div class="progress mb-2">
+                  <div class="progress-bar bg-success" id="prog-livros" role="progressbar" style="width:0%">0%</div>
+                </div>
+                <span id="texto-prog-livros">0 de 0 livros</span>
+              </div>
             </div>
-            <button id="btn-gerar-relatorio" class="btn btn-success"><i class="fas fa-file-alt me-1"></i>Gerar Relatório</button>
-            <div id="relatorio-preview" class="mt-3 d-none">
-              <h5>Pré-visualização</h5>
-              <pre id="relatorio-conteudo" class="p-3 bg-light rounded" style="max-height: 300px; overflow-y: auto;"></pre>
-              <button id="btn-baixar-relatorio" class="btn btn-outline-primary mt-2"><i class="fas fa-download"></i> Baixar TXT</button>
+          </div>
+          <div class="col-md-6">
+            <div class="card shadow-sm">
+              <div class="card-body">
+                <h5>Progresso anual de páginas</h5>
+                <div class="progress mb-2">
+                  <div class="progress-bar bg-info" id="prog-paginas" role="progressbar" style="width:0%">0%</div>
+                </div>
+                <span id="texto-prog-paginas">0 de 0 páginas</span>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-12">
+            <div class="card shadow-sm">
+              <div class="card-body">
+                <h5>Meta mensal</h5>
+                <p id="info-meta-mensal">Faltam 0 páginas para bater a meta mensal. Leia 0 páginas por dia.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Conquistas -->
+        <div class="card shadow-sm">
+          <div class="card-header fw-bold d-flex justify-content-between align-items-center">
+            <span><i class="fas fa-trophy me-2"></i>Conquistas</span>
+            <button class="btn btn-sm btn-outline-primary" id="verificar-conquistas-btn">Verificar novas</button>
+          </div>
+          <div class="card-body">
+            <div class="row g-3" id="conquistas-grid">
+              <!-- Carregado dinamicamente -->
             </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
-</div>
-<div id="page-configuracoes" class="page">
-  <div class="container py-4">
-    <h1 class="mb-4">Configurações</h1>
 
-    <!-- Preferências -->
-    <div class="card mb-4 shadow-sm">
-      <div class="card-header fw-bold"><i class="fas fa-sliders-h me-2"></i>Preferências</div>
-      <div class="card-body">
-        <form id="form-config">
-          <div class="row g-3">
-            <div class="col-md-6">
-              <label for="config-meta-livros" class="form-label">Meta anual de livros (padrão)</label>
-              <input type="number" id="config-meta-livros" class="form-control" min="0">
-            </div>
-            <div class="col-md-6">
-              <label for="config-meta-paginas" class="form-label">Meta anual de páginas (padrão)</label>
-              <input type="number" id="config-meta-paginas" class="form-control" min="0">
-            </div>
-            <div class="col-md-4">
-              <label for="config-cor" class="form-label">Cor principal</label>
-              <input type="color" id="config-cor" class="form-control form-control-color">
-            </div>
-            <div class="col-md-4">
-              <label class="form-label">Tema padrão</label>
-              <select id="config-tema" class="form-select">
-                <option value="light">Claro</option>
-                <option value="dark">Escuro</option>
-              </select>
+    <div id="page-anotacoes" class="page">
+      <div class="container py-4">
+        <!-- Abas: Anotações | Citações -->
+        <ul class="nav nav-tabs mb-4" id="anotacoesTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="anotacoes-tab" data-bs-toggle="tab" data-bs-target="#anotacoes-painel" type="button" role="tab">Anotações</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="citacoes-tab" data-bs-toggle="tab" data-bs-target="#citacoes-painel" type="button" role="tab">Citações</button>
+          </li>
+        </ul>
+
+        <div class="tab-content">
+          <!-- Painel de Anotações -->
+          <div class="tab-pane fade show active" id="anotacoes-painel" role="tabpanel">
+            <div class="row g-3">
+              <div class="col-md-5">
+                <div class="card shadow-sm">
+                  <div class="card-header fw-bold">Nova anotação</div>
+                  <div class="card-body">
+                    <form id="form-anotacao">
+                      <div class="mb-3">
+                        <label for="anot-livro" class="form-label">Livro</label>
+                        <select id="anot-livro" class="form-select" required></select>
+                      </div>
+                      <div class="row g-2">
+                        <div class="col-6">
+                          <label for="anot-capitulo" class="form-label">Capítulo</label>
+                          <input type="text" id="anot-capitulo" class="form-control">
+                        </div>
+                        <div class="col-6">
+                          <label for="anot-pagina" class="form-label">Página</label>
+                          <input type="number" id="anot-pagina" class="form-control">
+                        </div>
+                      </div>
+                      <div class="mb-3 mt-2">
+                        <label for="anot-categoria" class="form-label">Categoria</label>
+                        <select id="anot-categoria" class="form-select">
+                          <option value="Geral">Geral</option>
+                          <option value="Reflexão">Reflexão</option>
+                          <option value="Personagem">Personagem</option>
+                          <option value="Enredo">Enredo</option>
+                          <option value="Citação">Citação</option>
+                        </select>
+                      </div>
+                      <div class="mb-3">
+                        <label for="anot-resumo" class="form-label">Resumo</label>
+                        <textarea id="anot-resumo" class="form-control" rows="2"></textarea>
+                      </div>
+                      <div class="mb-3">
+                        <label for="anot-trecho" class="form-label">Trecho</label>
+                        <textarea id="anot-trecho" class="form-control" rows="2"></textarea>
+                      </div>
+                      <div class="mb-3">
+                        <label for="anot-comentario" class="form-label">Comentário</label>
+                        <textarea id="anot-comentario" class="form-control" rows="2"></textarea>
+                      </div>
+                      <button type="submit" class="btn btn-primary">Salvar</button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-7">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <h5>Minhas anotações</h5>
+                  <select id="filtro-livro-anot" class="form-select w-auto">
+                    <option value="">Todos os livros</option>
+                  </select>
+                </div>
+                <div id="lista-anotacoes">
+                  <!-- Preenchido dinamicamente -->
+                </div>
+              </div>
             </div>
           </div>
-          <button type="submit" class="btn btn-primary mt-3"><i class="fas fa-save me-1"></i>Salvar Preferências</button>
-        </form>
-      </div>
-    </div>
 
-    <!-- Backup e Restauração -->
-    <div class="row g-4">
-      <div class="col-md-6">
-        <div class="card shadow-sm">
-          <div class="card-header fw-bold"><i class="fas fa-cloud-download-alt me-2"></i>Backup</div>
-          <div class="card-body">
-            <p>Baixe todos os seus dados em um arquivo JSON para manter uma cópia de segurança.</p>
-            <button id="btn-backup" class="btn btn-outline-primary"><i class="fas fa-download"></i> Baixar Backup</button>
+          <!-- Painel de Citações -->
+          <div class="tab-pane fade" id="citacoes-painel" role="tabpanel">
+            <div class="row g-3">
+              <div class="col-md-5">
+                <div class="card shadow-sm">
+                  <div class="card-header fw-bold">Nova citação</div>
+                  <div class="card-body">
+                    <form id="form-citacao">
+                      <div class="mb-3">
+                        <label for="cit-livro" class="form-label">Livro</label>
+                        <select id="cit-livro" class="form-select" required></select>
+                      </div>
+                      <div class="mb-3">
+                        <label for="cit-trecho" class="form-label">Trecho *</label>
+                        <textarea id="cit-trecho" class="form-control" rows="4" required></textarea>
+                      </div>
+                      <div class="row g-2">
+                        <div class="col-6">
+                          <label for="cit-pagina" class="form-label">Página</label>
+                          <input type="number" id="cit-pagina" class="form-control">
+                        </div>
+                        <div class="col-6">
+                          <label for="cit-comentario" class="form-label">Comentário</label>
+                          <input type="text" id="cit-comentario" class="form-control">
+                        </div>
+                      </div>
+                      <button type="submit" class="btn btn-primary mt-3">Salvar</button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-7">
+                <h5>Minhas citações</h5>
+                <div id="lista-citacoes">
+                  <!-- Preenchido dinamicamente -->
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-      <div class="col-md-6">
-        <div class="card shadow-sm">
-          <div class="card-header fw-bold"><i class="fas fa-cloud-upload-alt me-2"></i>Restaurar Backup</div>
-          <div class="card-body">
-            <p>Selecione um arquivo de backup (.json) previamente salvo para restaurar todos os dados. <strong class="text-danger">Isso substituirá seus dados atuais!</strong></p>
-            <input type="file" id="input-restore" accept=".json" class="form-control mb-2">
-            <button id="btn-restore" class="btn btn-outline-danger" disabled><i class="fas fa-upload"></i> Restaurar</button>
+    </div>
+
+    <div id="page-desejos" class="page">
+      <div class="container py-4">
+        <ul class="nav nav-tabs mb-4" id="desejosTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="wishlist-tab" data-bs-toggle="tab" data-bs-target="#wishlist-painel" type="button" role="tab">Lista de Desejos</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="emprestimos-tab" data-bs-toggle="tab" data-bs-target="#emprestimos-painel" type="button" role="tab">Empréstimos</button>
+          </li>
+        </ul>
+
+        <div class="tab-content">
+          <!-- Painel Desejos -->
+          <div class="tab-pane fade show active" id="wishlist-painel" role="tabpanel">
+            <div class="row g-3">
+              <div class="col-md-5">
+                <div class="card shadow-sm">
+                  <div class="card-header fw-bold">Adicionar à Lista de Desejos</div>
+                  <div class="card-body">
+                    <form id="form-desejo">
+                      <div class="mb-3">
+                        <label for="desejo-titulo" class="form-label">Título *</label>
+                        <input type="text" id="desejo-titulo" class="form-control" required>
+                      </div>
+                      <div class="mb-3">
+                        <label for="desejo-autor" class="form-label">Autor</label>
+                        <input type="text" id="desejo-autor" class="form-control">
+                      </div>
+                      <div class="row g-2">
+                        <div class="col-6">
+                          <label for="desejo-prioridade" class="form-label">Prioridade</label>
+                          <select id="desejo-prioridade" class="form-select">
+                            <option value="Alta">Alta</option>
+                            <option value="Média" selected>Média</option>
+                            <option value="Baixa">Baixa</option>
+                          </select>
+                        </div>
+                        <div class="col-6">
+                          <label for="desejo-preco" class="form-label">Preço</label>
+                          <input type="text" id="desejo-preco" class="form-control" placeholder="R$">
+                        </div>
+                      </div>
+                      <div class="mt-2 mb-3">
+                        <label for="desejo-link" class="form-label">Link</label>
+                        <input type="url" id="desejo-link" class="form-control">
+                      </div>
+                      <div class="mb-3">
+                        <label for="desejo-onde-comprar" class="form-label">Onde comprar</label>
+                        <input type="text" id="desejo-onde-comprar" class="form-control" placeholder="Amazon, Livraria...">
+                      </div>
+                      <div class="mb-3">
+                        <label for="desejo-obs" class="form-label">Observações</label>
+                        <textarea id="desejo-obs" class="form-control" rows="2"></textarea>
+                      </div>
+                      <button type="submit" class="btn btn-primary">Adicionar Desejo</button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-7">
+                <h5>Meus Desejos</h5>
+                <div id="lista-desejos">
+                  <!-- Preenchido dinamicamente -->
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Painel Empréstimos -->
+          <div class="tab-pane fade" id="emprestimos-painel" role="tabpanel">
+            <div class="row g-3">
+              <div class="col-md-5">
+                <div class="card shadow-sm">
+                  <div class="card-header fw-bold">Registrar Empréstimo</div>
+                  <div class="card-body">
+                    <form id="form-emprestimo">
+                      <div class="mb-3">
+                        <label for="emprestimo-livro" class="form-label">Livro *</label>
+                        <select id="emprestimo-livro" class="form-select" required>
+                          <option value="">Selecione um livro da sua biblioteca...</option>
+                        </select>
+                      </div>
+                      <div class="mb-3">
+                        <label for="emprestimo-para" class="form-label">Para quem *</label>
+                        <input type="text" id="emprestimo-para" class="form-control" required>
+                      </div>
+                      <div class="row g-2">
+                        <div class="col-6">
+                          <label for="emprestimo-data" class="form-label">Data do empréstimo</label>
+                          <input type="date" id="emprestimo-data" class="form-control">
+                        </div>
+                        <div class="col-6">
+                          <label for="emprestimo-previsao" class="form-label">Previsão de devolução</label>
+                          <input type="date" id="emprestimo-previsao" class="form-control">
+                        </div>
+                      </div>
+                      <button type="submit" class="btn btn-primary mt-3">Registrar</button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-7">
+                <h5>Empréstimos</h5>
+                <div id="lista-emprestimos">
+                  <!-- Preenchido dinamicamente -->
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Informações do sistema -->
-    <div class="card mt-4 shadow-sm">
-      <div class="card-header fw-bold"><i class="fas fa-info-circle me-2"></i>Informações do Sistema</div>
-      <div class="card-body">
-        <p><strong>Versão:</strong> 1.0.0</p>
-        <p><strong>Total de livros na biblioteca:</strong> <span id="info-total-livros">...</span></p>
-        <p><strong>Espaço estimado usado:</strong> <span id="info-espaco">...</span></p>
+    <div id="page-exportar" class="page">
+      <div class="container py-4">
+        <h1 class="mb-4">Exportar Dados e Relatórios</h1>
+
+        <div class="row g-4">
+          <!-- Exportação de dados brutos -->
+          <div class="col-lg-6">
+            <div class="card shadow-sm">
+              <div class="card-header fw-bold"><i class="fas fa-download me-2"></i>Exportar Dados</div>
+              <div class="card-body">
+                <form id="form-exportar">
+                  <div class="mb-3">
+                    <label class="form-label">Tipo de dados</label>
+                    <select id="export-tipo" class="form-select">
+                      <option value="livros">Livros</option>
+                      <option value="sessoes">Sessões de leitura</option>
+                      <option value="anotacoes">Anotações</option>
+                      <option value="citacoes">Citações</option>
+                      <option value="tudo">Todos os dados (JSON)</option>
+                    </select>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Formato</label>
+                    <select id="export-formato" class="form-select">
+                      <option value="csv">CSV</option>
+                      <option value="json">JSON</option>
+                      <option value="markdown">Markdown</option>
+                      <option value="txt">TXT</option>
+                    </select>
+                  </div>
+                  <button type="submit" class="btn btn-primary"><i class="fas fa-file-export me-1"></i>Baixar Arquivo</button>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <!-- Relatório -->
+          <div class="col-lg-6">
+            <div class="card shadow-sm">
+              <div class="card-header fw-bold"><i class="fas fa-chart-bar me-2"></i>Relatório de Leitura</div>
+              <div class="card-body">
+                <div class="mb-3">
+                  <label class="form-label">Período</label>
+                  <select id="relatorio-periodo" class="form-select">
+                    <option value="mensal">Mensal (atual)</option>
+                    <option value="anual">Anual (atual)</option>
+                  </select>
+                </div>
+                <button id="btn-gerar-relatorio" class="btn btn-success"><i class="fas fa-file-alt me-1"></i>Gerar Relatório</button>
+                <div id="relatorio-preview" class="mt-3 d-none">
+                  <h5>Pré-visualização</h5>
+                  <pre id="relatorio-conteudo" class="p-3 bg-light rounded" style="max-height: 300px; overflow-y: auto;"></pre>
+                  <button id="btn-baixar-relatorio" class="btn btn-outline-primary mt-2"><i class="fas fa-download"></i> Baixar TXT</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-</div>
+
+    <div id="page-configuracoes" class="page">
+      <div class="container py-4">
+        <h1 class="mb-4">Configurações</h1>
+
+        <!-- Preferências -->
+        <div class="card mb-4 shadow-sm">
+          <div class="card-header fw-bold"><i class="fas fa-sliders-h me-2"></i>Preferências</div>
+          <div class="card-body">
+            <form id="form-config">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label for="config-meta-livros" class="form-label">Meta anual de livros (padrão)</label>
+                  <input type="number" id="config-meta-livros" class="form-control" min="0">
+                </div>
+                <div class="col-md-6">
+                  <label for="config-meta-paginas" class="form-label">Meta anual de páginas (padrão)</label>
+                  <input type="number" id="config-meta-paginas" class="form-control" min="0">
+                </div>
+                <div class="col-md-4">
+                  <label for="config-cor" class="form-label">Cor principal</label>
+                  <input type="color" id="config-cor" class="form-control form-control-color">
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Tema padrão</label>
+                  <select id="config-tema" class="form-select">
+                    <option value="light">Claro</option>
+                    <option value="dark">Escuro</option>
+                  </select>
+                </div>
+              </div>
+              <button type="submit" class="btn btn-primary mt-3"><i class="fas fa-save me-1"></i>Salvar Preferências</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Backup e Restauração -->
+        <div class="row g-4">
+          <div class="col-md-6">
+            <div class="card shadow-sm">
+              <div class="card-header fw-bold"><i class="fas fa-cloud-download-alt me-2"></i>Backup</div>
+              <div class="card-body">
+                <p>Baixe todos os seus dados em um arquivo JSON para manter uma cópia de segurança.</p>
+                <button id="btn-backup" class="btn btn-outline-primary"><i class="fas fa-download"></i> Baixar Backup</button>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card shadow-sm">
+              <div class="card-header fw-bold"><i class="fas fa-cloud-upload-alt me-2"></i>Restaurar Backup</div>
+              <div class="card-body">
+                <p>Selecione um arquivo de backup (.json) previamente salvo para restaurar todos os dados. <strong class="text-danger">Isso substituirá seus dados atuais!</strong></p>
+                <input type="file" id="input-restore" accept=".json" class="form-control mb-2">
+                <button id="btn-restore" class="btn btn-outline-danger" disabled><i class="fas fa-upload"></i> Restaurar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Informações do sistema -->
+        <div class="card mt-4 shadow-sm">
+          <div class="card-header fw-bold"><i class="fas fa-info-circle me-2"></i>Informações do Sistema</div>
+          <div class="card-body">
+            <p><strong>Versão:</strong> 1.0.0</p>
+            <p><strong>Total de livros na biblioteca:</strong> <span id="info-total-livros">...</span></p>
+            <p><strong>Espaço estimado usado:</strong> <span id="info-espaco">...</span></p>
+          </div>
+        </div>
+      </div>
+    </div>
   </main>
 
-<!-- Dependências -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="js/util.js"></script>
-<script src="js/api.js"></script>
-<script src="js/auth.js"></script>
+  <!-- Dependências -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/util.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
 
-<!-- Módulos -->
-<script src="js/livros.js"></script>
-<script src="js/leitura.js"></script>
-<script src="js/dashboard.js"></script>
-<script src="js/biblioteca.js"></script>
-<script src="js/estatisticas.js"></script>
-<script src="js/metas.js"></script>
-<script src="js/anotacoes.js"></script>
-<script src="js/desejos.js"></script>
-<script src="js/exportar.js"></script>
-<script src="js/configuracoes.js"></script>
+  <!-- Módulos -->
+  <script src="js/livros.js"></script>
+  <script src="js/leitura.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script src="js/biblioteca.js"></script>
+  <script src="js/estatisticas.js"></script>
+  <script src="js/metas.js"></script>
+  <script src="js/anotacoes.js"></script>
+  <script src="js/desejos.js"></script>
+  <script src="js/exportar.js"></script>
+  <script src="js/configuracoes.js"></script>
 
-<!-- Controlador principal (sempre por último) -->
-<script src="js/app.js"></script>
+  <!-- Controlador principal (sempre por último) -->
+  <script src="js/app.js"></script>
 </body>
 </html>
