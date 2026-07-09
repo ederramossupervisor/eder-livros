@@ -16,3 +16,8 @@
   border-radius: 8px;
   margin-bottom: 4px;
 }
+/* Limita a altura dos gráficos */
+.card canvas {
+  max-height: 300px !important;
+  width: 100% !important;
+}
