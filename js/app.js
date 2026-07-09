@@ -19,79 +19,86 @@ document.addEventListener('DOMContentLoaded', () => {
       Dashboard.init();
     }
   }
+
+  // Atalhos de página (ex.: ?page=leitura)
+  const urlParams = new URLSearchParams(window.location.search);
+  const shortcutPage = urlParams.get('page');
+  if (shortcutPage) {
+    setTimeout(() => activatePageGlobal(shortcutPage), 400);
+  }
 });
+
+// Função pública para ativar uma página (usada por atalhos e navegação)
+function activatePageGlobal(pageName) {
+  const navItems = document.querySelectorAll('.nav-link, .bottom-nav .nav-item');
+  navItems.forEach(link => {
+    link.classList.remove('active');
+    if (link.dataset.page === pageName) {
+      link.classList.add('active');
+    }
+  });
+
+  const pages = document.querySelectorAll('.page');
+  pages.forEach(page => {
+    page.classList.remove('active');
+    if (page.id === `page-${pageName}`) {
+      page.classList.add('active');
+    }
+  });
+
+  // Inicializa módulos específicos
+  switch (pageName) {
+    case 'dashboard':
+      if (typeof Dashboard !== 'undefined' && Dashboard.init) Dashboard.init();
+      break;
+    case 'leitura':
+      if (typeof Leitura !== 'undefined' && Leitura.init) Leitura.init();
+      break;
+    case 'adicionar':
+      if (typeof Livros !== 'undefined' && Livros.init) Livros.init();
+      break;
+    case 'biblioteca':
+      if (typeof Biblioteca !== 'undefined' && Biblioteca.init) Biblioteca.init();
+      break;
+    case 'estatisticas':
+      if (typeof Estatisticas !== 'undefined' && Estatisticas.init) Estatisticas.init();
+      break;
+    case 'metas':
+      if (typeof Metas !== 'undefined' && Metas.init) Metas.init();
+      break;
+    case 'anotacoes':
+      if (typeof Anotacoes !== 'undefined' && Anotacoes.init) Anotacoes.init();
+      break;
+    case 'desejos':
+      if (typeof DesejosEmprestimos !== 'undefined' && DesejosEmprestimos.init) DesejosEmprestimos.init();
+      break;
+    case 'exportar':
+      if (typeof Exportar !== 'undefined' && Exportar.init) Exportar.init();
+      break;
+    case 'configuracoes':
+      if (typeof Configuracoes !== 'undefined' && Configuracoes.init) Configuracoes.init();
+      break;
+  }
+
+  // Fecha o offcanvas mobile se estiver aberto
+  try {
+    const offcanvasEl = document.getElementById('mobileMenu');
+    if (offcanvasEl) {
+      const offcanvas = bootstrap.Offcanvas.getInstance(offcanvasEl);
+      if (offcanvas) offcanvas.hide();
+    }
+  } catch (e) { /* ignora */ }
+}
 
 // Gerencia a navegação entre páginas
 function initNavegacao() {
   const navItems = document.querySelectorAll('.nav-link, .bottom-nav .nav-item');
 
-  function activatePage(pageName) {
-    // Atualiza links ativos
-    navItems.forEach(link => {
-      link.classList.remove('active');
-      if (link.dataset.page === pageName) {
-        link.classList.add('active');
-      }
-    });
-
-    // Mostra/oculta páginas
-    const pages = document.querySelectorAll('.page');
-    pages.forEach(page => {
-      page.classList.remove('active');
-      if (page.id === `page-${pageName}`) {
-        page.classList.add('active');
-      }
-    });
-
-    // Inicializa módulos específicos
-    switch (pageName) {
-      case 'dashboard':
-        if (typeof Dashboard !== 'undefined' && Dashboard.init) Dashboard.init();
-        break;
-      case 'leitura':
-        if (typeof Leitura !== 'undefined' && Leitura.init) Leitura.init();
-        break;
-      case 'adicionar':
-        if (typeof Livros !== 'undefined' && Livros.init) Livros.init();
-        break;
-      case 'biblioteca':
-        if (typeof Biblioteca !== 'undefined' && Biblioteca.init) Biblioteca.init();
-        break;
-      case 'estatisticas':
-        if (typeof Estatisticas !== 'undefined' && Estatisticas.init) Estatisticas.init();
-        break;
-      case 'metas':
-        if (typeof Metas !== 'undefined' && Metas.init) Metas.init();
-        break;
-      case 'anotacoes':
-        if (typeof Anotacoes !== 'undefined' && Anotacoes.init) Anotacoes.init();
-        break;
-      case 'desejos':
-        if (typeof DesejosEmprestimos !== 'undefined' && DesejosEmprestimos.init) DesejosEmprestimos.init();
-        break;
-      case 'exportar':
-        if (typeof Exportar !== 'undefined' && Exportar.init) Exportar.init();
-        break;
-      case 'configuracoes':
-        if (typeof Configuracoes !== 'undefined' && Configuracoes.init) Configuracoes.init();
-        break;
-    }
-
-    // Fecha o offcanvas mobile se estiver aberto
-    try {
-      const offcanvasEl = document.getElementById('mobileMenu');
-      if (offcanvasEl) {
-        const offcanvas = bootstrap.Offcanvas.getInstance(offcanvasEl);
-        if (offcanvas) offcanvas.hide();
-      }
-    } catch (e) { /* ignora */ }
-  }
-
   navItems.forEach(link => {
     link.addEventListener('click', (e) => {
       e.preventDefault();
       const pageName = link.dataset.page;
-      if (pageName) activatePage(pageName);
+      if (pageName) activatePageGlobal(pageName);
     });
   });
 }
