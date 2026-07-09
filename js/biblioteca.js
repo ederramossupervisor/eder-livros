@@ -141,6 +141,8 @@ const Biblioteca = (() => {
             <tr><td><strong>Páginas</strong></td><td>${livro.NúmeroPáginas || '-'}</td></tr>
             <tr><td><strong>Páginas lidas</strong></td><td>${livro.PáginasLidas || 0} (${progresso}%)</td></tr>
             <tr><td><strong>Formato</strong></td><td>${livro.Formato || '-'}</td></tr>
+            <tr><td><strong>Início</strong></td><td>${livro.DataInício || '-'}</td></tr>
+            <tr><td><strong>Término</strong></td><td>${livro.DataTérmino || '-'}</td></tr>
             <tr><td><strong>Gênero</strong></td><td>${livro.Gênero || '-'}</td></tr>
             <tr><td><strong>Tags</strong></td><td>${livro.Tags || '-'}</td></tr>
             <tr><td><strong>ISBN</strong></td><td>${livro.ISBN || '-'}</td></tr>
