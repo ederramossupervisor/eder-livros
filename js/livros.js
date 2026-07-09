@@ -40,18 +40,16 @@ const Livros = (() => {
       }
     });
 
-    // NOVO: evento de upload de imagem
-    uploadInput.addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(ev) {
-        imagemBase64 = ev.target.result;   // data:image/jpeg;base64,...
-        mostrarCapa(imagemBase64);
-        urlCapa.value = '';               // limpa URL se usar foto
-      };
-      reader.readAsDataURL(file);
-    });
+    // NOVO: evento de upload de imagem com redimensionamento
+uploadInput.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  redimensionarImagem(file, 800, (base64) => {
+    imagemBase64 = base64;
+    mostrarCapa(imagemBase64);
+    urlCapa.value = '';
+  });
+});
 
     criarBotaoCancelarEdicao();
     console.log('✅ Módulo Livros pronto.');
@@ -339,7 +337,28 @@ const Livros = (() => {
     btnSubmit.innerHTML = '<i class="fas fa-save me-1"></i> Salvar Livro';
     limparFormulario();
   }
-
+function redimensionarImagem(file, maxWidth, callback) {
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const img = new Image();
+    img.onload = function() {
+      const canvas = document.createElement('canvas');
+      let width = img.width;
+      let height = img.height;
+      if (width > maxWidth) {
+        height = (height * maxWidth) / width;
+        width = maxWidth;
+      }
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+      callback(canvas.toDataURL('image/jpeg', 0.8)); // qualidade 80%
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
   function editarLivro(livro) {
     const formEl = document.getElementById('book-form');
     if (!formEl) {
