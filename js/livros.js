@@ -333,12 +333,17 @@ function preencherFormularioCompleto(livro) {
   }
 
   function cancelarEdicao() {
-    editandoLivroID = null;
-    document.getElementById('cancel-edit-btn').classList.add('d-none');
-    const btnSubmit = form.querySelector('button[type="submit"]');
-    btnSubmit.innerHTML = '<i class="fas fa-save me-1"></i> Salvar Livro';
-    limparFormulario();
+  editandoLivroID = null;
+  const cancelBtn = document.getElementById('cancel-edit-btn');
+  if (cancelBtn) {
+    cancelBtn.classList.add('d-none');
   }
+  const btnSubmit = form.querySelector('button[type="submit"]');
+  if (btnSubmit) {
+    btnSubmit.innerHTML = '<i class="fas fa-save me-1"></i> Salvar Livro';
+  }
+  limparFormulario();
+}
 function voltarParaBiblioteca() {
   console.log('🔁 Tentando voltar para Biblioteca...');
   const link = document.querySelector(
