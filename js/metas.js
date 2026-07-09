@@ -126,9 +126,63 @@ const Metas = (() => {
   }
 
   async function carregarConquistas() {
-    // ... (mantenha o código existente para conquistas) ...
-  }
+  try {
+    const resp = await API.enviar({ acao: 'listAchievements' });
+    const grid = document.getElementById('conquistas-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
 
+    // Ícones fixos para as conquistas
+    const icones = {
+      'Primeiro livro': '📖',
+      'Leitor iniciante': '📚',
+      'Leitor dedicado': '🏅',
+      'Devorador de livros': '🔥',
+      'Página 1000': '📄',
+      'Página 5000': '📑',
+      'Maratona de 7 dias': '🗓️',
+      'Maratona de 30 dias': '📅',
+      'Livro gigante': '🐘',
+      'Favorito': '⭐',
+      'Leitor global': '🌍'
+    };
+
+    // Conquistas já obtidas
+    const nomesObtidos = (Array.isArray(resp) ? resp : []).map(c => c.Nome);
+
+    Object.keys(icones).forEach(nome => {
+      const obtida = nomesObtidos.includes(nome);
+      const col = document.createElement('div');
+      col.className = 'col-6 col-md-4 col-lg-3 col-xl-2';
+      col.innerHTML = `
+        <div class="conquista-card ${obtida ? 'conquistada' : ''}">
+          <div class="conquista-badge mx-auto mb-2">${icones[nome]}</div>
+          <strong>${nome}</strong>
+          ${obtida ? '<span class="badge bg-success d-block mt-1">Conquistada</span>' : '<span class="badge bg-light text-muted d-block mt-1">Bloqueada</span>'}
+        </div>`;
+      grid.appendChild(col);
+    });
+
+    // Reconectar botão "Verificar novas"
+    const btnVerificar = document.getElementById('verificar-conquistas-btn');
+    if (btnVerificar) {
+      // Remove listeners antigos (se houver) e adiciona novo
+      btnVerificar.replaceWith(btnVerificar.cloneNode(true));
+      const novoBtn = document.getElementById('verificar-conquistas-btn');
+      novoBtn.addEventListener('click', async () => {
+        const novas = await API.enviar({ acao: 'checkAchievements' });
+        if (Array.isArray(novas) && novas.length > 0) {
+          Util.toast(`${novas.length} nova(s) conquista(s)! 🎉`, 'success');
+          carregarConquistas(); // recarrega
+        } else {
+          Util.toast('Nenhuma conquista nova.', 'info');
+        }
+      });
+    }
+  } catch (e) {
+    console.error('Erro ao carregar conquistas:', e);
+  }
+}
   return { init };
 })();
 
