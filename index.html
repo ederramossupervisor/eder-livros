@@ -708,7 +708,7 @@
 
     <!-- Metas -->
     <div class="card mb-4 shadow-sm">
-      <div class="card-header fw-bold"><i class="fas fa-bullseye me-2"></i>Definir Metas</div>
+      <div class="card-header fw-bold"><i class="fas fa-bullseye me-2"></i>Definir Metas Anuais</div>
       <div class="card-body">
         <form id="metas-form">
           <div class="row g-3">
@@ -716,6 +716,10 @@
               <label for="meta-ano" class="form-label">Ano</label>
               <input type="number" id="meta-ano" class="form-control" min="2020" max="2100" required>
             </div>
+          </div>
+          <hr>
+          <h6>Livros e Páginas</h6>
+          <div class="row g-3">
             <div class="col-md-4">
               <label for="meta-livros" class="form-label">Meta de livros</label>
               <input type="number" id="meta-livros" class="form-control" min="0">
@@ -728,13 +732,55 @@
               <label for="meta-mensal" class="form-label">Meta mensal (páginas)</label>
               <input type="number" id="meta-mensal" class="form-control" min="0">
             </div>
+          </div>
+          <h6 class="mt-3">Horas de Leitura</h6>
+          <div class="row g-3">
+            <div class="col-md-3">
+              <label for="meta-horas-diaria" class="form-label">Diária (h)</label>
+              <input type="number" id="meta-horas-diaria" class="form-control" min="0" step="0.1">
+            </div>
+            <div class="col-md-3">
+              <label for="meta-horas-semanal" class="form-label">Semanal (h)</label>
+              <input type="number" id="meta-horas-semanal" class="form-control" min="0" step="0.1">
+            </div>
+            <div class="col-md-3">
+              <label for="meta-horas-mensal" class="form-label">Mensal (h)</label>
+              <input type="number" id="meta-horas-mensal" class="form-control" min="0" step="0.1">
+            </div>
+            <div class="col-md-3">
+              <label for="meta-horas-anual" class="form-label">Anual (h)</label>
+              <input type="number" id="meta-horas-anual" class="form-control" min="0" step="0.1">
+            </div>
+          </div>
+          <h6 class="mt-3">Outras Metas</h6>
+          <div class="row g-3">
             <div class="col-md-4">
-              <label for="meta-semanal" class="form-label">Meta semanal (páginas)</label>
-              <input type="number" id="meta-semanal" class="form-control" min="0">
+              <label for="meta-sequencia" class="form-label">Sequência de dias</label>
+              <input type="number" id="meta-sequencia" class="form-control" min="0">
             </div>
             <div class="col-md-4">
-              <label for="meta-diaria" class="form-label">Meta diária (páginas)</label>
-              <input type="number" id="meta-diaria" class="form-control" min="0">
+              <label for="meta-generos" class="form-label">Gêneros diferentes</label>
+              <input type="number" id="meta-generos" class="form-control" min="0">
+            </div>
+            <div class="col-md-4">
+              <label for="meta-livros-mes" class="form-label">Livros por mês (média)</label>
+              <input type="number" id="meta-livros-mes" class="form-control" min="0" step="0.1">
+            </div>
+            <div class="col-md-4">
+              <label for="meta-avaliacoes" class="form-label">% livros avaliados</label>
+              <input type="number" id="meta-avaliacoes" class="form-control" min="0" max="100">
+            </div>
+            <div class="col-md-4">
+              <label for="meta-anotacoes" class="form-label">Anotações/Citações</label>
+              <input type="number" id="meta-anotacoes" class="form-control" min="0">
+            </div>
+            <div class="col-md-4">
+              <label for="meta-livros-grandes" class="form-label">Livros grandes (+600 pág)</label>
+              <input type="number" id="meta-livros-grandes" class="form-control" min="0">
+            </div>
+            <div class="col-12">
+              <label for="meta-personalizada" class="form-label">Meta personalizada (texto)</label>
+              <input type="text" id="meta-personalizada" class="form-control">
             </div>
           </div>
           <button type="submit" class="btn btn-primary mt-3"><i class="fas fa-save me-1"></i>Salvar Metas</button>
@@ -742,41 +788,12 @@
       </div>
     </div>
 
-    <!-- Progresso -->
+    <!-- Progresso das Metas -->
     <div class="row g-3 mb-4" id="progresso-container">
-      <div class="col-md-6">
-        <div class="card shadow-sm">
-          <div class="card-body">
-            <h5>Progresso anual de livros</h5>
-            <div class="progress mb-2">
-              <div class="progress-bar bg-success" id="prog-livros" role="progressbar" style="width:0%">0%</div>
-            </div>
-            <span id="texto-prog-livros">0 de 0 livros</span>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-6">
-        <div class="card shadow-sm">
-          <div class="card-body">
-            <h5>Progresso anual de páginas</h5>
-            <div class="progress mb-2">
-              <div class="progress-bar bg-info" id="prog-paginas" role="progressbar" style="width:0%">0%</div>
-            </div>
-            <span id="texto-prog-paginas">0 de 0 páginas</span>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-12">
-        <div class="card shadow-sm">
-          <div class="card-body">
-            <h5>Meta mensal</h5>
-            <p id="info-meta-mensal">Faltam 0 páginas para bater a meta mensal. Leia 0 páginas por dia.</p>
-          </div>
-        </div>
-      </div>
+      <!-- Cards de progresso gerados dinamicamente -->
     </div>
 
-    <!-- Conquistas -->
+    <!-- Conquistas (já existente) -->
     <div class="card shadow-sm">
       <div class="card-header fw-bold d-flex justify-content-between align-items-center">
         <span><i class="fas fa-trophy me-2"></i>Conquistas</span>
