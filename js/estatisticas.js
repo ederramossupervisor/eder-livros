@@ -8,14 +8,16 @@ const Estatisticas = (() => {
     console.log('📊 Carregando estatísticas...');
     try {
       const dados = await API.enviar({ acao: 'stats' });
+      console.log('📈 Dados recebidos:', dados);
       if (dados && !dados.erro) {
         preencherResumo(dados);
         criarInsights(dados.insights);
-        criarGraficoFinalizadosMes(dados.finalizadosPorMes);
-        criarGraficoPaginasDia(dados.paginasPorDia);
-        criarGraficoGeneros(dados.generos);
-        criarGraficoDiaSemana(dados.tempoPorDiaSemana);
-        criarHeatmap(dados.heatmap);
+        // Cada criação de gráfico é envolvida em try/catch para isolar falhas
+        try { criarGraficoFinalizadosMes(dados.finalizadosPorMes); } catch(e) { console.warn('Erro gráfico finalizados/mês', e); }
+        try { criarGraficoPaginasDia(dados.paginasPorDia); } catch(e) { console.warn('Erro gráfico páginas/dia', e); }
+        try { criarGraficoGeneros(dados.generos); } catch(e) { console.warn('Erro gráfico gêneros', e); }
+        try { criarGraficoDiaSemana(dados.tempoPorDiaSemana); } catch(e) { console.warn('Erro gráfico dia semana', e); }
+        try { criarHeatmap(dados.heatmap); } catch(e) { console.warn('Erro heatmap', e); }
         preencherTopAutores(dados.topAutores);
         preencherTopEditoras(dados.topEditoras);
       } else {
@@ -25,6 +27,7 @@ const Estatisticas = (() => {
       console.error('Erro stats:', e);
       Util.toast('Falha na conexão', 'danger');
     }
+    console.log('✅ Módulo Estatísticas pronto.');
   }
 
   function preencherResumo(d) {
@@ -36,17 +39,23 @@ const Estatisticas = (() => {
 
   function criarInsights(lista) {
     const ul = document.getElementById('insights-list');
+    if (!ul) return;
     ul.innerHTML = '';
-    lista.forEach(texto => {
-      const li = document.createElement('li');
-      li.className = 'list-group-item';
-      li.innerHTML = `<i class="fas fa-check-circle text-success me-2"></i>${texto}`;
-      ul.appendChild(li);
-    });
+    if (lista && lista.length) {
+      lista.forEach(texto => {
+        const li = document.createElement('li');
+        li.className = 'list-group-item';
+        li.innerHTML = `<i class="fas fa-check-circle text-success me-2"></i>${texto}`;
+        ul.appendChild(li);
+      });
+    } else {
+      ul.innerHTML = '<li class="list-group-item text-muted">Nenhum insight disponível.</li>';
+    }
   }
 
   function criarGraficoFinalizadosMes(dados) {
-    const ctx = document.getElementById('grafico-finalizados-mes').getContext('2d');
+    const ctx = document.getElementById('grafico-finalizados-mes')?.getContext('2d');
+    if (!ctx) return;
     if (graficos.finalizadosMes) graficos.finalizadosMes.destroy();
     graficos.finalizadosMes = new Chart(ctx, {
       type: 'bar',
@@ -55,7 +64,7 @@ const Estatisticas = (() => {
         datasets: [{
           label: 'Livros finalizados',
           data: dados.valores,
-          backgroundColor: 'rgba(26, 115, 232, 0.7)',
+          backgroundColor: 'rgba(99, 102, 241, 0.7)',
           borderRadius: 4
         }]
       },
@@ -64,7 +73,8 @@ const Estatisticas = (() => {
   }
 
   function criarGraficoPaginasDia(dados) {
-    const ctx = document.getElementById('grafico-paginas-dia').getContext('2d');
+    const ctx = document.getElementById('grafico-paginas-dia')?.getContext('2d');
+    if (!ctx) return;
     if (graficos.paginasDia) graficos.paginasDia.destroy();
     graficos.paginasDia = new Chart(ctx, {
       type: 'line',
@@ -73,10 +83,10 @@ const Estatisticas = (() => {
         datasets: [{
           label: 'Páginas',
           data: dados.valores,
-          borderColor: '#1a73e8',
+          borderColor: '#6366f1',
           tension: 0.3,
           fill: true,
-          backgroundColor: 'rgba(26,115,232,0.1)'
+          backgroundColor: 'rgba(99,102,241,0.1)'
         }]
       },
       options: { responsive: true, scales: { y: { beginAtZero: true } } }
@@ -84,15 +94,17 @@ const Estatisticas = (() => {
   }
 
   function criarGraficoGeneros(generos) {
-    const ctx = document.getElementById('grafico-generos').getContext('2d');
+    const ctx = document.getElementById('grafico-generos')?.getContext('2d');
+    if (!ctx) return;
     if (graficos.generos) graficos.generos.destroy();
+    if (!generos || generos.length === 0) return;
     graficos.generos = new Chart(ctx, {
       type: 'doughnut',
       data: {
         labels: generos.map(g => g.genero),
         datasets: [{
           data: generos.map(g => g.count),
-          backgroundColor: ['#1a73e8','#e8710a','#0d904f','#d93025','#fbbc04','#9c27b0']
+          backgroundColor: ['#6366f1','#f59e0b','#10b981','#ef4444','#3b82f6','#8b5cf6']
         }]
       },
       options: { responsive: true }
@@ -100,7 +112,8 @@ const Estatisticas = (() => {
   }
 
   function criarGraficoDiaSemana(dados) {
-    const ctx = document.getElementById('grafico-dia-semana').getContext('2d');
+    const ctx = document.getElementById('grafico-dia-semana')?.getContext('2d');
+    if (!ctx) return;
     if (graficos.diaSemana) graficos.diaSemana.destroy();
     graficos.diaSemana = new Chart(ctx, {
       type: 'bar',
@@ -119,15 +132,14 @@ const Estatisticas = (() => {
 
   function criarHeatmap(heatmapData) {
     const container = document.getElementById('heatmap-container');
+    if (!container) return;
     container.innerHTML = '';
-    // Exibir os últimos 84 dias (12 semanas) para caber bem
     const diasExibir = heatmapData.slice(0, 84).reverse();
-    // Valor máximo para cor
-    const maxPag = Math.max.apply(null, diasExibir.map(d => d.paginas));
+    const maxPag = Math.max(...diasExibir.map(d => d.paginas), 1);
     diasExibir.forEach(dia => {
       const cell = document.createElement('div');
       cell.className = 'heatmap-cell';
-      const intensidade = maxPag > 0 ? dia.paginas / maxPag : 0;
+      const intensidade = dia.paginas / maxPag;
       cell.style.backgroundColor = getHeatColor(intensidade);
       cell.title = `${dia.data}: ${dia.paginas} páginas`;
       container.appendChild(cell);
@@ -144,32 +156,39 @@ const Estatisticas = (() => {
 
   function preencherTopAutores(autores) {
     const ul = document.getElementById('top-autores');
+    if (!ul) return;
     ul.innerHTML = '';
-    autores.forEach(a => {
-      const li = document.createElement('li');
-      li.className = 'list-group-item d-flex justify-content-between align-items-center';
-      li.innerHTML = `${a.nome} <span class="badge bg-primary rounded-pill">${a.livros}</span>`;
-      ul.appendChild(li);
-    });
-    if (autores.length === 0) ul.innerHTML = '<li class="list-group-item text-muted">Nenhum dado</li>';
+    if (autores && autores.length) {
+      autores.forEach(a => {
+        const li = document.createElement('li');
+        li.className = 'list-group-item d-flex justify-content-between align-items-center';
+        li.innerHTML = `${a.nome} <span class="badge bg-primary rounded-pill">${a.livros}</span>`;
+        ul.appendChild(li);
+      });
+    } else {
+      ul.innerHTML = '<li class="list-group-item text-muted">Nenhum dado</li>';
+    }
   }
 
   function preencherTopEditoras(editoras) {
     const ul = document.getElementById('top-editoras');
+    if (!ul) return;
     ul.innerHTML = '';
-    editoras.forEach(e => {
-      const li = document.createElement('li');
-      li.className = 'list-group-item d-flex justify-content-between align-items-center';
-      li.innerHTML = `${e.nome} <span class="badge bg-secondary rounded-pill">${e.livros}</span>`;
-      ul.appendChild(li);
-    });
-    if (editoras.length === 0) ul.innerHTML = '<li class="list-group-item text-muted">Nenhum dado</li>';
+    if (editoras && editoras.length) {
+      editoras.forEach(e => {
+        const li = document.createElement('li');
+        li.className = 'list-group-item d-flex justify-content-between align-items-center';
+        li.innerHTML = `${e.nome} <span class="badge bg-secondary rounded-pill">${e.livros}</span>`;
+        ul.appendChild(li);
+      });
+    } else {
+      ul.innerHTML = '<li class="list-group-item text-muted">Nenhum dado</li>';
+    }
   }
 
   return { init };
 })();
 
-// Inicialização segura
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => Estatisticas.init());
 } else {
