@@ -308,8 +308,7 @@ function preencherFormularioCompleto(livro) {
 
       // Se estava editando, navega automaticamente para a Biblioteca
       if (isEdicao) {
-        const linkBiblioteca = document.querySelector('.nav-link[data-page="biblioteca"]');
-        if (linkBiblioteca) linkBiblioteca.click();
+        voltarParaBiblioteca();
       }
     } else {
       const msg = resposta?.mensagem || resposta?.erro || 'Falha no servidor';
@@ -340,7 +339,25 @@ function preencherFormularioCompleto(livro) {
     btnSubmit.innerHTML = '<i class="fas fa-save me-1"></i> Salvar Livro';
     limparFormulario();
   }
-
+function voltarParaBiblioteca() {
+  // Tenta encontrar o link em qualquer lugar (sidebar, menu inferior)
+  const link = document.querySelector(
+    '.nav-link[data-page="biblioteca"], .nav-item[data-page="biblioteca"]'
+  );
+  if (link) {
+    link.click();
+  } else {
+    // Fallback: ativa a página manualmente
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    const pageBiblioteca = document.getElementById('page-biblioteca');
+    if (pageBiblioteca) {
+      pageBiblioteca.classList.add('active');
+      if (typeof Biblioteca !== 'undefined' && Biblioteca.init) {
+        Biblioteca.init();
+      }
+    }
+  }
+}
   // Função pública para ser chamada da biblioteca
 function editarLivro(livro) {
   // Garante que o formulário está disponível (a página de adicionar pode não estar ativa)
