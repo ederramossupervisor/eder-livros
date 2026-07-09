@@ -56,23 +56,30 @@ uploadInput.addEventListener('change', (e) => {
   }
 
   function criarBotaoCancelarEdicao() {
-    if (!document.getElementById('cancel-edit-btn')) {
-      const btnCancel = document.createElement('button');
-      btnCancel.type = 'button';
-      btnCancel.id = 'cancel-edit-btn';
-      btnCancel.className = 'btn btn-outline-warning ms-2 d-none';
-      btnCancel.textContent = 'Cancelar Edição';
-      btnCancel.addEventListener('click', cancelarEdicao);
-      const botoesDiv = document.querySelector('#book-form .d-flex');
-      if (botoesDiv) botoesDiv.prepend(btnCancel);
+  if (!document.getElementById('cancel-edit-btn')) {
+    const btnCancel = document.createElement('button');
+    btnCancel.type = 'button';
+    btnCancel.id = 'cancel-edit-btn';
+    btnCancel.className = 'btn btn-outline-warning ms-2 d-none';
+    btnCancel.textContent = 'Cancelar Edição';
+    btnCancel.addEventListener('click', cancelarEdicao);
+    
+    // Tenta inserir no grupo de botões, se não encontrar, coloca após o formulário
+    const botoesDiv = document.querySelector('#book-form .d-flex');
+    if (botoesDiv) {
+      botoesDiv.prepend(btnCancel);
+    } else {
+      // fallback: insere antes do botão de submit
+      const btnSubmit = form.querySelector('button[type="submit"]');
+      if (btnSubmit && btnSubmit.parentNode) {
+        btnSubmit.parentNode.insertBefore(btnCancel, btnSubmit);
+      } else {
+        // último recurso: adiciona ao final do formulário
+        form.appendChild(btnCancel);
+      }
     }
   }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
+}
 
   /* ========== FUNÇÕES DE BUSCA (inalteradas) ========== */
   async function buscarLivro() {
