@@ -31,18 +31,15 @@
   <link rel="stylesheet" href="css/desejos.css">
   <link rel="stylesheet" href="css/exportar.css">
   <link rel="stylesheet" href="css/configuracoes.css">
-  <link rel="stylesheet" href="css/splash.css">
 </head>
 <body class="light-mode">
 
-  <!-- Splash screen personalizada -->
-  <div id="splash-screen" class="splash">
-    <div class="splash-content">
-      <img src="img/icons/logo.png" alt="Eder Livros" class="splash-logo">
-      <h1 class="splash-title">Eder Livros</h1>
-      <div class="splash-loader">
-        <div class="splash-loader-bar"></div>
-      </div>
+  <!-- Splash screen (aparece enquanto carrega) -->
+  <div id="splash-screen" class="d-flex align-items-center justify-content-center">
+    <div class="text-center">
+      <img src="img/icons/logo.png" alt="Eder Livros" width="80" height="80" class="mb-3">
+      <h1 class="fw-bold">Eder Livros</h1>
+      <div class="spinner-border text-primary mt-2" role="status"></div>
     </div>
   </div>
 
@@ -325,16 +322,6 @@
                       <input type="text" id="edicao" class="form-control">
                     </div>
                   </div>
-                  <div class="row g-2">
-                    <div class="col-md-6">
-                      <label for="data-inicio" class="form-label">Data de início</label>
-                      <input type="date" id="data-inicio" class="form-control">
-                    </div>
-                    <div class="col-md-6">
-                      <label for="data-termino" class="form-label">Data de término</label>
-                      <input type="date" id="data-termino" class="form-control">
-                    </div>
-                  </div>
                   <div class="row g-2 mt-2">
                     <div class="col-md-6">
                       <label for="isbn" class="form-label">ISBN</label>
@@ -426,23 +413,14 @@
                   <div id="cover-preview" class="mb-3 border rounded p-3 bg-light d-flex align-items-center justify-content-center" style="min-height: 250px;">
                     <span class="text-muted">Pré-visualização</span>
                   </div>
-              
-                  <!-- Upload de imagem -->
-                  <div class="mb-3">
-                    <label for="upload-capa" class="btn btn-outline-primary">
-                      <i class="fas fa-camera me-1"></i> Tirar foto / Escolher arquivo
-                    </label>
-                    <input type="file" id="upload-capa" accept="image/*" capture="environment" style="display: none;">
-                    <small class="d-block text-muted mt-1">Ou cole o link direto da imagem abaixo</small>
-                  </div>
-              
-                  <!-- URL alternativa -->
                   <div class="input-group mb-3">
                     <input type="url" id="urlCapa" class="form-control" placeholder="URL da imagem de capa">
                     <button class="btn btn-outline-secondary" type="button" id="load-cover-btn"><i class="fas fa-sync-alt"></i></button>
                   </div>
+                  <small class="text-muted">Ou cole o link direto da imagem</small>
                 </div>
               </div>
+
               <div class="card mb-3">
                 <div class="card-header fw-bold">Detalhes pessoais</div>
                 <div class="card-body">
@@ -1172,13 +1150,7 @@
   </div>
 </div>
   </main>
-<script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.getRegistrations().then(registrations => {
-      registrations.forEach(reg => reg.unregister());
-    });
-  }
-</script>
+
 <!-- Dependências -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="js/util.js"></script>
@@ -1186,18 +1158,18 @@
 <script src="js/auth.js"></script>
 
 <!-- Módulos -->
-<script src="js/livros.js?v=1.1"></script>
-<script src="js/leitura.js?v=1.1"></script>
-<script src="js/dashboard.js?v=1.1"></script>
-<script src="js/biblioteca.js?v=1.1"></script>
-<script src="js/estatisticas.js?v=1.1"></script>
-<script src="js/metas.js?v=1.1"></script>
-<script src="js/anotacoes.js?v=1.1"></script>
-<script src="js/desejos.js?v=1.1"></script>
-<script src="js/exportar.js?v=1.1"></script>
-<script src="js/configuracoes.js?v=1.1"></script>
+<script src="js/livros.js"></script>
+<script src="js/leitura.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/biblioteca.js"></script>
+<script src="js/estatisticas.js"></script>
+<script src="js/metas.js"></script>
+<script src="js/anotacoes.js"></script>
+<script src="js/desejos.js"></script>
+<script src="js/exportar.js"></script>
+<script src="js/configuracoes.js"></script>
 
 <!-- Controlador principal (sempre por último) -->
-<script src="js/app.js?v=1.1"></script>
+<script src="js/app.js"></script>
 </body>
 </html>
