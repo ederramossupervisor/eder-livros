@@ -238,6 +238,8 @@ const Livros = (() => {
     document.getElementById('tags').value = livro.Tags || '';
     document.getElementById('observacoes').value = livro.Observações || '';
     document.getElementById('urlCapa').value = livro.URLCapa || livro.ImagemCapa || '';
+    document.getElementById('data-inicio').value = livro.DataInício || '';
+    document.getElementById('data-termino').value = livro.DataTérmino || '';
     document.getElementById('favorito').checked = livro.Favorito === 'true' || livro.Favorito === true;
     if (livro.URLCapa || livro.ImagemCapa) {
       mostrarCapa(livro.URLCapa || livro.ImagemCapa);
