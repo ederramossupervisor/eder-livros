@@ -277,6 +277,8 @@ const Livros = (() => {
       favorito: document.getElementById('favorito').checked,
       preco: document.getElementById('preco').value,
       tags: document.getElementById('tags').value,
+      dataInicio: document.getElementById('data-inicio').value,
+      dataTermino: document.getElementById('data-termino').value,
       observacoes: document.getElementById('observacoes').value,
       urlCapa: urlCapa.value,
       imagemCapa: urlCapa.value
