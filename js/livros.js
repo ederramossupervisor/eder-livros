@@ -313,12 +313,14 @@ console.log('📸 imagemBase64 presente?', !!book.imagemBase64, 'tamanho:', book
       } else {
         resposta = await API.enviar({ acao: 'addBook', book });
       }
-      if (resposta && resposta.status === 'ok') {
+     if (resposta && resposta.status === 'ok') {
         Util.toast(editandoLivroID ? 'Livro atualizado!' : 'Livro adicionado!', 'success');
         limparFormulario();
         cancelarEdicao();
       } else {
-        throw new Error(resposta?.erro || 'Falha no servidor');
+        // Extrai a mensagem de erro, considerando que o backend pode retornar 'mensagem' ou 'erro'
+        const msg = resposta?.mensagem || resposta?.erro || 'Falha no servidor';
+        throw new Error(msg);
       }
     } catch (erro) {
       Util.toast('Erro ao salvar: ' + erro.message, 'danger');
