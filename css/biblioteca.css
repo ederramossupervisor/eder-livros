@@ -76,3 +76,11 @@
   color: var(--primary);
   opacity: 0.3;
 }
+.modal-content {
+  border: none;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+}
+.modal-header {
+  border-bottom: 1px solid var(--border-color);
+}
