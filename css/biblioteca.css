@@ -58,3 +58,8 @@
   max-width: 150px;
   border-radius: 8px;
 }
+.livro-card .titulo {
+  font-weight: 600;
+  font-size: 0.85rem;
+  line-height: 1.3;
+}
