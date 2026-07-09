@@ -1,5 +1,5 @@
 /**
- * Módulo de registro de sessões de leitura
+ * Módulo de registro de sessões de leitura – com cronômetro
  */
 const Leitura = (() => {
   const form = document.getElementById('session-form');
@@ -17,9 +17,23 @@ const Leitura = (() => {
   const pagLidasSpan = document.getElementById('paginas-lidas');
   const historicoContainer = document.getElementById('historico-sessoes');
 
+  // Elementos do cronômetro
+  const display = document.getElementById('cronometro-display');
+  const btnIniciar = document.getElementById('btn-iniciar');
+  const btnPausar = document.getElementById('btn-pausar');
+  const btnRetomar = document.getElementById('btn-retomar');
+  const btnFinalizar = document.getElementById('btn-finalizar');
+
   let livrosCache = [];
   let editandoSessaoID = null;
 
+  // Variáveis do cronômetro
+  let cronometroAtivo = false;
+  let tempoAcumulado = 0;      // em segundos
+  let inicioCronometro = null;
+  let timerInterval = null;
+
+  /* ========== INICIALIZAÇÃO ========== */
   function init() {
     if (!form) return;
 
@@ -30,11 +44,116 @@ const Leitura = (() => {
     form.addEventListener('submit', salvarSessao);
     document.getElementById('clear-session-btn')?.addEventListener('click', limparFormulario);
 
+    // Eventos do cronômetro
+    btnIniciar.addEventListener('click', iniciarCronometro);
+    btnPausar.addEventListener('click', pausarCronometro);
+    btnRetomar.addEventListener('click', retomarCronometro);
+    btnFinalizar.addEventListener('click', finalizarCronometro);
+
     carregarLivros();
-    carregarHistorico(); // carrega histórico ao entrar
-    console.log('✅ Módulo Leitura pronto.');
+    carregarHistorico();
+    console.log('✅ Módulo Leitura pronto (com cronômetro).');
   }
 
+  /* ========== CRONÔMETRO ========== */
+  function atualizarDisplay(segundos) {
+    const mins = Math.floor(segundos / 60);
+    const secs = segundos % 60;
+    display.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  }
+
+  function iniciarCronometro() {
+    // Se é a primeira vez (não há tempo acumulado), captura a hora inicial
+    if (tempoAcumulado === 0) {
+      horaInicio.value = new Date().toTimeString().slice(0, 5);
+    }
+    inicioCronometro = Date.now();
+    cronometroAtivo = true;
+
+    btnIniciar.classList.add('d-none');
+    btnPausar.classList.remove('d-none');
+    btnRetomar.classList.add('d-none');
+    btnFinalizar.classList.remove('d-none');
+
+    // Desabilita campos manuais enquanto o cronômetro estiver ativo
+    horaInicio.disabled = true;
+    horaFim.disabled = true;
+
+    timerInterval = setInterval(() => {
+      const agora = Date.now();
+      const decorrido = Math.floor((agora - inicioCronometro) / 1000);
+      const total = tempoAcumulado + decorrido;
+      atualizarDisplay(total);
+    }, 1000);
+  }
+
+  function pausarCronometro() {
+    if (!cronometroAtivo) return;
+    clearInterval(timerInterval);
+    const agora = Date.now();
+    tempoAcumulado += Math.floor((agora - inicioCronometro) / 1000);
+    cronometroAtivo = false;
+
+    btnPausar.classList.add('d-none');
+    btnRetomar.classList.remove('d-none');
+  }
+
+  function retomarCronometro() {
+    inicioCronometro = Date.now();
+    cronometroAtivo = true;
+
+    btnRetomar.classList.add('d-none');
+    btnPausar.classList.remove('d-none');
+
+    timerInterval = setInterval(() => {
+      const agora = Date.now();
+      const decorrido = Math.floor((agora - inicioCronometro) / 1000);
+      const total = tempoAcumulado + decorrido;
+      atualizarDisplay(total);
+    }, 1000);
+  }
+
+  function finalizarCronometro() {
+    if (cronometroAtivo) {
+      clearInterval(timerInterval);
+      const agora = Date.now();
+      tempoAcumulado += Math.floor((agora - inicioCronometro) / 1000);
+      cronometroAtivo = false;
+    }
+    // Preenche a hora de fim com o horário atual
+    horaFim.value = new Date().toTimeString().slice(0, 5);
+    atualizarDisplay(tempoAcumulado);
+    calcularTempo(); // atualiza o campo "Tempo calculado"
+
+    // Reseta o estado dos botões
+    btnIniciar.classList.remove('d-none');
+    btnPausar.classList.add('d-none');
+    btnRetomar.classList.add('d-none');
+    btnFinalizar.classList.add('d-none');
+
+    horaInicio.disabled = false;
+    horaFim.disabled = false;
+  }
+
+  function resetarCronometro() {
+    clearInterval(timerInterval);
+    cronometroAtivo = false;
+    tempoAcumulado = 0;
+    inicioCronometro = null;
+    atualizarDisplay(0);
+
+    btnIniciar.classList.remove('d-none');
+    btnPausar.classList.add('d-none');
+    btnRetomar.classList.add('d-none');
+    btnFinalizar.classList.add('d-none');
+
+    horaInicio.disabled = false;
+    horaFim.disabled = false;
+    horaInicio.value = '';
+    horaFim.value = '';
+  }
+
+  /* ========== CARREGAMENTO DE LIVROS ========== */
   async function carregarLivros() {
     try {
       livroSelect.innerHTML = '<option value="">Carregando...</option>';
@@ -77,6 +196,7 @@ const Leitura = (() => {
     });
   }
 
+  /* ========== CÁLCULOS AUTOMÁTICOS ========== */
   function calcularTempo() {
     if (horaInicio.value && horaFim.value) {
       const [hi, mi] = horaInicio.value.split(':').map(Number);
@@ -91,19 +211,20 @@ const Leitura = (() => {
   }
 
   function calcularPaginas() {
-  const pi = parseInt(pagInicial.value) || 0;
-  const pf = parseInt(pagFinal.value) || 0;
-  if (pf > pi) {
-    let lidas = pf - pi;
-    if (pi > 0) lidas += 1;
-    lidas = Math.max(0, lidas);
-    pagLidasSpan.textContent = lidas;
-    pagLidasDiv.classList.remove('d-none');
-  } else {
-    pagLidasDiv.classList.add('d-none');
+    const pi = parseInt(pagInicial.value) || 0;
+    const pf = parseInt(pagFinal.value) || 0;
+    if (pf > pi) {
+      let lidas = pf - pi;
+      if (pi > 0) lidas += 1;
+      lidas = Math.max(0, lidas);
+      pagLidasSpan.textContent = lidas;
+      pagLidasDiv.classList.remove('d-none');
+    } else {
+      pagLidasDiv.classList.add('d-none');
+    }
   }
-}
 
+  /* ========== SALVAR SESSÃO ========== */
   async function salvarSessao(e) {
     e.preventDefault();
     if (!form.checkValidity()) {
@@ -147,8 +268,8 @@ const Leitura = (() => {
         limparFormulario();
         editandoSessaoID = null;
         btnSubmit.innerHTML = '<i class="fas fa-save me-1"></i> Registrar Sessão';
-        carregarHistorico(); // atualiza lista
-        carregarLivros(); // atualiza páginas lidas no dropdown
+        carregarHistorico();
+        carregarLivros();
       } else {
         throw new Error(resposta?.erro || 'Falha no servidor');
       }
@@ -168,72 +289,62 @@ const Leitura = (() => {
     editandoSessaoID = null;
     const btnSubmit = form.querySelector('button[type="submit"]');
     btnSubmit.innerHTML = '<i class="fas fa-save me-1"></i> Registrar Sessão';
+    resetarCronometro();
   }
 
-  // Histórico de sessões
+  /* ========== HISTÓRICO ========== */
   async function carregarHistorico() {
-  if (!historicoContainer) return;
-  try {
-    const resp = await API.enviar({ acao: 'listRecentSessions' });
-    if (Array.isArray(resp) && resp.length > 0) {
-      historicoContainer.innerHTML = '';
+    if (!historicoContainer) return;
+    try {
+      const resp = await API.enviar({ acao: 'listRecentSessions' });
+      if (Array.isArray(resp) && resp.length > 0) {
+        historicoContainer.innerHTML = '';
+        const mapaTitulos = {};
+        livrosCache.forEach(livro => {
+          mapaTitulos[livro.ID] = livro.Título || 'Livro sem título';
+        });
 
-      // Criar mapa de ID -> título do livro (já temos livrosCache)
-      const mapaTitulos = {};
-      livrosCache.forEach(livro => {
-        mapaTitulos[livro.ID] = livro.Título || 'Livro sem título';
-      });
+        resp.forEach(sess => {
+          const div = document.createElement('div');
+          div.className = 'd-flex justify-content-between align-items-center p-2 border-bottom';
+          const dataFormatada = sess.Data
+            ? new Date(sess.Data).toLocaleDateString('pt-BR', { timeZone: 'UTC' })
+            : 'Data inválida';
+          const pagInicial = sess.PáginaInicial !== undefined && sess.PáginaInicial !== '' ? sess.PáginaInicial : '?';
+          const pagFinal = sess.PáginaFinal !== undefined && sess.PáginaFinal !== '' ? sess.PáginaFinal : '?';
+          const faixaPaginas = (pagInicial !== '?' || pagFinal !== '?')
+            ? `Pág. ${pagInicial}-${pagFinal}`
+            : 'Páginas não informadas';
+          const pagLidas = sess.PáginasLidas !== undefined ? sess.PáginasLidas : 0;
+          const tempo = sess.Tempo ? `${sess.Tempo} min` : '';
+          const nomeLivro = mapaTitulos[sess.LivroID] || 'Livro desconhecido';
 
-      resp.forEach(sess => {
-        const div = document.createElement('div');
-        div.className = 'd-flex justify-content-between align-items-center p-2 border-bottom';
+          div.innerHTML = `
+            <div>
+              <strong>${nomeLivro}</strong><br>
+              <small>${dataFormatada} - ${faixaPaginas} (${pagLidas} pág) ${tempo ? '- ' + tempo : ''}</small>
+              ${sess.Local ? `<br><small class="text-muted">Local: ${sess.Local}</small>` : ''}
+            </div>
+            <div>
+              <button class="btn btn-sm btn-outline-secondary btn-editar-sessao" data-id="${sess.ID}"><i class="fas fa-edit"></i></button>
+              <button class="btn btn-sm btn-outline-danger btn-excluir-sessao" data-id="${sess.ID}"><i class="fas fa-trash"></i></button>
+            </div>`;
+          historicoContainer.appendChild(div);
+        });
 
-        // Formatar data
-        const dataFormatada = sess.Data
-          ? new Date(sess.Data).toLocaleDateString('pt-BR', { timeZone: 'UTC' })
-          : 'Data inválida';
-
-        // Páginas: exibir faixa se ambos os valores existirem
-        const pagInicial = sess.PáginaInicial !== undefined && sess.PáginaInicial !== '' ? sess.PáginaInicial : '?';
-        const pagFinal = sess.PáginaFinal !== undefined && sess.PáginaFinal !== '' ? sess.PáginaFinal : '?';
-        const faixaPaginas = (pagInicial !== '?' || pagFinal !== '?')
-          ? `Pág. ${pagInicial}-${pagFinal}`
-          : 'Páginas não informadas';
-
-        const pagLidas = sess.PáginasLidas !== undefined ? sess.PáginasLidas : 0;
-        const tempo = sess.Tempo ? `${sess.Tempo} min` : '';
-
-        // Nome do livro
-        const nomeLivro = mapaTitulos[sess.LivroID] || 'Livro desconhecido';
-
-        div.innerHTML = `
-          <div>
-            <strong>${nomeLivro}</strong><br>
-            <small>${dataFormatada} - ${faixaPaginas} (${pagLidas} pág) ${tempo ? '- ' + tempo : ''}</small>
-            ${sess.Local ? `<br><small class="text-muted">Local: ${sess.Local}</small>` : ''}
-          </div>
-          <div>
-            <button class="btn btn-sm btn-outline-secondary btn-editar-sessao" data-id="${sess.ID}"><i class="fas fa-edit"></i></button>
-            <button class="btn btn-sm btn-outline-danger btn-excluir-sessao" data-id="${sess.ID}"><i class="fas fa-trash"></i></button>
-          </div>`;
-        historicoContainer.appendChild(div);
-      });
-
-      // Reatribuir eventos
-      document.querySelectorAll('.btn-editar-sessao').forEach(btn => {
-        btn.addEventListener('click', () => editarSessao(btn.dataset.id, resp));
-      });
-      document.querySelectorAll('.btn-excluir-sessao').forEach(btn => {
-        btn.addEventListener('click', () => excluirSessao(btn.dataset.id));
-      });
-
-    } else {
-      historicoContainer.innerHTML = '<p class="text-muted">Nenhuma sessão registrada ainda.</p>';
+        document.querySelectorAll('.btn-editar-sessao').forEach(btn => {
+          btn.addEventListener('click', () => editarSessao(btn.dataset.id, resp));
+        });
+        document.querySelectorAll('.btn-excluir-sessao').forEach(btn => {
+          btn.addEventListener('click', () => excluirSessao(btn.dataset.id));
+        });
+      } else {
+        historicoContainer.innerHTML = '<p class="text-muted">Nenhuma sessão registrada ainda.</p>';
+      }
+    } catch (e) {
+      console.error('Erro ao carregar histórico:', e);
     }
-  } catch (e) {
-    console.error('Erro ao carregar histórico:', e);
   }
-}
 
   function editarSessao(id, lista) {
     const sess = lista.find(s => s.ID === id);
@@ -261,7 +372,7 @@ const Leitura = (() => {
       try {
         await API.enviar({ acao: 'deleteSession', id });
         carregarHistorico();
-        carregarLivros(); // atualiza progresso do livro
+        carregarLivros();
         Util.toast('Sessão excluída', 'info');
       } catch (e) {
         Util.toast('Erro ao excluir: ' + e.message, 'danger');
