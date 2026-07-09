@@ -16,27 +16,34 @@ const Metas = (() => {
     document.getElementById('meta-ano').value = new Date().getFullYear();
 
     form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const meta = {
-        ano: document.getElementById('meta-ano').value,
-        metaLivros: document.getElementById('meta-livros').value,
-        metaPaginas: document.getElementById('meta-paginas').value,
-        metaMensal: document.getElementById('meta-mensal').value,
-        metaSemanal: document.getElementById('meta-semanal').value,
-        metaDiaria: document.getElementById('meta-diaria').value
-      };
-      try {
-        const resp = await API.enviar({ acao: 'saveGoal', meta });
-        if (resp && resp.status === 'ok') {
-          Util.toast('Metas salvas!', 'success');
-          carregarMetas();
-        } else {
-          Util.toast('Erro ao salvar metas', 'danger');
-        }
-      } catch (e) {
-        Util.toast('Falha na conexão', 'danger');
+    e.preventDefault();
+    const meta = {
+      ano: Number(document.getElementById('meta-ano').value) || new Date().getFullYear(),
+      metaLivros: Number(document.getElementById('meta-livros').value) || 0,
+      metaPaginas: Number(document.getElementById('meta-paginas').value) || 0,
+      metaMensal: Number(document.getElementById('meta-mensal').value) || 0,
+      metaSemanal: Number(document.getElementById('meta-semanal').value) || 0,
+      metaDiaria: Number(document.getElementById('meta-diaria').value) || 0
+    };
+  
+    // Validação simples
+    if (!meta.ano || meta.ano < 2020 || meta.ano > 2100) {
+      Util.toast('Informe um ano válido.', 'warning');
+      return;
+    }
+  
+    try {
+      const resp = await API.enviar({ acao: 'saveGoal', meta });
+      if (resp && resp.status === 'ok') {
+        Util.toast('Metas salvas!', 'success');
+        carregarMetas(); // recarrega os dados
+      } else {
+        throw new Error(resp?.erro || 'Falha no servidor');
       }
-    });
+    } catch (err) {
+      Util.toast('Erro ao salvar metas: ' + err.message, 'danger');
+    }
+  });
   }
 
   async function carregarMetas() {
