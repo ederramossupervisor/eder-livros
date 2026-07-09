@@ -253,8 +253,8 @@ uploadInput.addEventListener('change', (e) => {
     if (livro.URLCapa || livro.ImagemCapa) {
       mostrarCapa(livro.URLCapa || livro.ImagemCapa);
     }
-    document.getElementById('data-inicio').value = livro.DataInício || '';
-    document.getElementById('data-termino').value = livro.DataTérmino || '';
+    document.getElementById('data-inicio').value = (livro.DataInício || '').substring(0, 10);
+    document.getElementById('data-termino').value = (livro.DataTérmino || '').substring(0, 10);
 
     // Limpa upload anterior (a imagem existente está na URL)
     imagemBase64 = null;
