@@ -15,11 +15,13 @@ const Estatisticas = (() => {
 
         // Pequeno atraso para garantir que os canvas estejam visíveis após a ativação da página
         setTimeout(() => {
-          try { criarGraficoFinalizadosMes(dados.finalizadosPorMes); } catch(e) { console.warn('Erro gráfico finalizados/mês', e); }
-          try { criarGraficoPaginasDia(dados.paginasPorDia); } catch(e) { console.warn('Erro gráfico páginas/dia', e); }
-          try { criarGraficoGeneros(dados.generos); } catch(e) { console.warn('Erro gráfico gêneros', e); }
-          try { criarGraficoDiaSemana(dados.tempoPorDiaSemana); } catch(e) { console.warn('Erro gráfico dia semana', e); }
-          try { criarHeatmap(dados.heatmap); } catch(e) { console.warn('Erro heatmap', e); }
+          try { criarGraficoFinalizadosMes(dados.finalizadosPorMes); } catch(e) { console.warn(e); }
+          try { criarGraficoPaginasDia(dados.paginasPorDia); } catch(e) { console.warn(e); }
+          try { criarGraficoGeneros(dados.generos); } catch(e) { console.warn(e); }
+          try { criarGraficoDiaSemana(dados.tempoPorDiaSemana); } catch(e) { console.warn(e); }
+          try { criarHeatmap(dados.heatmap); } catch(e) { console.warn(e); }
+          // Força o redimensionamento para corrigir possíveis alturas zero
+          window.dispatchEvent(new Event('resize'));
         }, 100);
 
         preencherTopAutores(dados.topAutores);
