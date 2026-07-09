@@ -27,107 +27,122 @@ function initNavegacao() {
   const pages = document.querySelectorAll('.page');
 
   function activatePage(pageName) {
-    // Atualiza classes ativas nos links
-    navItems.forEach(link => {
-      link.classList.remove('active');
-      if (link.dataset.page === pageName) {
-        link.classList.add('active');
-      }
-    });
-
-    // Mostra/oculta páginas
-    pages.forEach(page => {
-      page.classList.remove('active');
-      if (page.id === `page-${pageName}`) {
-        page.classList.add('active');
-      }
-    });
-
-    // Inicializa módulos específicos
-    switch (pageName) {
-      case 'dashboard':
-        if (typeof Dashboard !== 'undefined' && Dashboard.init) {
-          Dashboard.init();
-        }
-        break;
-      case 'leitura':
-        if (typeof Leitura !== 'undefined' && Leitura.init) {
-          Leitura.init();
-        }
-        break;
-      case 'adicionar':
-        if (typeof Livros !== 'undefined' && Livros.init) {
-          Livros.init();
-        }
-        break;
-      case 'biblioteca':
-        if (typeof Biblioteca !== 'undefined' && Biblioteca.init) {
-          Biblioteca.init();
-        }
-        break;
-      case 'estatisticas':
-        if (typeof Estatisticas !== 'undefined' && Estatisticas.init) {
-            Estatisticas.init();
-        }
-        break;
-      case 'metas':
-        if (typeof Metas !== 'undefined' && Metas.init) {
-            Metas.init();
-        }
-        break;
-      case 'anotacoes':
-        if (typeof Anotacoes !== 'undefined' && Anotacoes.init) {
-            Anotacoes.init();
-        }
-        break;
-      case 'desejos':                         
-        if (typeof DesejosEmprestimos !== 'undefined' && DesejosEmprestimos.init) {
-          DesejosEmprestimos.init();
-        }
-        break;
-
-      case 'exportar':
-        if (typeof Exportar !== 'undefined' && Exportar.init) {
-            Exportar.init();
-        }
-        break;
-      case 'configuracoes':
-        if (typeof Configuracoes !== 'undefined' && Configuracoes.init) {
-            Configuracoes.init();
-        }
-        break;  
-      // Futuros módulos podem ser adicionados aqui
+  // Atualiza links ativos
+  const navItems = document.querySelectorAll('.nav-link, .bottom-nav .nav-item');
+  navItems.forEach(link => {
+    link.classList.remove('active');
+    if (link.dataset.page === pageName) {
+      link.classList.add('active');
     }
+  });
+
+  // Mostra/oculta páginas
+  const pages = document.querySelectorAll('.page');
+  pages.forEach(page => {
+    page.classList.remove('active');
+    if (page.id === `page-${pageName}`) {
+      page.classList.add('active');
+    }
+  });
+
+  // Inicializa módulos específicos
+  switch (pageName) {
+    case 'dashboard':
+      if (typeof Dashboard !== 'undefined' && Dashboard.init) {
+        Dashboard.init();
+      }
+      break;
+    case 'leitura':
+      if (typeof Leitura !== 'undefined' && Leitura.init) {
+        Leitura.init();
+      }
+      break;
+    case 'adicionar':
+      if (typeof Livros !== 'undefined' && Livros.init) {
+        Livros.init();
+      }
+      break;
+    case 'biblioteca':
+      if (typeof Biblioteca !== 'undefined' && Biblioteca.init) {
+        Biblioteca.init();
+      }
+      break;
+    case 'estatisticas':
+      if (typeof Estatisticas !== 'undefined' && Estatisticas.init) {
+        Estatisticas.init();
+      }
+      break;
+    case 'metas':
+      if (typeof Metas !== 'undefined' && Metas.init) {
+        Metas.init();
+      }
+      break;
+    case 'anotacoes':
+      if (typeof Anotacoes !== 'undefined' && Anotacoes.init) {
+        Anotacoes.init();
+      }
+      break;
+    case 'desejos':
+      if (typeof DesejosEmprestimos !== 'undefined' && DesejosEmprestimos.init) {
+        DesejosEmprestimos.init();
+      }
+      break;
+    case 'exportar':
+      if (typeof Exportar !== 'undefined' && Exportar.init) {
+        Exportar.init();
+      }
+      break;
+    case 'configuracoes':
+      if (typeof Configuracoes !== 'undefined' && Configuracoes.init) {
+        Configuracoes.init();
+      }
+      break;
   }
 
-  navItems.forEach(link => {
-    link.addEventListener('click', (e) => {
-      e.preventDefault();
-      const pageName = link.dataset.page;
-      if (pageName) activatePage(pageName);
-    });
-  });
+  // Fecha o offcanvas mobile se estiver aberto
+  const offcanvasEl = document.getElementById('mobileMenu');
+  if (offcanvasEl) {
+    const offcanvas = bootstrap.Offcanvas.getInstance(offcanvasEl);
+    if (offcanvas) {
+      offcanvas.hide();
+    }
+  }
 }
-
 // Modo escuro / claro
 function initTema() {
-  const toggle = document.getElementById('theme-toggle');
+  const toggleDesktop = document.getElementById('theme-toggle');
+  const toggleMobileOffcanvas = document.getElementById('theme-toggle-mobile');
+  const toggleMobileTop = document.getElementById('theme-toggle-mobile-top');
+
   const body = document.body;
   const saved = Util.getPreference('darkMode', false);
-
   if (saved) body.classList.add('dark-mode');
-  atualizarBotaoTema(toggle);
 
-  toggle.addEventListener('click', () => {
-    body.classList.toggle('dark-mode');
-    Util.setPreference('darkMode', body.classList.contains('dark-mode'));
-    atualizarBotaoTema(toggle);
+  // Função para atualizar o ícone/texto de um botão
+  function atualizarBotao(btn) {
+    if (!btn) return;
+    const isDark = body.classList.contains('dark-mode');
+    btn.innerHTML = isDark
+      ? '<i class="fas fa-sun"></i> <span class="ms-1">Modo claro</span>'
+      : '<i class="fas fa-moon"></i> <span class="ms-1">Modo escuro</span>';
+  }
+
+  // Atualiza todos os botões
+  function atualizarTodos() {
+    [toggleDesktop, toggleMobileOffcanvas, toggleMobileTop].forEach(atualizarBotao);
+  }
+
+  // Inicializa visual dos botões
+  atualizarTodos();
+
+  // Adiciona evento a todos os botões existentes
+  [toggleDesktop, toggleMobileOffcanvas, toggleMobileTop].forEach(btn => {
+    if (btn) {
+      btn.addEventListener('click', () => {
+        body.classList.toggle('dark-mode');
+        Util.setPreference('darkMode', body.classList.contains('dark-mode'));
+        atualizarTodos();
+      });
+    }
   });
-}
-
-function atualizarBotaoTema(btn) {
-  const isDark = document.body.classList.contains('dark-mode');
-  btn.innerHTML = isDark
-    ? '<i class="fas fa-sun"></i> <span class="ms-1">Modo claro</span>'
-    : '<i class="fas fa-moon"></i> <span class="ms-1">Modo escuro</span>';
 }
