@@ -282,8 +282,7 @@ function preencherFormularioCompleto(livro) {
     tags: document.getElementById('tags').value,
     observacoes: document.getElementById('observacoes').value,
     urlCapa: urlCapa.value,
-    imagemCapa: urlCapa.value,
-    // NOVOS CAMPOS:
+    imagemBase64: imagemBase64 || '',
     dataInicio: document.getElementById('data-inicio').value,
     dataTermino: document.getElementById('data-termino').value
   };
@@ -293,25 +292,38 @@ function preencherFormularioCompleto(livro) {
   btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Salvando...';
 
   try {
+    // Guardamos se é edição antes de qualquer limpeza
+    const isEdicao = !!editandoLivroID;
+
     let resposta;
     if (editandoLivroID) {
       resposta = await API.enviar({ acao: 'updateBook', id: editandoLivroID, book });
     } else {
       resposta = await API.enviar({ acao: 'addBook', book });
     }
+
     if (resposta && resposta.status === 'ok') {
-      Util.toast(editandoLivroID ? 'Livro atualizado!' : 'Livro adicionado!', 'success');
+      Util.toast(isEdicao ? 'Livro atualizado!' : 'Livro adicionado!', 'success');
       limparFormulario();
       cancelarEdicao();
+
+      // Se estava editando, navega automaticamente para a Biblioteca
+      if (isEdicao) {
+        const linkBiblioteca = document.querySelector('.nav-link[data-page="biblioteca"]');
+        if (linkBiblioteca) linkBiblioteca.click();
+      }
     } else {
-      throw new Error(resposta?.erro || 'Falha no servidor');
+      const msg = resposta?.mensagem || resposta?.erro || 'Falha no servidor';
+      throw new Error(msg);
     }
   } catch (erro) {
     Util.toast('Erro ao salvar: ' + erro.message, 'danger');
+  } finally {
+    btnSubmit.disabled = false;
+    btnSubmit.innerHTML = editandoLivroID
+      ? '<i class="fas fa-save me-1"></i> Atualizar Livro'
+      : '<i class="fas fa-save me-1"></i> Salvar Livro';
   }
-
-  btnSubmit.disabled = false;
-  btnSubmit.innerHTML = editandoLivroID ? '<i class="fas fa-save me-1"></i> Atualizar Livro' : '<i class="fas fa-save me-1"></i> Salvar Livro';
 }
 
   function limparFormulario() {
