@@ -118,7 +118,19 @@ const Biblioteca = (() => {
       card.addEventListener('click', () => abrirModal(card.dataset.id));
     });
   }
-
+  function formatarData(dataISO) {
+    if (!dataISO) return '-';
+    try {
+      const data = new Date(dataISO);
+      // Ajusta para o fuso horário local (evita a data aparecer um dia antes)
+      const dia = data.getUTCDate().toString().padStart(2, '0');
+      const mes = (data.getUTCMonth() + 1).toString().padStart(2, '0');
+      const ano = data.getUTCFullYear();
+      return `${dia}/${mes}/${ano}`;
+    } catch (e) {
+      return dataISO; // fallback: se não conseguir formatar, mostra o valor original
+    }
+  }
   function abrirModal(id) {
     const livro = livros.find(l => l.ID === id);
     if (!livro) return;
