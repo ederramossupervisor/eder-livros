@@ -1,23 +1,26 @@
 /* -------------------------------------------
    Variáveis CSS – Temas Claro e Escuro
+   Eder Livros – Paleta Aconchegante
 ------------------------------------------- */
 :root {
   /* Cores principais */
-  --primary: #1a73e8;
-  --primary-hover: #1558b0;
-  --secondary: #5f6368;
+  --primary: #5C6B5A;        /* Verde musgo – cor principal */
+  --primary-hover: #4A5748;
+  --primary-light: #E8EDE7;  /* Fundo verde muito claro */
+  --secondary: #8B7D6B;      /* Marrom suave – secundária */
+  --accent: #C49A6C;         /* Dourado terra – detalhes */
 
   /* Tema claro */
-  --bg-primary: #ffffff;
-  --bg-secondary: #f8f9fa;
-  --bg-card: #ffffff;
-  --text-primary: #202124;
-  --text-secondary: #5f6368;
-  --border-color: #e0e0e0;
-  --shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.08);
-  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px rgba(0,0,0,0.05);
-  --navbar-bg: #ffffff;
-  --sidebar-bg: #ffffff;
+  --bg-primary: #FDFAF5;     /* Tom de papel envelhecido */
+  --bg-secondary: #F5F0E8;
+  --bg-card: #FFFFFF;
+  --text-primary: #3E3A35;
+  --text-secondary: #6B6560;
+  --border-color: #E0DBD0;
+  --shadow: 0 1px 3px rgba(62,58,53,0.08), 0 1px 2px rgba(62,58,53,0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(62,58,53,0.1), 0 4px 6px rgba(62,58,53,0.05);
+  --navbar-bg: #FFFFFF;
+  --sidebar-bg: #FDFAF5;
 
   --font-family: 'Inter', sans-serif;
   --radius: 12px;
@@ -26,15 +29,21 @@
 
 /* Modo escuro */
 body.dark-mode {
-  --bg-primary: #121212;
-  --bg-secondary: #1e1e1e;
-  --bg-card: #2d2d2d;
-  --text-primary: #e0e0e0;
-  --text-secondary: #aaaaaa;
-  --border-color: #444444;
-  --shadow: 0 1px 3px rgba(255,255,255,0.05);
-  --navbar-bg: #1e1e1e;
-  --sidebar-bg: #1e1e1e;
+  --primary: #8BA989;        /* Verde mais claro no escuro */
+  --primary-hover: #9DBC9B;
+  --primary-light: #2A3329;
+  --secondary: #B8A898;
+  --accent: #D4B896;
+
+  --bg-primary: #1E1C19;     /* Fundo quase preto */
+  --bg-secondary: #252320;
+  --bg-card: #2D2A26;
+  --text-primary: #E8E4DD;
+  --text-secondary: #B5AFA6;
+  --border-color: #3E3A35;
+  --shadow: 0 1px 3px rgba(0,0,0,0.2);
+  --navbar-bg: #252320;
+  --sidebar-bg: #1E1C19;
 }
 
 body {
@@ -42,4 +51,16 @@ body {
   background-color: var(--bg-secondary);
   color: var(--text-primary);
   transition: background-color var(--transition), color var(--transition);
+}
+
+/* Scrollbar personalizada (opcional) */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--secondary);
+  border-radius: 3px;
 }
