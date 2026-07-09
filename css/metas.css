@@ -26,3 +26,9 @@
 .conquista-card.conquistada .conquista-badge {
   background: #fff3cd;
 }
+.progress {
+  background-color: var(--bg-secondary);
+}
+.card-title {
+  font-size: 0.9rem;
+}
