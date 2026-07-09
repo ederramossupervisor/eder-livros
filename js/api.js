@@ -1,7 +1,11 @@
 const API = (() => {
-  const BASE_URL = 'https://script.google.com/macros/s/AKfycbzTqBGdFu372Z_7fXeUuXuqEgaIV-DDTU1n1SDkh6cLrnY3UAaZuXqmXzNMiAvhtCk5pg/exec';
+  // URL original do seu Apps Script
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzTqBGdFu372Z_7fXeUuXuqEgaIV-DDTU1n1SDkh6cLrnY3UAaZuXqmXzNMiAvhtCk5pg/exec';
 
-  async function enviar(dados, timeoutMs = 30000) { // timeout maior para upload
+  // Proxy CORS público
+  const BASE_URL = 'https://corsproxy.io/?' + encodeURIComponent(SCRIPT_URL);
+
+  async function enviar(dados, timeoutMs = 30000) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
 
@@ -25,7 +29,9 @@ const API = (() => {
 
   async function testarConexao() {
     try {
-      const resp = await fetch(BASE_URL);
+      const resp = await fetch(BASE_URL + '&' + new URLSearchParams({ data: JSON.stringify({ acao: 'listBooks' }) }), {
+        method: 'GET'
+      });
       return await resp.json();
     } catch (e) {
       return { status: 'erro', message: 'Sem comunicação.' };
