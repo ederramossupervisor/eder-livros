@@ -16,22 +16,20 @@ const Estatisticas = (() => {
         preencherResumo(dados);
         criarInsights(dados.insights);
 
-        // Aguarda a página ficar realmente visível e com altura antes de criar gráficos
-        await aguardarPaginaVisivel(page);
+        // Aguarda até que o primeiro canvas tenha largura (sinal de que a página está renderizada)
+        await aguardarCanvasPronto();
 
-        console.log('📐 Página visível, criando gráficos...');
+        console.log('📐 Canvas pronto, criando gráficos...');
         try { criarGraficoFinalizadosMes(dados.finalizadosPorMes); } catch(e) { console.warn(e); }
         try { criarGraficoPaginasDia(dados.paginasPorDia); } catch(e) { console.warn(e); }
         try { criarGraficoGeneros(dados.generos); } catch(e) { console.warn(e); }
         try { criarGraficoDiaSemana(dados.tempoPorDiaSemana); } catch(e) { console.warn(e); }
         try { criarHeatmap(dados.heatmap); } catch(e) { console.warn(e); }
 
-        // Redimensiona após tudo pronto
+        // Redimensiona todos os gráficos após um pequeno delay
         setTimeout(() => {
           Object.values(graficos).forEach(chart => {
-            if (chart && chart.canvas) {
-              chart.resize();
-            }
+            if (chart && chart.canvas) chart.resize();
           });
           // Log final
           document.querySelectorAll('canvas').forEach(c => {
@@ -51,25 +49,25 @@ const Estatisticas = (() => {
     console.log('✅ Módulo Estatísticas pronto.');
   }
 
-  /* Aguarda até que a página esteja ativa e com altura mínima */
-  function aguardarPaginaVisivel(page) {
+  /* Aguarda até que o canvas de finalizados por mês tenha largura > 0 */
+  function aguardarCanvasPronto() {
     return new Promise((resolve) => {
+      const canvas = document.getElementById('grafico-finalizados-mes');
+      if (!canvas) { resolve(); return; }
+
+      // Força altura mínima nos containers antes de verificar
+      document.querySelectorAll('.card canvas').forEach(c => {
+        c.style.minHeight = '250px';
+        const cardBody = c.closest('.card-body');
+        if (cardBody) cardBody.style.minHeight = '300px';
+      });
+
       const check = () => {
-        const rect = page.getBoundingClientRect();
-        const altura = rect.height;
-        console.log(`🔍 Verificando página: altura=${altura}, classe ativa=${page.classList.contains('active')}`);
-        if (page.classList.contains('active') && altura > 100) {
-          // Força altura nos containers dos gráficos
-          page.querySelectorAll('.card canvas').forEach(canvas => {
-            const card = canvas.closest('.card-body');
-            if (card) {
-              card.style.minHeight = '300px';
-            }
-            canvas.style.minHeight = '250px';
-          });
+        const width = canvas.clientWidth;
+        console.log(`🔍 Verificando largura do canvas: ${width}px`);
+        if (width > 0) {
           resolve();
         } else {
-          console.log('⏳ Aguardando página ficar visível...');
           requestAnimationFrame(check);
         }
       };
@@ -77,7 +75,7 @@ const Estatisticas = (() => {
     });
   }
 
-  /* ========== FUNÇÕES DE CRIAÇÃO DOS GRÁFICOS (com logs) ========== */
+  /* ========== FUNÇÕES DE CRIAÇÃO DOS GRÁFICOS (inalteradas) ========== */
   function criarGraficoFinalizadosMes(dados) {
     const canvas = document.getElementById('grafico-finalizados-mes');
     console.log('📊 Gráfico finalizados/mês:', dados.labels, dados.valores, 'Canvas:', canvas?.clientWidth, canvas?.clientHeight);
