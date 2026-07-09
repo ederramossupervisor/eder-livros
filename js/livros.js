@@ -282,7 +282,6 @@ function preencherFormularioCompleto(livro) {
     tags: document.getElementById('tags').value,
     observacoes: document.getElementById('observacoes').value,
     urlCapa: urlCapa.value,
-    imagemBase64: imagemBase64 || '',
     dataInicio: document.getElementById('data-inicio').value,
     dataTermino: document.getElementById('data-termino').value
   };
