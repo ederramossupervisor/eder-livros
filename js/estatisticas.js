@@ -13,16 +13,28 @@ const Estatisticas = (() => {
         preencherResumo(dados);
         criarInsights(dados.insights);
 
-        // Pequeno atraso para garantir que os canvas estejam visíveis após a ativação da página
+        // Aguarda a página ficar visível (importante após troca de aba)
         setTimeout(() => {
+          // Garante altura mínima nos canvas
+          document.querySelectorAll('canvas').forEach(canvas => {
+            if (!canvas.hasAttribute('height') || canvas.height < 200) {
+              canvas.style.height = '250px';
+            }
+          });
+
           try { criarGraficoFinalizadosMes(dados.finalizadosPorMes); } catch(e) { console.warn(e); }
           try { criarGraficoPaginasDia(dados.paginasPorDia); } catch(e) { console.warn(e); }
           try { criarGraficoGeneros(dados.generos); } catch(e) { console.warn(e); }
           try { criarGraficoDiaSemana(dados.tempoPorDiaSemana); } catch(e) { console.warn(e); }
           try { criarHeatmap(dados.heatmap); } catch(e) { console.warn(e); }
-          // Força o redimensionamento para corrigir possíveis alturas zero
-          window.dispatchEvent(new Event('resize'));
-        }, 100);
+
+          // Força cada gráfico a se redimensionar após estarem prontos
+          setTimeout(() => {
+            Object.values(graficos).forEach(chart => {
+              if (chart && typeof chart.resize === 'function') chart.resize();
+            });
+          }, 200);
+        }, 150);
 
         preencherTopAutores(dados.topAutores);
         preencherTopEditoras(dados.topEditoras);
