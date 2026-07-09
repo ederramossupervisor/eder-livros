@@ -50,3 +50,75 @@ body {
   transition: background-color var(--transition), color var(--transition);
   -webkit-font-smoothing: antialiased;
 }
+/* ========== MELHORIAS VISUAIS – EDER LIVROS ========== */
+
+/* Cards mais elegantes */
+.card {
+  border-radius: 16px !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
+  transition: box-shadow 0.3s ease, transform 0.2s ease !important;
+}
+.card:hover {
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1) !important;
+  transform: translateY(-2px);
+}
+
+/* Tipografia refinada */
+h1, h2, h3, h4, h5, h6 {
+  letter-spacing: -0.3px;
+  font-weight: 700;
+}
+
+/* Barra inferior com efeito de vidro (mobile) */
+.bottom-nav {
+  backdrop-filter: blur(12px);
+  background-color: rgba(255,255,255,0.75) !important;
+  border-top: 1px solid rgba(0,0,0,0.05);
+}
+
+/* Modo escuro – vidro na barra inferior */
+body.dark-mode .bottom-nav {
+  background-color: rgba(15, 23, 42, 0.8) !important;
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+
+/* Capa do livro com sombra e borda */
+#livro-atual-capa img {
+  border-radius: 8px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+  transition: transform 0.2s ease;
+}
+#livro-atual-capa img:hover {
+  transform: scale(1.03);
+}
+
+/* Animação de pulsar para conquistas (usada via JS, mas podemos preparar a classe) */
+.conquista-card.conquistada .conquista-badge {
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+/* Background sutil no modo claro */
+body.light-mode {
+  background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
+}
+
+/* Ajuste de espaçamento nos títulos das páginas */
+.page h1 {
+  margin-bottom: 1.5rem;
+  font-size: 1.8rem;
+  color: var(--primary);
+}
+
+/* Suavizar transições de página */
+.page.active {
+  animation: fadeSlideIn 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
