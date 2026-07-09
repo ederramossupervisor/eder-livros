@@ -147,8 +147,20 @@ const Leitura = (() => {
         limparFormulario();
         editandoSessaoID = null;
         btnSubmit.innerHTML = '<i class="fas fa-save me-1"></i> Registrar Sessão';
-        carregarHistorico(); // atualiza lista
-        carregarLivros(); // atualiza páginas lidas no dropdown
+        
+        console.log('🔄 Chamando carregarHistorico...');
+        carregarHistorico().then(() => {
+          console.log('✅ carregarHistorico finalizado');
+        }).catch(e => {
+          console.error('❌ Erro em carregarHistorico:', e);
+        });
+      
+        console.log('🔄 Chamando carregarLivros...');
+        carregarLivros().then(() => {
+          console.log('✅ carregarLivros finalizado');
+        }).catch(e => {
+          console.error('❌ Erro em carregarLivros:', e);
+        });
       } else {
         throw new Error(resposta?.erro || 'Falha no servidor');
       }
