@@ -19,3 +19,12 @@
   background: var(--primary-light);
   border-left: 4px solid var(--primary);
 }
+#livro-atual-titulo {
+  font-weight: 700;
+  font-size: 1.2rem;
+}
+
+.card h3 {
+  font-weight: 700;
+  font-size: 1.5rem;
+}
