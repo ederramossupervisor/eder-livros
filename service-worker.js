@@ -1,5 +1,5 @@
-// Eder Livros – Service Worker v15 (cache restrito, ignora APIs)
-const CACHE_NAME = 'eder-livros-v15';
+// Eder Livros – Service Worker v16 (cache restrito, ignora APIs)
+const CACHE_NAME = 'eder-livros-v16';
 
 // Apenas recursos estáticos que compõem o shell do app
 const ASSETS = [
