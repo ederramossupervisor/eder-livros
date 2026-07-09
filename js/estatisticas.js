@@ -12,12 +12,16 @@ const Estatisticas = (() => {
       if (dados && !dados.erro) {
         preencherResumo(dados);
         criarInsights(dados.insights);
-        // Cada criação de gráfico é envolvida em try/catch para isolar falhas
-        try { criarGraficoFinalizadosMes(dados.finalizadosPorMes); } catch(e) { console.warn('Erro gráfico finalizados/mês', e); }
-        try { criarGraficoPaginasDia(dados.paginasPorDia); } catch(e) { console.warn('Erro gráfico páginas/dia', e); }
-        try { criarGraficoGeneros(dados.generos); } catch(e) { console.warn('Erro gráfico gêneros', e); }
-        try { criarGraficoDiaSemana(dados.tempoPorDiaSemana); } catch(e) { console.warn('Erro gráfico dia semana', e); }
-        try { criarHeatmap(dados.heatmap); } catch(e) { console.warn('Erro heatmap', e); }
+
+        // Pequeno atraso para garantir que os canvas estejam visíveis após a ativação da página
+        setTimeout(() => {
+          try { criarGraficoFinalizadosMes(dados.finalizadosPorMes); } catch(e) { console.warn('Erro gráfico finalizados/mês', e); }
+          try { criarGraficoPaginasDia(dados.paginasPorDia); } catch(e) { console.warn('Erro gráfico páginas/dia', e); }
+          try { criarGraficoGeneros(dados.generos); } catch(e) { console.warn('Erro gráfico gêneros', e); }
+          try { criarGraficoDiaSemana(dados.tempoPorDiaSemana); } catch(e) { console.warn('Erro gráfico dia semana', e); }
+          try { criarHeatmap(dados.heatmap); } catch(e) { console.warn('Erro heatmap', e); }
+        }, 100);
+
         preencherTopAutores(dados.topAutores);
         preencherTopEditoras(dados.topEditoras);
       } else {
@@ -31,10 +35,15 @@ const Estatisticas = (() => {
   }
 
   function preencherResumo(d) {
-    document.getElementById('stat-total-livros').textContent = d.totalLivros;
-    document.getElementById('stat-total-paginas').textContent = d.totalPaginas;
-    document.getElementById('stat-total-horas').textContent = d.totalHoras;
-    document.getElementById('stat-velocidade').textContent = d.velocidadeMedia;
+    setText('stat-total-livros', d.totalLivros);
+    setText('stat-total-paginas', d.totalPaginas);
+    setText('stat-total-horas', d.totalHoras);
+    setText('stat-velocidade', d.velocidadeMedia);
+  }
+
+  function setText(id, value) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
   }
 
   function criarInsights(lista) {
@@ -54,8 +63,10 @@ const Estatisticas = (() => {
   }
 
   function criarGraficoFinalizadosMes(dados) {
-    const ctx = document.getElementById('grafico-finalizados-mes')?.getContext('2d');
-    if (!ctx) return;
+    const canvas = document.getElementById('grafico-finalizados-mes');
+    console.log('📊 Gráfico finalizados/mês:', dados.labels, dados.valores);
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
     if (graficos.finalizadosMes) graficos.finalizadosMes.destroy();
     graficos.finalizadosMes = new Chart(ctx, {
       type: 'bar',
@@ -68,13 +79,19 @@ const Estatisticas = (() => {
           borderRadius: 4
         }]
       },
-      options: { responsive: true, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+      }
     });
   }
 
   function criarGraficoPaginasDia(dados) {
-    const ctx = document.getElementById('grafico-paginas-dia')?.getContext('2d');
-    if (!ctx) return;
+    const canvas = document.getElementById('grafico-paginas-dia');
+    console.log('📈 Gráfico páginas/dia:', dados.labels, dados.valores);
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
     if (graficos.paginasDia) graficos.paginasDia.destroy();
     graficos.paginasDia = new Chart(ctx, {
       type: 'line',
@@ -89,13 +106,19 @@ const Estatisticas = (() => {
           backgroundColor: 'rgba(99,102,241,0.1)'
         }]
       },
-      options: { responsive: true, scales: { y: { beginAtZero: true } } }
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: { y: { beginAtZero: true } }
+      }
     });
   }
 
   function criarGraficoGeneros(generos) {
-    const ctx = document.getElementById('grafico-generos')?.getContext('2d');
-    if (!ctx) return;
+    const canvas = document.getElementById('grafico-generos');
+    console.log('🍩 Gráfico gêneros:', generos);
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
     if (graficos.generos) graficos.generos.destroy();
     if (!generos || generos.length === 0) return;
     graficos.generos = new Chart(ctx, {
@@ -107,13 +130,15 @@ const Estatisticas = (() => {
           backgroundColor: ['#6366f1','#f59e0b','#10b981','#ef4444','#3b82f6','#8b5cf6']
         }]
       },
-      options: { responsive: true }
+      options: { responsive: true, maintainAspectRatio: false }
     });
   }
 
   function criarGraficoDiaSemana(dados) {
-    const ctx = document.getElementById('grafico-dia-semana')?.getContext('2d');
-    if (!ctx) return;
+    const canvas = document.getElementById('grafico-dia-semana');
+    console.log('📅 Gráfico dia semana:', dados.labels, dados.valores);
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
     if (graficos.diaSemana) graficos.diaSemana.destroy();
     graficos.diaSemana = new Chart(ctx, {
       type: 'bar',
@@ -126,7 +151,11 @@ const Estatisticas = (() => {
           borderRadius: 4
         }]
       },
-      options: { responsive: true, scales: { y: { beginAtZero: true } } }
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: { y: { beginAtZero: true } }
+      }
     });
   }
 
