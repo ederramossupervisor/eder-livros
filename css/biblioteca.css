@@ -58,3 +58,21 @@
   max-width: 150px;
   border-radius: 8px;
 }
+.livro-card {
+  border: none;
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: var(--shadow);
+}
+.livro-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--card-hover-shadow);
+}
+.livro-card .capa-wrapper {
+  background: linear-gradient(135deg, var(--bg-secondary), var(--primary-light));
+}
+.livro-card .capa-wrapper i {
+  color: var(--primary);
+  opacity: 0.3;
+}
