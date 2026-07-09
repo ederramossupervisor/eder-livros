@@ -15,3 +15,18 @@
 .text-orange {
   color: #f97316;
 }
+/* Cards do dashboard com gradiente sutil */
+#card-livros-mes .fa-book { color: #6366f1 !important; }
+#card-livros-ano .fa-calendar-check { color: #10b981 !important; }
+#card-paginas-hoje .fa-file-alt { color: #f59e0b !important; }
+#card-paginas-semana .fa-layer-group { color: #3b82f6 !important; }
+#card-horas .fa-clock { color: #ef4444 !important; }
+#card-sequencia .fa-fire { color: #f97316 !important; }
+
+.dashboard-card {
+  transition: all var(--transition);
+  cursor: pointer;
+}
+.dashboard-card:hover {
+  transform: translateY(-2px);
+}
