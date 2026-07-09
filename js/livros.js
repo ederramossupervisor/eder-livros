@@ -308,12 +308,23 @@ uploadInput.addEventListener('change', (e) => {
   try {
     // Guardamos se é edição antes de qualquer limpeza
     const isEdicao = !!editandoLivroID;
-
     let resposta;
+
     if (editandoLivroID) {
-      resposta = await API.enviar({ acao: 'updateBook', id: editandoLivroID, book });
+      if (book.imagemBase64) {
+        // Upload com imagem usa POST direto (fire-and-forget)
+        await API.enviarComImagem({ acao: 'updateBook', id: editandoLivroID, book });
+        resposta = { status: 'ok' }; // assumimos sucesso
+      } else {
+        resposta = await API.enviar({ acao: 'updateBook', id: editandoLivroID, book });
+      }
     } else {
-      resposta = await API.enviar({ acao: 'addBook', book });
+      if (book.imagemBase64) {
+        await API.enviarComImagem({ acao: 'addBook', book });
+        resposta = { status: 'ok' };
+      } else {
+        resposta = await API.enviar({ acao: 'addBook', book });
+      }
     }
 
     if (resposta && resposta.status === 'ok') {
@@ -321,7 +332,6 @@ uploadInput.addEventListener('change', (e) => {
       limparFormulario();
       cancelarEdicao();
 
-      // Se estava editando, navega automaticamente para a Biblioteca
       if (isEdicao) {
         const linkBiblioteca = document.querySelector('.nav-link[data-page="biblioteca"]');
         if (linkBiblioteca) linkBiblioteca.click();
