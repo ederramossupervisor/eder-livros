@@ -15,3 +15,7 @@
 .text-orange {
   color: #f97316;
 }
+#livro-atual-card {
+  background: var(--primary-light);
+  border-left: 4px solid var(--primary);
+}
