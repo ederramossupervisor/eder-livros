@@ -340,13 +340,17 @@ function preencherFormularioCompleto(livro) {
     limparFormulario();
   }
 function voltarParaBiblioteca() {
-  // Tenta encontrar o link em qualquer lugar (sidebar, menu inferior)
+  console.log('🔁 Tentando voltar para Biblioteca...');
   const link = document.querySelector(
     '.nav-link[data-page="biblioteca"], .nav-item[data-page="biblioteca"]'
   );
+  console.log('Link encontrado?', !!link);
+
   if (link) {
+    console.log('Clicando no link...');
     link.click();
   } else {
+    console.log('Link não encontrado, fazendo fallback manual.');
     // Fallback: ativa a página manualmente
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     const pageBiblioteca = document.getElementById('page-biblioteca');
@@ -355,6 +359,7 @@ function voltarParaBiblioteca() {
       if (typeof Biblioteca !== 'undefined' && Biblioteca.init) {
         Biblioteca.init();
       }
+      console.log('Biblioteca ativada manualmente.');
     }
   }
 }
