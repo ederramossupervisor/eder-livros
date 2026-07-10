@@ -1,74 +1,123 @@
 /**
- * Módulo Dashboard – cards dinâmicos, gráfico e navegação entre livros atuais
+ * Módulo Dashboard – cards dinâmicos, gráfico, navegação entre livros atuais,
+ * animação de contagem e skeleton loading.
  */
 const Dashboard = (() => {
   let chartInstance = null;
-  // Estado da navegação de livros "Lendo"
   let currentLivroIndex = 0;
   let livrosLendoList = [];
   let livroAtualID = null;
   let containerCard = null;
+  // Elementos que receberão skeleton
+  const skeletonIds = [
+    'card-livros-mes', 'card-livros-ano', 'card-paginas-hoje',
+    'card-paginas-semana', 'card-horas', 'card-sequencia',
+    'livro-atual-titulo', 'livro-atual-progresso'
+  ];
 
   async function init() {
     const dashPage = document.getElementById('page-dashboard');
     if (!dashPage || !dashPage.classList.contains('active')) return;
 
+    mostrarSkeletons();
     console.log('📊 Carregando dashboard...');
     try {
       const dados = await API.enviar({ acao: 'dashboard' });
       if (dados && !dados.erro) {
+        ocultarSkeletons();
         preencherCards(dados);
         criarGrafico(dados.paginasUltimos7Dias);
       } else {
+        ocultarSkeletons();
         Util.toast('Erro ao carregar dashboard', 'danger');
       }
     } catch (e) {
+      ocultarSkeletons();
       console.error('Erro dashboard:', e);
       Util.toast('Falha na conexão', 'danger');
     }
   }
 
-  /* ========== PREENCHER CARDS ========== */
+  function mostrarSkeletons() {
+    skeletonIds.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.classList.add('skeleton-placeholder');
+        // Para títulos, mantém um texto fantasma
+        if (id === 'livro-atual-titulo') el.textContent = 'Carregando...';
+        if (id === 'livro-atual-progresso') el.textContent = '';
+        // Para números, zera
+        if (id.startsWith('card-')) el.textContent = '...';
+      }
+    });
+    // Adiciona skeleton também na capa
+    const capa = document.getElementById('livro-atual-capa');
+    if (capa) capa.innerHTML = '<div class="skeleton-placeholder" style="width:50px;height:70px;border-radius:4px;"></div>';
+  }
+
+  function ocultarSkeletons() {
+    skeletonIds.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('skeleton-placeholder');
+    });
+    const capa = document.getElementById('livro-atual-capa');
+    if (capa) capa.innerHTML = '';
+  }
+
   function preencherCards(d) {
-    // Atualiza lista de livros lendo e índice
-    livrosLendoList = d.livrosLendo || [];
     containerCard = document.getElementById('livro-atual-card');
     if (!containerCard) return;
 
-    // Determina índice do livro atual
+    livrosLendoList = d.livrosLendo || [];
     if (d.livroAtual && livrosLendoList.length > 0) {
-      const idx = livrosLendoList.findIndex(l => l.ID === d.livroAtual.ID);
-      currentLivroIndex = idx >= 0 ? idx : 0;
+      currentLivroIndex = livrosLendoList.findIndex(l => l.ID === d.livroAtual.ID);
+      if (currentLivroIndex < 0) currentLivroIndex = 0;
     } else {
       currentLivroIndex = 0;
     }
     livroAtualID = d.livroAtual ? d.livroAtual.ID : null;
 
-    // Renderiza o livro atual
     renderizarLivroAtual();
-
-    // Cria controles de navegação se houver mais de um livro lendo
     criarControlesNavegacao();
-
-    // Adiciona suporte a swipe
     adicionarSwipe();
 
-    // Atualiza os demais cards (números, meta)
-    document.getElementById('card-livros-mes').textContent = d.livrosFinalizadosMes;
-    document.getElementById('card-livros-ano').textContent = d.livrosFinalizadosAno;
-    document.getElementById('card-paginas-hoje').textContent = d.paginasHoje;
-    document.getElementById('card-paginas-semana').textContent = d.paginasSemana;
-    document.getElementById('card-horas').textContent = d.horasTotal;
-    document.getElementById('card-sequencia').textContent = d.sequenciaAtual + ' dias';
+    // Animação de contagem para os números
+    animarContador('card-livros-mes', d.livrosFinalizadosMes);
+    animarContador('card-livros-ano', d.livrosFinalizadosAno);
+    animarContador('card-paginas-hoje', d.paginasHoje);
+    animarContador('card-paginas-semana', d.paginasSemana);
+    animarContador('card-horas', d.horasTotal);
+    animarContador('card-sequencia', d.sequenciaAtual);
 
-    document.getElementById('meta-texto').textContent = `${d.livrosFinalizadosAno} de ${d.metaLivros} livros (${d.percentualMeta}%)`;
+    // Meta (sem animação complexa, apenas texto)
+    document.getElementById('meta-texto').textContent =
+      `${d.livrosFinalizadosAno} de ${d.metaLivros} livros (${d.percentualMeta}%)`;
     const barra = document.getElementById('barra-meta');
     barra.style.width = d.percentualMeta + '%';
     barra.textContent = d.percentualMeta + '%';
     barra.setAttribute('aria-valuenow', d.percentualMeta);
   }
 
-  /* ========== RENDERIZA O LIVRO ATUAL NO CARD ========== */
+  function animarContador(id, valorFinal) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const valorInicial = 0;
+    const duracao = 800; // ms
+    const inicio = performance.now();
+    const passo = (agora) => {
+      const decorrido = agora - inicio;
+      const progresso = Math.min(decorrido / duracao, 1);
+      const valorAtual = Math.round(valorInicial + (valorFinal - valorInicial) * progresso);
+      el.textContent = id === 'card-horas' ? valorAtual : valorAtual + (id === 'card-sequencia' ? ' dias' : '');
+      if (progresso < 1) {
+        requestAnimationFrame(passo);
+      } else {
+        el.textContent = id === 'card-horas' ? valorFinal : valorFinal + (id === 'card-sequencia' ? ' dias' : '');
+      }
+    };
+    requestAnimationFrame(passo);
+  }
+
   function renderizarLivroAtual() {
     if (!containerCard) return;
     const livro = livrosLendoList.length > 0 ? livrosLendoList[currentLivroIndex] : null;
@@ -81,13 +130,12 @@ const Dashboard = (() => {
       if (tituloEl) tituloEl.textContent = livro.titulo;
       if (progressoEl) progressoEl.textContent = `${livro.pagLidas || 0} de ${livro.totalPag} páginas (${progresso}%)`;
       if (capaEl) {
-        capaEl.innerHTML = livro.urlCapa ? `<img src="${livro.urlCapa}" alt="Capa" class="img-fluid rounded" style="max-height:70px;">` : '';
+        capaEl.innerHTML = livro.urlCapa
+          ? `<img src="${livro.urlCapa}" alt="Capa" class="img-fluid rounded" style="max-height:70px;">`
+          : '';
       }
-      // Atualiza indicador de posição se existir
       const indicador = document.getElementById('livro-atual-indicador');
-      if (indicador) {
-        indicador.textContent = `${currentLivroIndex + 1}/${livrosLendoList.length}`;
-      }
+      if (indicador) indicador.textContent = `${currentLivroIndex + 1}/${livrosLendoList.length}`;
     } else {
       if (tituloEl) tituloEl.textContent = 'Nenhum livro em andamento';
       if (progressoEl) progressoEl.textContent = '';
@@ -95,9 +143,7 @@ const Dashboard = (() => {
     }
   }
 
-  /* ========== CONTROLES DE NAVEGAÇÃO (SETAS E INDICADOR) ========== */
   function criarControlesNavegacao() {
-    // Remove controles antigos
     const oldLeft = document.getElementById('livro-atual-seta-left');
     if (oldLeft) oldLeft.remove();
     const oldRight = document.getElementById('livro-atual-seta-right');
@@ -107,63 +153,46 @@ const Dashboard = (() => {
 
     if (livrosLendoList.length <= 1) return;
 
-    // Botão esquerdo
     const btnLeft = document.createElement('button');
     btnLeft.id = 'livro-atual-seta-left';
     btnLeft.className = 'btn btn-link text-secondary position-absolute start-0 top-50 translate-middle-y px-2';
     btnLeft.innerHTML = '<i class="fas fa-chevron-left"></i>';
     btnLeft.style.opacity = '0.6';
     btnLeft.style.fontSize = '1.2rem';
-    btnLeft.addEventListener('click', (e) => {
-      e.stopPropagation();
-      mudarLivro(-1);
-    });
+    btnLeft.addEventListener('click', (e) => { e.stopPropagation(); mudarLivro(-1); });
 
-    // Botão direito
     const btnRight = document.createElement('button');
     btnRight.id = 'livro-atual-seta-right';
     btnRight.className = 'btn btn-link text-secondary position-absolute end-0 top-50 translate-middle-y px-2';
     btnRight.innerHTML = '<i class="fas fa-chevron-right"></i>';
     btnRight.style.opacity = '0.6';
     btnRight.style.fontSize = '1.2rem';
-    btnRight.addEventListener('click', (e) => {
-      e.stopPropagation();
-      mudarLivro(1);
-    });
+    btnRight.addEventListener('click', (e) => { e.stopPropagation(); mudarLivro(1); });
 
-    // Indicador de posição (ex.: 2/3)
     const indicador = document.createElement('small');
     indicador.id = 'livro-atual-indicador';
     indicador.className = 'text-muted ms-2';
     indicador.textContent = `${currentLivroIndex + 1}/${livrosLendoList.length}`;
 
-    // Adiciona os elementos ao container (que deve ter position: relative)
     containerCard.style.position = 'relative';
     containerCard.appendChild(btnLeft);
     containerCard.appendChild(btnRight);
 
-    // Insere o indicador após o título
     const tituloEl = document.getElementById('livro-atual-titulo');
-    if (tituloEl) {
-      tituloEl.parentNode.appendChild(indicador);
-    }
+    if (tituloEl) tituloEl.parentNode.appendChild(indicador);
   }
 
-  /* ========== MUDAR DE LIVRO ========== */
   async function mudarLivro(delta) {
     if (livrosLendoList.length === 0) return;
     currentLivroIndex = (currentLivroIndex + delta + livrosLendoList.length) % livrosLendoList.length;
     const novoLivro = livrosLendoList[currentLivroIndex];
     if (novoLivro && novoLivro.ID !== livroAtualID) {
-      // Atualiza localmente primeiro (resposta rápida)
       renderizarLivroAtual();
       livroAtualID = novoLivro.ID;
-      // Salva no backend
       await API.enviar({ acao: 'setLivroAtual', livroID: novoLivro.ID });
     }
   }
 
-  /* ========== SUPORTE A SWIPE NO CARD ========== */
   function adicionarSwipe() {
     if (!containerCard) return;
     let touchStartX = 0;
@@ -173,14 +202,11 @@ const Dashboard = (() => {
     containerCard.addEventListener('touchend', (e) => {
       if (touchStartX === 0) return;
       const diff = e.changedTouches[0].screenX - touchStartX;
-      if (Math.abs(diff) > 50) { // threshold 50px
-        mudarLivro(diff > 0 ? -1 : 1);
-      }
+      if (Math.abs(diff) > 50) mudarLivro(diff > 0 ? -1 : 1);
       touchStartX = 0;
     });
   }
 
-  /* ========== GRÁFICO (mantido igual) ========== */
   function criarGrafico(dados) {
     if (chartInstance) chartInstance.destroy();
     const ctx = document.getElementById('grafico-semanal')?.getContext('2d');
@@ -198,9 +224,7 @@ const Dashboard = (() => {
       },
       options: {
         responsive: true,
-        scales: {
-          y: { beginAtZero: true, ticks: { stepSize: 10 } }
-        }
+        scales: { y: { beginAtZero: true, ticks: { stepSize: 10 } } }
       }
     });
   }
@@ -208,7 +232,6 @@ const Dashboard = (() => {
   return { init };
 })();
 
-// Inicialização condicional (chamada por app.js quando a página é ativada)
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('page-dashboard')?.classList.contains('active')) {
