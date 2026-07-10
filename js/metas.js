@@ -79,23 +79,23 @@ const Metas = (() => {
 
       // Mapeamento de ícones (emojis) para cada conquista
       const icones = {
-  'Primeiro livro': '📖',
-  'Leitor iniciante': '📚',
-  'Leitor dedicado': '🏅',
-  'Devorador de livros': '🔥',
-  'Página 1000': '📄',
-  'Página 5000': '📑',
-  'Maratona de 7 dias': '🗓️',
-  'Maratona de 30 dias': '📅',
-  'Livro gigante': '🐘',
-  'Favorito': '⭐',
-  'Leitor global': '🌍',
-  'Leitor noturno': '🌙',
-  'Colecionador de clássicos': '🏛️',
-  'Diversidade literária': '🌈',
-  'Anotador': '✍️',
-  'Viajante literário': '🗺️'
-};
+      'Primeiro livro': 'fa-book',
+      'Leitor iniciante': 'fa-book-open',
+      'Leitor dedicado': 'fa-award',
+      'Devorador de livros': 'fa-fire',
+      'Página 1000': 'fa-file-alt',
+      'Página 5000': 'fa-copy',
+      'Maratona de 7 dias': 'fa-calendar-check',
+      'Maratona de 30 dias': 'fa-calendar-alt',
+      'Livro gigante': 'fa-weight-hanging', // ou 'fa-elephant' (não existe, pode usar 'fa-book' grande?)
+      'Favorito': 'fa-star',
+      'Leitor global': 'fa-globe-americas',
+      'Leitor noturno': 'fa-moon',
+      'Colecionador de clássicos': 'fa-landmark',
+      'Diversidade literária': 'fa-rainbow',
+      'Anotador': 'fa-pen',
+      'Viajante literário': 'fa-map-marked-alt'
+    };
       const nomesObtidos = (Array.isArray(resp) ? resp : []).map(c => c.Nome);
 
       Object.keys(icones).forEach(nome => {
