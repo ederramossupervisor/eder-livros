@@ -131,7 +131,11 @@ const DesejosEmprestimos = (() => {
           });
         });
       } else {
-        container.innerHTML = '<p class="text-muted">Nenhum desejo ainda.</p>';
+        container.innerHTML = `
+        <div class="empty-state">
+          <i class="fas fa-heart fa-3x text-muted mb-3"></i>
+          <p class="text-muted">Nenhum desejo ainda.</p>
+        </div>`;
       }
     } catch (e) {
       console.error(e);
