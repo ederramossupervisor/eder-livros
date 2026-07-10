@@ -18,8 +18,11 @@ const Estatisticas = (() => {
         preencherResumo(dados);
         criarInsights(dados.insights);
 
-        // Aguarda um pouco para garantir que a página esteja visível
+        // Aguarda um tempo maior para a página ficar totalmente visível
         setTimeout(() => {
+          // Prepara os canvas com dimensões explícitas
+          prepararCanvas();
+
           try { criarGraficoFinalizadosMes(dados.finalizadosPorMes); } catch(e) { console.warn(e); }
           try { criarGraficoPaginasDia(dados.paginasPorDia); } catch(e) { console.warn(e); }
           try { criarGraficoGeneros(dados.generos); } catch(e) { console.warn(e); }
@@ -27,13 +30,19 @@ const Estatisticas = (() => {
           try { criarGraficoVelocidade(dados.velocidadePorDia); } catch(e) { console.warn(e); }
           try { criarHeatmap(dados.heatmap); } catch(e) { console.warn(e); }
 
-          // Redimensiona após tudo pronto
+          // Redimensiona todos os gráficos após um breve intervalo
           setTimeout(() => {
             Object.values(graficos).forEach(chart => {
-              if (chart && chart.canvas) chart.resize();
+              if (chart && chart.canvas) {
+                chart.resize();
+              }
             });
-          }, 100);
-        }, 100);
+            // Log final para diagnóstico
+            document.querySelectorAll('#page-estatisticas canvas').forEach(c => {
+              console.log(`📏 Final ${c.id}: ${c.clientWidth}x${c.clientHeight}`);
+            });
+          }, 200);
+        }, 300); // aumentado para 300ms
 
         preencherTopAutores(dados.topAutores);
         preencherTopEditoras(dados.topEditoras);
@@ -47,10 +56,34 @@ const Estatisticas = (() => {
     console.log('✅ Módulo Estatísticas pronto.');
   }
 
+  /* Define explicitamente largura e altura nos canvas */
+  function prepararCanvas() {
+    const ids = [
+      'grafico-finalizados-mes',
+      'grafico-paginas-dia',
+      'grafico-generos',
+      'grafico-dia-semana',
+      'grafico-velocidade'
+    ];
+    ids.forEach(id => {
+      const canvas = document.getElementById(id);
+      if (canvas) {
+        // Define estilos mínimos
+        canvas.style.width = '100%';
+        canvas.style.height = '250px';
+        canvas.style.minHeight = '250px';
+        // Define atributos para o Chart.js usar como base
+        canvas.setAttribute('width', canvas.clientWidth || 400);
+        canvas.setAttribute('height', 250);
+      }
+    });
+  }
+
   /* ========== GRÁFICOS ========== */
 
   function criarGraficoFinalizadosMes(dados) {
     const canvas = document.getElementById('grafico-finalizados-mes');
+    console.log('📊 Gráfico finalizados/mês:', dados.labels, dados.valores, 'Canvas:', canvas?.clientWidth, canvas?.clientHeight);
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (graficos.finalizadosMes) graficos.finalizadosMes.destroy();
@@ -75,6 +108,7 @@ const Estatisticas = (() => {
 
   function criarGraficoPaginasDia(dados) {
     const canvas = document.getElementById('grafico-paginas-dia');
+    console.log('📈 Gráfico páginas/dia:', dados.labels, dados.valores, 'Canvas:', canvas?.clientWidth, canvas?.clientHeight);
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (graficos.paginasDia) graficos.paginasDia.destroy();
@@ -101,6 +135,7 @@ const Estatisticas = (() => {
 
   function criarGraficoGeneros(generos) {
     const canvas = document.getElementById('grafico-generos');
+    console.log('🍩 Gráfico gêneros:', generos, 'Canvas:', canvas?.clientWidth, canvas?.clientHeight);
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (graficos.generos) graficos.generos.destroy();
@@ -120,6 +155,7 @@ const Estatisticas = (() => {
 
   function criarGraficoDiaSemana(dados) {
     const canvas = document.getElementById('grafico-dia-semana');
+    console.log('📅 Gráfico dia semana:', dados.labels, dados.valores, 'Canvas:', canvas?.clientWidth, canvas?.clientHeight);
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (graficos.diaSemana) graficos.diaSemana.destroy();
@@ -144,6 +180,7 @@ const Estatisticas = (() => {
 
   function criarGraficoVelocidade(dados) {
     const canvas = document.getElementById('grafico-velocidade');
+    console.log('⚡ Gráfico velocidade:', dados, 'Canvas:', canvas?.clientWidth, canvas?.clientHeight);
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (graficos.velocidade) graficos.velocidade.destroy();
@@ -201,7 +238,6 @@ const Estatisticas = (() => {
     setText('stat-total-paginas', d.totalPaginas);
     setText('stat-total-horas', d.totalHoras);
     setText('stat-velocidade', d.velocidadeMedia);
-    // Média de páginas por sessão
     const mediaEl = document.getElementById('stat-media-sessao');
     if (mediaEl) mediaEl.textContent = d.mediaPaginasSessao;
   }
