@@ -104,7 +104,7 @@ const Metas = (() => {
         col.className = 'col-6 col-md-4 col-lg-3 col-xl-2';
         col.innerHTML = `
           <div class="conquista-card ${obtida ? 'conquistada' : ''}">
-            <div class="conquista-badge mx-auto mb-2">${icones[nome]}</div>
+            <div class="conquista-badge mx-auto mb-2"><i class="fas ${icones[nome]} fa-2x"></i></div>
             <strong>${nome}</strong>
             ${obtida ? '<span class="badge bg-success d-block mt-1">Conquistada</span>' : '<span class="badge bg-light text-muted d-block mt-1">Bloqueada</span>'}
           </div>`;
