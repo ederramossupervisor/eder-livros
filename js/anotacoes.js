@@ -106,7 +106,11 @@ const Anotacoes = (() => {
           container.appendChild(div);
         });
       } else {
-        container.innerHTML = '<p class="text-muted">Nenhuma anotação encontrada.</p>';
+        container.innerHTML = `
+        <div class="empty-state">
+          <i class="fas fa-sticky-note fa-3x text-muted mb-3"></i>
+          <p class="text-muted">Nenhuma anotação encontrada.</p>
+        </div>`;
       }
     } catch (e) {
       console.error(e);
