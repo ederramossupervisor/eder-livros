@@ -339,7 +339,11 @@ const Leitura = (() => {
           btn.addEventListener('click', () => excluirSessao(btn.dataset.id));
         });
       } else {
-        historicoContainer.innerHTML = '<p class="text-muted">Nenhuma sessão registrada ainda.</p>';
+        historicoContainer.innerHTML = `
+        <div class="empty-state">
+          <i class="fas fa-clock fa-3x text-muted mb-3"></i>
+          <p class="text-muted">Nenhuma sessão registrada ainda.</p>
+        </div>`;
       }
     } catch (e) {
       console.error('Erro ao carregar histórico:', e);
