@@ -136,7 +136,11 @@ const Anotacoes = (() => {
           container.appendChild(div);
         });
       } else {
-        container.innerHTML = '<p class="text-muted">Nenhuma citação salva.</p>';
+        container.innerHTML = `
+        <div class="empty-state">
+          <i class="fas fa-quote-right fa-3x text-muted mb-3"></i>
+          <p class="text-muted">Nenhuma citação salva.</p>
+        </div>`;
       }
     } catch (e) {
       console.error(e);
