@@ -30,6 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Função pública para ativar uma página (usada por atalhos e navegação)
 function activatePageGlobal(pageName) {
+  // Atualiza links ativos
   const navItems = document.querySelectorAll('.nav-link, .bottom-nav .nav-item');
   navItems.forEach(link => {
     link.classList.remove('active');
@@ -38,6 +39,7 @@ function activatePageGlobal(pageName) {
     }
   });
 
+  // Mostra/oculta páginas
   const pages = document.querySelectorAll('.page');
   pages.forEach(page => {
     page.classList.remove('active');
@@ -88,6 +90,25 @@ function activatePageGlobal(pageName) {
       if (offcanvas) offcanvas.hide();
     }
   } catch (e) { /* ignora */ }
+
+  // ÍCONES NOS TÍTULOS DAS PÁGINAS (NOVO)
+  const iconesPaginas = {
+    dashboard: '📊',
+    biblioteca: '📚',
+    adicionar: '➕',
+    leitura: '⏱️',
+    estatisticas: '📈',
+    metas: '🎯',
+    anotacoes: '📝',
+    desejos: '❤️',
+    exportar: '📤',
+    configuracoes: '⚙️'
+  };
+
+  const h1 = document.querySelector(`#page-${pageName} h1`);
+  if (h1 && iconesPaginas[pageName] && !h1.textContent.startsWith(iconesPaginas[pageName])) {
+    h1.innerHTML = `${iconesPaginas[pageName]} ${h1.textContent}`;
+  }
 }
 
 // Gerencia a navegação entre páginas
