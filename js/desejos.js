@@ -173,7 +173,11 @@ const DesejosEmprestimos = (() => {
           });
         });
       } else {
-        container.innerHTML = '<p class="text-muted">Nenhum empréstimo registrado.</p>';
+        container.innerHTML = `
+        <div class="empty-state">
+          <i class="fas fa-hand-holding-heart fa-3x text-muted mb-3"></i>
+          <p class="text-muted">Nenhum empréstimo registrado.</p>
+        </div>`;
       }
     } catch (e) {
       console.error(e);
