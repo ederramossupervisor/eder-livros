@@ -122,3 +122,18 @@ body.light-mode {
   from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
 }
+/* CSS do ripple */
+.btn {
+  position: relative;
+  overflow: hidden;
+}
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.4);
+  transform: scale(0);
+  animation: ripple-anim 0.6s ease-out;
+}
+@keyframes ripple-anim {
+  to { transform: scale(4); opacity: 0; }
+}
