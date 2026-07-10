@@ -87,7 +87,13 @@ const Biblioteca = (() => {
   function renderizarGrade(livrosFiltrados) {
     grid.innerHTML = '';
     if (livrosFiltrados.length === 0) {
-      grid.innerHTML = '<div class="col-12 text-center text-muted py-5">Nenhum livro encontrado</div>';
+      grid.innerHTML = `
+      <div class="col-12 text-center py-5">
+        <div class="empty-state">
+          <i class="fas fa-book-open fa-3x text-muted mb-3"></i>
+          <p class="text-muted">Nenhum livro encontrado</p>
+        </div>
+      </div>`;
       return;
     }
 
