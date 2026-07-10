@@ -91,23 +91,25 @@ function activatePageGlobal(pageName) {
     }
   } catch (e) { /* ignora */ }
 
-  // ÍCONES NOS TÍTULOS DAS PÁGINAS (NOVO)
-  const iconesPaginas = {
-    dashboard: '📊',
-    biblioteca: '📚',
-    adicionar: '➕',
-    leitura: '⏱️',
-    estatisticas: '📈',
-    metas: '🎯',
-    anotacoes: '📝',
-    desejos: '❤️',
-    exportar: '📤',
-    configuracoes: '⚙️'
-  };
+  // ÍCONES NOS TÍTULOS DAS PÁGINAS (USANDO FONT AWESOME)
+const iconesPaginas = {
+  dashboard: 'fa-chart-pie',
+  biblioteca: 'fa-books',
+  adicionar: 'fa-plus-circle',
+  leitura: 'fa-clock',
+  estatisticas: 'fa-chart-bar',
+  metas: 'fa-bullseye',
+  anotacoes: 'fa-sticky-note',
+  desejos: 'fa-heart',
+  exportar: 'fa-download',
+  configuracoes: 'fa-cog'
+};
 
-  const h1 = document.querySelector(`#page-${pageName} h1`);
-  if (h1 && iconesPaginas[pageName] && !h1.textContent.startsWith(iconesPaginas[pageName])) {
-    h1.innerHTML = `${iconesPaginas[pageName]} ${h1.textContent}`;
+const h1 = document.querySelector(`#page-${pageName} h1`);
+if (h1 && iconesPaginas[pageName]) {
+  // Verifica se já não foi adicionado para evitar duplicação
+  if (!h1.querySelector('.fa')) {
+    h1.innerHTML = `<i class="fas ${iconesPaginas[pageName]} me-2"></i>${h1.textContent}`;
   }
 }
 
