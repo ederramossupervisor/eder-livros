@@ -16,44 +16,48 @@ const Livros = (() => {
   let editandoLivroID = null;
 
   function init() {
-    if (!form) {
-      console.warn('⚠️ Formulário de livro não encontrado no DOM.');
-      return;
-    }
-
-    searchBtn.addEventListener('click', buscarLivro);
-    searchInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') buscarLivro();
-    });
-
-    // Eventos de capa com conversão de link do Drive
-    loadCoverBtn.addEventListener('click', () => {
-      const urlConvertida = Util.converterLinkDrive(urlCapa.value);
-      mostrarCapa(urlConvertida);
-    });
-
-    urlCapa.addEventListener('change', () => {
-      const urlConvertida = Util.converterLinkDrive(urlCapa.value);
-      mostrarCapa(urlConvertida);
-    });
-
-    form.addEventListener('submit', salvarLivro);
-    document.getElementById('clear-form-btn')?.addEventListener('click', limparFormulario);
-
-    searchList.addEventListener('click', (e) => {
-      const item = e.target.closest('.list-group-item');
-      if (!item) return;
-      const index = parseInt(item.dataset.index, 10);
-      if (!isNaN(index) && searchResults[index]) {
-        preencherFormulario(searchResults[index]);
-        resultsDiv.classList.add('d-none');
-      }
-    });
-
-    criarBotaoCancelarEdicao();
-    console.log('✅ Módulo Livros pronto.');
+  if (!form) {
+    console.warn('⚠️ Formulário de livro não encontrado no DOM.');
+    return;
   }
 
+  searchBtn.addEventListener('click', buscarLivro);
+  searchInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') buscarLivro();
+  });
+
+  loadCoverBtn.addEventListener('click', () => {
+    const urlConvertida = Util.converterLinkDrive(urlCapa.value);
+    mostrarCapa(urlConvertida);
+  });
+
+  urlCapa.addEventListener('change', () => {
+    const urlConvertida = Util.converterLinkDrive(urlCapa.value);
+    mostrarCapa(urlConvertida);
+  });
+
+  form.addEventListener('submit', salvarLivro);
+  document.getElementById('clear-form-btn')?.addEventListener('click', limparFormulario);
+
+  searchList.addEventListener('click', (e) => {
+    const item = e.target.closest('.list-group-item');
+    if (!item) return;
+    const index = parseInt(item.dataset.index, 10);
+    if (!isNaN(index) && searchResults[index]) {
+      preencherFormulario(searchResults[index]);
+      resultsDiv.classList.add('d-none');
+    }
+  });
+
+  // NOVO: Botão de escaneamento de ISBN
+  const scanBtn = document.getElementById('scan-isbn-btn');
+  if (scanBtn) {
+    scanBtn.addEventListener('click', escanearISBN);
+  }
+
+  criarBotaoCancelarEdicao();
+  console.log('✅ Módulo Livros pronto.');
+}
   function criarBotaoCancelarEdicao() {
     if (!document.getElementById('cancel-edit-btn')) {
       const btnCancel = document.createElement('button');
@@ -380,3 +384,69 @@ const Livros = (() => {
 
   return { init, editarLivro, cancelarEdicao };
 })();
+async function escanearISBN() {
+  if (!('BarcodeDetector' in window)) {
+    Util.toast('Escaneamento não suportado neste navegador. Use Chrome ou Edge.', 'warning');
+    return;
+  }
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment' }
+    });
+
+    // Cria um modal simples para exibir a câmera
+    const modal = document.createElement('div');
+    modal.className = 'scanner-modal position-fixed top-0 start-0 w-100 h-100 d-flex flex-column align-items-center justify-content-center bg-dark bg-opacity-75';
+    modal.style.zIndex = '10000';
+    modal.innerHTML = `
+      <video id="scanner-video" autoplay playsinline style="max-width: 90%; max-height: 60vh; border-radius: 12px;"></video>
+      <p class="text-white mt-2">Aponte para o código de barras do livro</p>
+      <button id="scanner-close" class="btn btn-light mt-2">Cancelar</button>
+    `;
+    document.body.appendChild(modal);
+
+    const video = document.getElementById('scanner-video');
+    video.srcObject = stream;
+
+    document.getElementById('scanner-close').addEventListener('click', () => {
+      closeScanner(stream, modal);
+    });
+
+    const barcodeDetector = new BarcodeDetector({
+      formats: ['ean_13', 'ean_8', 'isbn_13', 'isbn_10']
+    });
+
+    const detectLoop = async () => {
+      if (!video.paused && !video.ended) {
+        try {
+          const barcodes = await barcodeDetector.detect(video);
+          if (barcodes.length > 0) {
+            const isbn = barcodes[0].rawValue;
+            closeScanner(stream, modal);
+            // Preenche o campo de busca e aciona a busca
+            searchInput.value = isbn;
+            buscarLivro();
+          }
+        } catch (e) {
+          // ignora erros de detecção temporários
+        }
+        requestAnimationFrame(detectLoop);
+      }
+    };
+    detectLoop();
+
+  } catch (err) {
+    console.error('Erro ao acessar a câmera:', err);
+    Util.toast('Não foi possível acessar a câmera. Verifique as permissões.', 'danger');
+  }
+}
+
+function closeScanner(stream, modal) {
+  if (stream) {
+    stream.getTracks().forEach(track => track.stop());
+  }
+  if (modal) {
+    modal.remove();
+  }
+}
