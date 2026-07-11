@@ -37,3 +37,18 @@ document.addEventListener('click', function(e) {
   btn.appendChild(ripple);
   setTimeout(() => ripple.remove(), 600);
 });
+/**
+ * Converte links de compartilhamento do Google Drive em links diretos de imagem.
+ * Aceita formatos como:
+ *   https://drive.google.com/file/d/ID/view?usp=sharing
+ *   https://drive.google.com/file/d/ID/view?usp=drive_link
+ * Retorna a URL original caso não seja um link do Drive.
+ */
+Util.converterLinkDrive = function(url) {
+  const regex = /\/file\/d\/([^/]+)\//;
+  const match = url.match(regex);
+  if (match && match[1]) {
+    return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1000`;
+  }
+  return url; // não é um link do Drive, retorna o original
+};
