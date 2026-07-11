@@ -16,48 +16,50 @@ const Livros = (() => {
   let editandoLivroID = null;
 
   function init() {
-  if (!form) {
-    console.warn('⚠️ Formulário de livro não encontrado no DOM.');
-    return;
-  }
-
-  searchBtn.addEventListener('click', buscarLivro);
-  searchInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') buscarLivro();
-  });
-
-  loadCoverBtn.addEventListener('click', () => {
-    const urlConvertida = Util.converterLinkDrive(urlCapa.value);
-    mostrarCapa(urlConvertida);
-  });
-
-  urlCapa.addEventListener('change', () => {
-    const urlConvertida = Util.converterLinkDrive(urlCapa.value);
-    mostrarCapa(urlConvertida);
-  });
-
-  form.addEventListener('submit', salvarLivro);
-  document.getElementById('clear-form-btn')?.addEventListener('click', limparFormulario);
-
-  searchList.addEventListener('click', (e) => {
-    const item = e.target.closest('.list-group-item');
-    if (!item) return;
-    const index = parseInt(item.dataset.index, 10);
-    if (!isNaN(index) && searchResults[index]) {
-      preencherFormulario(searchResults[index]);
-      resultsDiv.classList.add('d-none');
+    if (!form) {
+      console.warn('⚠️ Formulário de livro não encontrado no DOM.');
+      return;
     }
-  });
 
-  // NOVO: Botão de escaneamento de ISBN
-  const scanBtn = document.getElementById('scan-isbn-btn');
-  if (scanBtn) {
-    scanBtn.addEventListener('click', escanearISBN);
+    searchBtn.addEventListener('click', buscarLivro);
+    searchInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') buscarLivro();
+    });
+
+    // Eventos de capa com conversão de link do Drive
+    loadCoverBtn.addEventListener('click', () => {
+      const urlConvertida = Util.converterLinkDrive(urlCapa.value);
+      mostrarCapa(urlConvertida);
+    });
+
+    urlCapa.addEventListener('change', () => {
+      const urlConvertida = Util.converterLinkDrive(urlCapa.value);
+      mostrarCapa(urlConvertida);
+    });
+
+    form.addEventListener('submit', salvarLivro);
+    document.getElementById('clear-form-btn')?.addEventListener('click', limparFormulario);
+
+    searchList.addEventListener('click', (e) => {
+      const item = e.target.closest('.list-group-item');
+      if (!item) return;
+      const index = parseInt(item.dataset.index, 10);
+      if (!isNaN(index) && searchResults[index]) {
+        preencherFormulario(searchResults[index]);
+        resultsDiv.classList.add('d-none');
+      }
+    });
+
+    // Botão de escaneamento de ISBN
+    const scanBtn = document.getElementById('scan-isbn-btn');
+    if (scanBtn) {
+      scanBtn.addEventListener('click', escanearISBN);
+    }
+
+    criarBotaoCancelarEdicao();
+    console.log('✅ Módulo Livros pronto.');
   }
 
-  criarBotaoCancelarEdicao();
-  console.log('✅ Módulo Livros pronto.');
-}
   function criarBotaoCancelarEdicao() {
     if (!document.getElementById('cancel-edit-btn')) {
       const btnCancel = document.createElement('button');
@@ -79,7 +81,93 @@ const Livros = (() => {
     init();
   }
 
-  /* ========== FUNÇÕES DE BUSCA ========== */
+  /* ========== FUNÇÕES DE ESCANEAMENTO ISBN ========== */
+
+  async function escanearISBN() {
+    // Verifica se a API é suportada
+    if (!('BarcodeDetector' in window)) {
+      Util.toast('Escaneamento não suportado neste navegador. Use Chrome ou Edge.', 'warning');
+      return;
+    }
+
+    let stream = null;
+    let modal = null;
+
+    try {
+      // Solicita acesso à câmera traseira
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment' }
+      });
+
+      // Cria o modal com o vídeo
+      modal = document.createElement('div');
+      modal.className = 'scanner-modal position-fixed top-0 start-0 w-100 h-100 d-flex flex-column align-items-center justify-content-center bg-dark bg-opacity-75';
+      modal.style.zIndex = '10000';
+      modal.innerHTML = `
+        <video id="scanner-video" autoplay playsinline style="max-width: 90%; max-height: 60vh; border-radius: 12px;"></video>
+        <p class="text-white mt-2">Aponte para o código de barras do livro</p>
+        <button id="scanner-close" class="btn btn-light mt-2">Cancelar</button>
+      `;
+      document.body.appendChild(modal);
+
+      const video = document.getElementById('scanner-video');
+      video.srcObject = stream;
+
+      // Fechar o scanner ao clicar em Cancelar
+      document.getElementById('scanner-close').addEventListener('click', () => {
+        closeScanner(stream, modal);
+      });
+
+      // Configura o detector para ISBN (EAN-13, EAN-8, ISBN-10)
+      const barcodeDetector = new BarcodeDetector({
+        formats: ['ean_13', 'ean_8']
+      });
+
+      // Loop de detecção
+      const detectLoop = async () => {
+        if (video.paused || video.ended) return;
+        try {
+          const barcodes = await barcodeDetector.detect(video);
+          if (barcodes.length > 0) {
+            const isbn = barcodes[0].rawValue;
+            closeScanner(stream, modal);
+            searchInput.value = isbn;
+            buscarLivro(); // dispara a busca automaticamente
+          } else {
+            requestAnimationFrame(detectLoop); // continua procurando
+          }
+        } catch (err) {
+          // Pequeno erro de detecção, tenta novamente
+          requestAnimationFrame(detectLoop);
+        }
+      };
+
+      detectLoop();
+
+    } catch (err) {
+      // Se houve erro ao acessar a câmera (ex.: permissão negada ou hardware indisponível)
+      console.error('Erro ao acessar a câmera:', err);
+      Util.toast('Não foi possível acessar a câmera. Verifique as permissões.', 'danger');
+      // Garante que qualquer recurso seja limpo
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
+      if (modal) {
+        modal.remove();
+      }
+    }
+  }
+
+  function closeScanner(stream, modal) {
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+    }
+    if (modal) {
+      modal.remove();
+    }
+  }
+
+  /* ========== FUNÇÕES DE BUSCA (inalteradas) ========== */
 
   async function buscarLivro() {
     const query = searchInput.value.trim();
@@ -290,7 +378,6 @@ const Livros = (() => {
       preco: document.getElementById('preco').value,
       tags: document.getElementById('tags').value,
       observacoes: document.getElementById('observacoes').value,
-      // Aplica a conversão de link do Drive antes de salvar
       urlCapa: Util.converterLinkDrive(urlCapa.value),
       dataInicio: document.getElementById('data-inicio').value,
       dataTermino: document.getElementById('data-termino').value
@@ -384,69 +471,3 @@ const Livros = (() => {
 
   return { init, editarLivro, cancelarEdicao };
 })();
-async function escanearISBN() {
-  if (!('BarcodeDetector' in window)) {
-    Util.toast('Escaneamento não suportado neste navegador. Use Chrome ou Edge.', 'warning');
-    return;
-  }
-
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: 'environment' }
-    });
-
-    // Cria um modal simples para exibir a câmera
-    const modal = document.createElement('div');
-    modal.className = 'scanner-modal position-fixed top-0 start-0 w-100 h-100 d-flex flex-column align-items-center justify-content-center bg-dark bg-opacity-75';
-    modal.style.zIndex = '10000';
-    modal.innerHTML = `
-      <video id="scanner-video" autoplay playsinline style="max-width: 90%; max-height: 60vh; border-radius: 12px;"></video>
-      <p class="text-white mt-2">Aponte para o código de barras do livro</p>
-      <button id="scanner-close" class="btn btn-light mt-2">Cancelar</button>
-    `;
-    document.body.appendChild(modal);
-
-    const video = document.getElementById('scanner-video');
-    video.srcObject = stream;
-
-    document.getElementById('scanner-close').addEventListener('click', () => {
-      closeScanner(stream, modal);
-    });
-
-    const barcodeDetector = new BarcodeDetector({
-      formats: ['ean_13', 'ean_8', 'isbn_13', 'isbn_10']
-    });
-
-    const detectLoop = async () => {
-      if (!video.paused && !video.ended) {
-        try {
-          const barcodes = await barcodeDetector.detect(video);
-          if (barcodes.length > 0) {
-            const isbn = barcodes[0].rawValue;
-            closeScanner(stream, modal);
-            // Preenche o campo de busca e aciona a busca
-            searchInput.value = isbn;
-            buscarLivro();
-          }
-        } catch (e) {
-          // ignora erros de detecção temporários
-        }
-        requestAnimationFrame(detectLoop);
-      }
-    };
-    detectLoop();
-
-  } catch (err) {
-    console.error('Erro ao acessar a câmera:', err);
-    Util.toast('Não foi possível acessar a câmera. Verifique as permissões.', 'danger');
-  }
-}
-
-function closeScanner(stream, modal) {
-  if (stream) {
-    stream.getTracks().forEach(track => track.stop());
-  }
-  if (modal) {
-    modal.remove();
-  }
-}
