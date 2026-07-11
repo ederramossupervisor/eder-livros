@@ -84,88 +84,79 @@ const Livros = (() => {
   /* ========== FUNÇÕES DE ESCANEAMENTO ISBN ========== */
 
   async function escanearISBN() {
-    // Verifica se a API é suportada
-    if (!('BarcodeDetector' in window)) {
-      Util.toast('Escaneamento não suportado neste navegador. Use Chrome ou Edge.', 'warning');
+  // Quagga2 estará disponível globalmente
+  if (typeof Quagga === 'undefined') {
+    Util.toast('Biblioteca de escaneamento não carregada. Tente recarregar a página.', 'warning');
+    return;
+  }
+
+  let modal = null;
+
+  // Cria o modal com um container para o Quagga
+  modal = document.createElement('div');
+  modal.className = 'scanner-modal position-fixed top-0 start-0 w-100 h-100 d-flex flex-column align-items-center justify-content-center bg-dark bg-opacity-75';
+  modal.style.zIndex = '10000';
+  modal.innerHTML = `
+    <div id="scanner-container" style="max-width: 90%; max-height: 60vh; border-radius: 12px; overflow: hidden; position: relative;">
+      <!-- O Quagga inserirá o vídeo e o canvas aqui -->
+    </div>
+    <p class="text-white mt-2">Aponte para o código de barras do livro</p>
+    <button id="scanner-close" class="btn btn-light mt-2">Cancelar</button>
+  `;
+  document.body.appendChild(modal);
+
+  // Fechar ao clicar em Cancelar
+  document.getElementById('scanner-close').addEventListener('click', () => {
+    Quagga.stop();
+    modal.remove();
+  });
+
+  // Inicia o Quagga
+  Quagga.init({
+    inputStream: {
+      name: 'Live',
+      type: 'LiveStream',
+      target: document.getElementById('scanner-container'),
+      constraints: {
+        facingMode: 'environment',    // câmera traseira
+        width: { ideal: 640 },
+        height: { ideal: 480 }
+      }
+    },
+    decoder: {
+      readers: ['ean_reader', 'ean_8_reader']   // formatos ISBN
+    }
+  }, (err) => {
+    if (err) {
+      console.error('Erro ao iniciar Quagga:', err);
+      Util.toast('Não foi possível acessar a câmera.', 'danger');
+      modal.remove();
       return;
     }
+    Quagga.start();
+  });
 
-    let stream = null;
-    let modal = null;
-
-    try {
-      // Solicita acesso à câmera traseira
-      stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment' }
-      });
-
-      // Cria o modal com o vídeo
-      modal = document.createElement('div');
-      modal.className = 'scanner-modal position-fixed top-0 start-0 w-100 h-100 d-flex flex-column align-items-center justify-content-center bg-dark bg-opacity-75';
-      modal.style.zIndex = '10000';
-      modal.innerHTML = `
-        <video id="scanner-video" autoplay playsinline style="max-width: 90%; max-height: 60vh; border-radius: 12px;"></video>
-        <p class="text-white mt-2">Aponte para o código de barras do livro</p>
-        <button id="scanner-close" class="btn btn-light mt-2">Cancelar</button>
-      `;
-      document.body.appendChild(modal);
-
-      const video = document.getElementById('scanner-video');
-      video.srcObject = stream;
-
-      // Fechar o scanner ao clicar em Cancelar
-      document.getElementById('scanner-close').addEventListener('click', () => {
-        closeScanner(stream, modal);
-      });
-
-      // Configura o detector para ISBN (EAN-13, EAN-8, ISBN-10)
-      const barcodeDetector = new BarcodeDetector({
-        formats: ['ean_13', 'ean_8']
-      });
-
-      // Loop de detecção
-      const detectLoop = async () => {
-        if (video.paused || video.ended) return;
-        try {
-          const barcodes = await barcodeDetector.detect(video);
-          if (barcodes.length > 0) {
-            const isbn = barcodes[0].rawValue;
-            closeScanner(stream, modal);
-            searchInput.value = isbn;
-            buscarLivro(); // dispara a busca automaticamente
-          } else {
-            requestAnimationFrame(detectLoop); // continua procurando
-          }
-        } catch (err) {
-          // Pequeno erro de detecção, tenta novamente
-          requestAnimationFrame(detectLoop);
-        }
-      };
-
-      detectLoop();
-
-    } catch (err) {
-      // Se houve erro ao acessar a câmera (ex.: permissão negada ou hardware indisponível)
-      console.error('Erro ao acessar a câmera:', err);
-      Util.toast('Não foi possível acessar a câmera. Verifique as permissões.', 'danger');
-      // Garante que qualquer recurso seja limpo
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
-      }
-      if (modal) {
-        modal.remove();
-      }
-    }
-  }
-
-  function closeScanner(stream, modal) {
-    if (stream) {
-      stream.getTracks().forEach(track => track.stop());
-    }
-    if (modal) {
+  // Quando um código for detectado
+  Quagga.onDetected((result) => {
+    if (result && result.codeResult && result.codeResult.code) {
+      const isbn = result.codeResult.code;
+      Quagga.stop();
       modal.remove();
+      searchInput.value = isbn;
+      buscarLivro();
     }
+  });
+}
+
+function closeScanner(stream, modal) {
+  // Não é mais necessária, mas mantemos por compatibilidade
+  if (stream) {
+    stream.getTracks().forEach(track => track.stop());
   }
+  if (modal) {
+    modal.remove();
+  }
+}
 
   /* ========== FUNÇÕES DE BUSCA (inalteradas) ========== */
 
