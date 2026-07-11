@@ -27,3 +27,12 @@
 #scan-isbn-btn {
   border-left: none;
 }
+#scanner-container {
+  width: 100%;
+  max-width: 500px;
+}
+#scanner-container video,
+#scanner-container canvas {
+  width: 100%;
+  border-radius: 12px;
+}
