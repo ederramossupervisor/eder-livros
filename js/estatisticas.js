@@ -13,10 +13,8 @@ const Estatisticas = (() => {
         preencherResumo(dados);
         criarInsights(dados.insights);
 
-        // Força altura nos canvas e seus containers antes de criar gráficos
         prepararContainers();
 
-        // Aguarda um ciclo de renderização
         await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 
         console.log('📐 Criando gráficos...');
@@ -24,14 +22,14 @@ const Estatisticas = (() => {
         try { criarGraficoPaginasDia(dados.paginasPorDia); } catch(e) { console.warn(e); }
         try { criarGraficoGeneros(dados.generos); } catch(e) { console.warn(e); }
         try { criarGraficoDiaSemana(dados.tempoPorDiaSemana); } catch(e) { console.warn(e); }
+        // NOVO GRÁFICO
+        try { criarGraficoVelocidadeMensal(dados.velocidadeMensal); } catch(e) { console.warn(e); }
         try { criarHeatmap(dados.heatmap); } catch(e) { console.warn(e); }
 
-        // Redimensiona gráficos após tudo pronto
         setTimeout(() => {
           Object.values(graficos).forEach(chart => {
             if (chart && chart.canvas) chart.resize();
           });
-          // Log final de diagnóstico
           document.querySelectorAll('canvas').forEach(c => {
             console.log(`📏 Final ${c.id}: ${c.clientWidth}x${c.clientHeight}`);
           });
@@ -49,9 +47,7 @@ const Estatisticas = (() => {
     console.log('✅ Módulo Estatísticas pronto.');
   }
 
-  // Define tamanhos explícitos nos containers e canvas
   function prepararContainers() {
-    // Aumenta a altura dos cards que contêm canvas
     document.querySelectorAll('#page-estatisticas .card-body').forEach(cardBody => {
       if (cardBody.querySelector('canvas')) {
         cardBody.style.minHeight = '350px';
@@ -59,17 +55,16 @@ const Estatisticas = (() => {
       }
     });
 
-    // Define atributos width/height diretamente nos canvas
     const ids = [
       'grafico-finalizados-mes',
       'grafico-paginas-dia',
       'grafico-generos',
-      'grafico-dia-semana'
+      'grafico-dia-semana',
+      'grafico-velocidade-mensal'  // NOVO
     ];
     ids.forEach(id => {
       const canvas = document.getElementById(id);
       if (canvas) {
-        // Pega a largura atual do elemento pai (se disponível)
         const parentWidth = canvas.parentElement.clientWidth || 400;
         canvas.setAttribute('width', parentWidth);
         canvas.setAttribute('height', '250');
@@ -80,7 +75,6 @@ const Estatisticas = (() => {
     });
   }
 
-  /* ========== FUNÇÕES DE CRIAÇÃO DOS GRÁFICOS (inalteradas) ========== */
   function criarGraficoFinalizadosMes(dados) {
     const canvas = document.getElementById('grafico-finalizados-mes');
     if (!canvas) return;
@@ -170,6 +164,52 @@ const Estatisticas = (() => {
         responsive: true,
         maintainAspectRatio: false,
         scales: { y: { beginAtZero: true } }
+      }
+    });
+  }
+
+  // NOVA FUNÇÃO – Gráfico de evolução da velocidade mensal
+  function criarGraficoVelocidadeMensal(dados) {
+    const canvas = document.getElementById('grafico-velocidade-mensal');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (graficos.velocidadeMensal) graficos.velocidadeMensal.destroy();
+    graficos.velocidadeMensal = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: dados.labels,
+        datasets: [{
+          label: 'Páginas/hora',
+          data: dados.valores,
+          borderColor: '#8b5cf6',
+          backgroundColor: 'rgba(139, 92, 246, 0.1)',
+          tension: 0.3,
+          fill: true,
+          pointRadius: 5,
+          pointHoverRadius: 7
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Páginas por hora'
+            }
+          }
+        },
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return context.parsed.y + ' pág/h';
+              }
+            }
+          }
+        }
       }
     });
   }
