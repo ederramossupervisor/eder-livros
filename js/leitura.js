@@ -1,5 +1,5 @@
 /**
- * Módulo de registro de sessões de leitura – com cronômetro
+ * Módulo de registro de sessões de leitura – com cronômetro e máscara de hora
  */
 const Leitura = (() => {
   const form = document.getElementById('session-form');
@@ -33,12 +33,42 @@ const Leitura = (() => {
   let inicioCronometro = null;
   let timerInterval = null;
 
+  /* ========== FORMATAÇÃO DE HORA ========== */
+  function formatarHora(input) {
+    let valor = input.value.replace(/\D/g, ''); // remove tudo que não for dígito
+    if (valor.length > 4) valor = valor.slice(0, 4);
+    if (valor.length > 2) {
+      valor = valor.slice(0, 2) + ':' + valor.slice(2);
+    }
+    input.value = valor;
+  }
+
   /* ========== INICIALIZAÇÃO ========== */
   function init() {
     if (!form) return;
 
     dataInput.valueAsDate = new Date();
-    [horaInicio, horaFim].forEach(el => el.addEventListener('change', calcularTempo));
+
+    // Máscara e validação dos campos de hora
+    horaInicio.addEventListener('input', () => formatarHora(horaInicio));
+    horaFim.addEventListener('input', () => formatarHora(horaFim));
+
+    horaInicio.addEventListener('blur', () => {
+      if (horaInicio.value && !horaInicio.value.includes(':')) {
+        horaInicio.value = horaInicio.value.padEnd(2, '0') + ':00';
+        if (horaInicio.value.length > 5) horaInicio.value = horaInicio.value.slice(0, 5);
+      }
+      calcularTempo();
+    });
+
+    horaFim.addEventListener('blur', () => {
+      if (horaFim.value && !horaFim.value.includes(':')) {
+        horaFim.value = horaFim.value.padEnd(2, '0') + ':00';
+        if (horaFim.value.length > 5) horaFim.value = horaFim.value.slice(0, 5);
+      }
+      calcularTempo();
+    });
+
     [pagInicial, pagFinal].forEach(el => el.addEventListener('input', calcularPaginas));
     refreshBtn.addEventListener('click', carregarLivros);
     form.addEventListener('submit', salvarSessao);
@@ -52,7 +82,7 @@ const Leitura = (() => {
 
     carregarLivros();
     carregarHistorico();
-    console.log('✅ Módulo Leitura pronto (com cronômetro).');
+    console.log('✅ Módulo Leitura pronto (com cronômetro e máscara de hora).');
   }
 
   /* ========== CRONÔMETRO ========== */
@@ -63,7 +93,6 @@ const Leitura = (() => {
   }
 
   function iniciarCronometro() {
-    // Se é a primeira vez (não há tempo acumulado), captura a hora inicial
     if (tempoAcumulado === 0) {
       horaInicio.value = new Date().toTimeString().slice(0, 5);
     }
@@ -75,7 +104,6 @@ const Leitura = (() => {
     btnRetomar.classList.add('d-none');
     btnFinalizar.classList.remove('d-none');
 
-    // Desabilita campos manuais enquanto o cronômetro estiver ativo
     horaInicio.disabled = true;
     horaFim.disabled = true;
 
@@ -120,12 +148,10 @@ const Leitura = (() => {
       tempoAcumulado += Math.floor((agora - inicioCronometro) / 1000);
       cronometroAtivo = false;
     }
-    // Preenche a hora de fim com o horário atual
     horaFim.value = new Date().toTimeString().slice(0, 5);
     atualizarDisplay(tempoAcumulado);
-    calcularTempo(); // atualiza o campo "Tempo calculado"
+    calcularTempo();
 
-    // Reseta o estado dos botões
     btnIniciar.classList.remove('d-none');
     btnPausar.classList.add('d-none');
     btnRetomar.classList.add('d-none');
@@ -201,10 +227,14 @@ const Leitura = (() => {
     if (horaInicio.value && horaFim.value) {
       const [hi, mi] = horaInicio.value.split(':').map(Number);
       const [hf, mf] = horaFim.value.split(':').map(Number);
-      let minutos = (hf * 60 + mf) - (hi * 60 + mi);
-      if (minutos < 0) minutos += 1440;
-      tempoMinSpan.textContent = minutos;
-      tempoCalculadoDiv.classList.remove('d-none');
+      if (!isNaN(hi) && !isNaN(mi) && !isNaN(hf) && !isNaN(mf)) {
+        let minutos = (hf * 60 + mf) - (hi * 60 + mi);
+        if (minutos < 0) minutos += 1440;
+        tempoMinSpan.textContent = minutos;
+        tempoCalculadoDiv.classList.remove('d-none');
+      } else {
+        tempoCalculadoDiv.classList.add('d-none');
+      }
     } else {
       tempoCalculadoDiv.classList.add('d-none');
     }
@@ -340,10 +370,10 @@ const Leitura = (() => {
         });
       } else {
         historicoContainer.innerHTML = `
-        <div class="empty-state">
-          <i class="fas fa-clock fa-3x text-muted mb-3"></i>
-          <p class="text-muted">Nenhuma sessão registrada ainda.</p>
-        </div>`;
+          <div class="empty-state">
+            <i class="fas fa-clock fa-3x text-muted mb-3"></i>
+            <p class="text-muted">Nenhuma sessão registrada ainda.</p>
+          </div>`;
       }
     } catch (e) {
       console.error('Erro ao carregar histórico:', e);
