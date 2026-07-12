@@ -79,33 +79,55 @@ const Metas = (() => {
 
       // Mapeamento de ícones (emojis) para cada conquista
       const icones = {
-      'Primeiro livro': 'fa-book',
-      'Leitor iniciante': 'fa-book-open',
-      'Leitor dedicado': 'fa-award',
-      'Devorador de livros': 'fa-fire',
-      'Página 1000': 'fa-file-alt',
-      'Página 5000': 'fa-copy',
-      'Maratona de 7 dias': 'fa-calendar-check',
-      'Maratona de 30 dias': 'fa-calendar-alt',
-      'Livro gigante': 'fa-weight-hanging', // ou 'fa-elephant' (não existe, pode usar 'fa-book' grande?)
-      'Favorito': 'fa-star',
-      'Leitor global': 'fa-globe-americas',
-      'Leitor noturno': 'fa-moon',
-      'Colecionador de clássicos': 'fa-landmark',
-      'Diversidade literária': 'fa-rainbow',
-      'Anotador': 'fa-pen',
-      'Viajante literário': 'fa-map-marked-alt'
-    };
+        'Primeiro livro': 'fa-book',
+        'Leitor iniciante': 'fa-book-open',
+        'Leitor dedicado': 'fa-award',
+        'Devorador de livros': 'fa-fire',
+        'Página 1000': 'fa-file-alt',
+        'Página 5000': 'fa-copy',
+        'Maratona de 7 dias': 'fa-calendar-check',
+        'Maratona de 30 dias': 'fa-calendar-alt',
+        'Livro gigante': 'fa-weight-hanging',
+        'Favorito': 'fa-star',
+        'Leitor global': 'fa-globe-americas',
+        'Leitor noturno': 'fa-moon',
+        'Colecionador de clássicos': 'fa-landmark',
+        'Diversidade literária': 'fa-rainbow',
+        'Anotador': 'fa-pen',
+        'Viajante literário': 'fa-map-marked-alt'
+      };
+
+      // Descrições (tooltips) para cada conquista
+      const descricoes = {
+        'Primeiro livro': 'Cadastrar o primeiro livro na biblioteca.',
+        'Leitor iniciante': 'Finalizar a leitura de 3 livros.',
+        'Leitor dedicado': 'Finalizar a leitura de 10 livros.',
+        'Devorador de livros': 'Finalizar a leitura de 50 livros.',
+        'Página 1000': 'Acumular 1.000 páginas lidas.',
+        'Página 5000': 'Acumular 5.000 páginas lidas.',
+        'Maratona de 7 dias': 'Ler por 7 dias consecutivos.',
+        'Maratona de 30 dias': 'Ler por 30 dias consecutivos.',
+        'Livro gigante': 'Ler um livro com mais de 500 páginas.',
+        'Favorito': 'Marcar um livro como favorito.',
+        'Leitor global': 'Ler um livro em outro idioma (diferente de Português).',
+        'Leitor noturno': 'Registrar uma sessão de leitura após as 23h.',
+        'Colecionador de clássicos': 'Ler 5 livros do gênero Literatura Clássica ou Clássico.',
+        'Diversidade literária': 'Ler livros de 10 gêneros diferentes.',
+        'Anotador': 'Escrever 20 anotações de livros.',
+        'Viajante literário': 'Ler livros em 3 idiomas diferentes.'
+      };
+
       const nomesObtidos = (Array.isArray(resp) ? resp : []).map(c => c.Nome);
 
       Object.keys(icones).forEach(nome => {
         const obtida = nomesObtidos.includes(nome);
+        const descricao = descricoes[nome] || 'Conquista do sistema.';
         const col = document.createElement('div');
         col.className = 'col-6 col-md-4 col-lg-3 col-xl-2';
         col.innerHTML = `
-          <div class="conquista-card ${obtida ? 'conquistada' : ''}">
+          <div class="conquista-card ${obtida ? 'conquistada' : ''}" title="${descricao}" style="cursor: help;">
             <div class="conquista-badge mx-auto mb-2"><i class="fas ${icones[nome]} fa-2x"></i></div>
-            <strong>${nome}</strong>
+            <strong>${nome} <i class="fas fa-question-circle text-muted small"></i></strong>
             ${obtida ? '<span class="badge bg-success d-block mt-1">Conquistada</span>' : '<span class="badge bg-light text-muted d-block mt-1">Bloqueada</span>'}
           </div>`;
         grid.appendChild(col);
