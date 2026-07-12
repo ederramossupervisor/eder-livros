@@ -65,39 +65,38 @@ const Dashboard = (() => {
   }
 
   function preencherCards(d) {
-    containerCard = document.getElementById('livro-atual-card');
-    if (!containerCard) return;
+  containerCard = document.getElementById('livro-atual-card');
+  if (!containerCard) return;
 
-    livrosLendoList = d.livrosLendo || [];
-    if (d.livroAtual && livrosLendoList.length > 0) {
-      currentLivroIndex = livrosLendoList.findIndex(l => l.ID === d.livroAtual.ID);
-      if (currentLivroIndex < 0) currentLivroIndex = 0;
-    } else {
-      currentLivroIndex = 0;
-    }
-    livroAtualID = d.livroAtual ? d.livroAtual.ID : null;
-
-    renderizarLivroAtual();
-    criarControlesNavegacao();
-    adicionarSwipe();
-
-    // Animação de contagem para os números
-    animarContador('card-livros-mes', d.livrosFinalizadosMes);
-    animarContador('card-livros-ano', d.livrosFinalizadosAno);
-    animarContador('card-paginas-hoje', d.paginasHoje);
-    animarContador('card-paginas-semana', d.paginasSemana);
-    animarContador('card-horas', d.horasTotal);
-    animarContador('card-sequencia', d.sequenciaAtual);
-
-    // Meta (sem animação complexa, apenas texto)
-    document.getElementById('meta-texto').textContent =
-      `${d.livrosFinalizadosAno} de ${d.metaLivros} livros (${d.percentualMeta}%)`;
-    const barra = document.getElementById('barra-meta');
-    barra.style.width = d.percentualMeta + '%';
-    barra.textContent = d.percentualMeta + '%';
-    barra.setAttribute('aria-valuenow', d.percentualMeta);
+  livrosLendoList = d.livrosLendo || [];
+  if (d.livroAtual && livrosLendoList.length > 0) {
+    currentLivroIndex = livrosLendoList.findIndex(l => l.ID === d.livroAtual.ID);
+    if (currentLivroIndex < 0) currentLivroIndex = 0;
+  } else {
+    currentLivroIndex = 0;
   }
+  livroAtualID = d.livroAtual ? d.livroAtual.ID : null;
 
+  renderizarLivroAtual();
+  criarControlesNavegacao();
+  adicionarSwipe();
+
+  // Animação de contagem para os números
+  animarContador('card-livros-mes', d.livrosFinalizadosMes);
+  animarContador('card-livros-ano', d.livrosFinalizadosAno);
+  animarContador('card-paginas-hoje', d.paginasHoje);
+  animarContador('card-paginas-semana', d.paginasSemana);
+  animarContador('card-horas', d.horasTotal);
+  animarContador('card-sequencia', d.sequenciaAtual);
+
+  // Meta (sem animação complexa, apenas texto)
+  document.getElementById('meta-texto').textContent =
+    `${d.livrosFinalizadosAno} de ${d.metaLivros} livros (${d.percentualMeta}%)`;
+  const barra = document.getElementById('barra-meta');
+  barra.style.width = d.percentualMeta + '%';
+  barra.textContent = d.percentualMeta + '%';
+  barra.setAttribute('aria-valuenow', d.percentualMeta);
+}
   function animarContador(id, valorFinal) {
     const el = document.getElementById(id);
     if (!el) return;
@@ -119,29 +118,41 @@ const Dashboard = (() => {
   }
 
   function renderizarLivroAtual() {
-    if (!containerCard) return;
-    const livro = livrosLendoList.length > 0 ? livrosLendoList[currentLivroIndex] : null;
-    const tituloEl = document.getElementById('livro-atual-titulo');
-    const progressoEl = document.getElementById('livro-atual-progresso');
-    const capaEl = document.getElementById('livro-atual-capa');
+  if (!containerCard) return;
+  const livro = livrosLendoList.length > 0 ? livrosLendoList[currentLivroIndex] : null;
+  const tituloEl = document.getElementById('livro-atual-titulo');
+  const progressoEl = document.getElementById('livro-atual-progresso');
+  const capaEl = document.getElementById('livro-atual-capa');
+  const previsaoEl = document.getElementById('livro-atual-previsao');
 
-    if (livro) {
-      const progresso = livro.totalPag > 0 ? Math.round((livro.pagLidas / livro.totalPag) * 100) : 0;
-      if (tituloEl) tituloEl.textContent = livro.titulo;
-      if (progressoEl) progressoEl.textContent = `${livro.pagLidas || 0} de ${livro.totalPag} páginas (${progresso}%)`;
-      if (capaEl) {
-        capaEl.innerHTML = livro.urlCapa
-          ? `<img src="${livro.urlCapa}" alt="Capa" class="img-fluid rounded" style="max-height:70px;">`
-          : '';
-      }
-      const indicador = document.getElementById('livro-atual-indicador');
-      if (indicador) indicador.textContent = `${currentLivroIndex + 1}/${livrosLendoList.length}`;
-    } else {
-      if (tituloEl) tituloEl.textContent = 'Nenhum livro em andamento';
-      if (progressoEl) progressoEl.textContent = '';
-      if (capaEl) capaEl.innerHTML = '';
+  if (livro) {
+    const progresso = livro.totalPag > 0 ? Math.round((livro.pagLidas / livro.totalPag) * 100) : 0;
+    if (tituloEl) tituloEl.textContent = livro.titulo;
+    if (progressoEl) progressoEl.textContent = `${livro.pagLidas || 0} de ${livro.totalPag} páginas (${progresso}%)`;
+    if (capaEl) {
+      capaEl.innerHTML = livro.urlCapa
+        ? `<img src="${livro.urlCapa}" alt="Capa" class="img-fluid rounded" style="max-height:70px;">`
+        : '';
     }
+    // Exibe previsão se disponível
+    if (previsaoEl) {
+      if (livro.dataTerminoEstimada) {
+        previsaoEl.textContent = `Previsão de término: ${livro.dataTerminoEstimada} (${livro.diasEstimados} dias)`;
+        previsaoEl.classList.remove('d-none');
+      } else {
+        previsaoEl.classList.add('d-none');
+      }
+    }
+    const indicador = document.getElementById('livro-atual-indicador');
+    if (indicador) indicador.textContent = `${currentLivroIndex + 1}/${livrosLendoList.length}`;
+  } else {
+    if (tituloEl) tituloEl.textContent = 'Nenhum livro em andamento';
+    if (progressoEl) progressoEl.textContent = '';
+    if (capaEl) capaEl.innerHTML = '';
+    if (previsaoEl) previsaoEl.classList.add('d-none');
   }
+}
+
 
   function criarControlesNavegacao() {
     const oldLeft = document.getElementById('livro-atual-seta-left');
