@@ -1,13 +1,18 @@
 // Controlador principal da aplicação
 document.addEventListener('DOMContentLoaded', () => {
-  // Remove splash screen após carregamento
-  document.body.classList.add('app-loaded');
+  const splash = document.getElementById('splash-screen');
+
+  // Só adiciona a classe que inicia a transição de saída após 5 segundos
   setTimeout(() => {
-    const splash = document.getElementById('splash-screen');
-    if (splash) splash.remove();
+    document.body.classList.add('app-loaded');
   }, 5000);
 
-  // Inicializa módulos básicos
+  // Remove o elemento do DOM depois que a transição terminar (5s + 0.5s)
+  setTimeout(() => {
+    if (splash) splash.remove();
+  }, 5500);
+
+  // Inicializa módulos básicos (independente da splash)
   Auth.init();
   initNavegacao();
   initTema();
