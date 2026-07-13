@@ -218,18 +218,25 @@ const Estatisticas = (() => {
     const container = document.getElementById('heatmap-container');
     if (!container) return;
     container.innerHTML = '';
+  
     const diasExibir = heatmapData.slice(0, 84).reverse();
     const maxPag = Math.max(...diasExibir.map(d => d.paginas), 1);
+  
+    // Função interna para formatar data ISO → DD/MM/AAAA
+    function formatarDataBrasileira(iso) {
+      const partes = iso.split('-'); // ["2026", "07", "13"]
+      return `${partes[2]}/${partes[1]}/${partes[0]}`;
+    }
+  
     diasExibir.forEach(dia => {
       const cell = document.createElement('div');
       cell.className = 'heatmap-cell';
       const intensidade = dia.paginas / maxPag;
       cell.style.backgroundColor = getHeatColor(intensidade);
-      cell.title = `${dia.data}: ${dia.paginas} páginas`;
+      cell.title = `${formatarDataBrasileira(dia.data)}: ${dia.paginas} páginas`;
       container.appendChild(cell);
     });
   }
-
   function getHeatColor(intensidade) {
     if (intensidade === 0) return '#ebedf0';
     if (intensidade < 0.25) return '#9be9a8';
