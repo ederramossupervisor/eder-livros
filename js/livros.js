@@ -317,6 +317,7 @@ function preencherFormularioCompleto(livro) {
   document.getElementById('edicao').value = livro.Edição || '';
   document.getElementById('isbn').value = livro.ISBN || '';
   document.getElementById('idioma').value = livro.Idioma || '';
+  document.getElementById('classico').checked = livro.Clássico === 'true' || livro.Clássico === true;
   document.getElementById('nacionalidadeAutor').value = livro.NacionalidadeAutor || '';  // NOVO
   document.getElementById('numeroPaginas').value = livro.NúmeroPáginas || '';
   document.getElementById('formato').value = livro.Formato || 'Físico';
@@ -355,6 +356,7 @@ function preencherFormularioCompleto(livro) {
     subtitulo: document.getElementById('subtitulo').value,
     autor: document.getElementById('autor').value,
     editora: document.getElementById('editora').value,
+    classico: document.getElementById('classico').checked,
     ano: document.getElementById('ano').value,
     edicao: document.getElementById('edicao').value,
     isbn: document.getElementById('isbn').value,
