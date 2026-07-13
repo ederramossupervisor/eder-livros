@@ -1,4 +1,9 @@
 const Anotacoes = (() => {
+  // Variáveis para o reconhecimento de voz
+  let recognition = null;
+  let isRecognizing = false;
+  let currentTrechoField = null;   // referência ao campo de trecho que está sendo ditado
+
   async function init() {
     const page = document.getElementById('page-anotacoes');
     if (!page || !page.classList.contains('active')) return;
@@ -6,6 +11,7 @@ const Anotacoes = (() => {
     console.log('📝 Carregando Anotações e Citações...');
     await carregarLivrosDropdown();
     configurarForms();
+    configurarReconhecimentoDeVoz();
     await listarAnotacoes();
     await listarCitacoes();
     console.log('✅ Módulo Anotações pronto.');
@@ -30,6 +36,69 @@ const Anotacoes = (() => {
     } catch (e) {
       console.error('Erro ao carregar livros para dropdown', e);
     }
+  }
+
+  // Inicializa a API de reconhecimento de voz
+  function configurarReconhecimentoDeVoz() {
+    const btnDitar = document.getElementById('btn-ditar-citacao');
+    const trechoField = document.getElementById('cit-trecho');
+    if (!btnDitar || !trechoField) return;
+
+    // Verifica suporte do navegador
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      btnDitar.disabled = true;
+      btnDitar.title = 'Reconhecimento de voz não suportado neste navegador';
+      return;
+    }
+
+    recognition = new SpeechRecognition();
+    recognition.lang = 'pt-BR';         // português brasileiro
+    recognition.interimResults = false; // só retorna resultado final
+    recognition.continuous = false;     // para após uma fala
+
+    recognition.onstart = () => {
+      isRecognizing = true;
+      btnDitar.innerHTML = '<i class="fas fa-microphone-alt text-danger"></i>'; // microfone pulsando
+      btnDitar.classList.add('btn-danger');
+      btnDitar.classList.remove('btn-outline-secondary');
+    };
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      // Adiciona o texto reconhecido ao campo (não substitui, permite ditar várias vezes)
+      const currentText = trechoField.value;
+      trechoField.value = currentText + (currentText ? ' ' : '') + transcript;
+    };
+
+    recognition.onerror = (event) => {
+      console.error('Erro no reconhecimento:', event.error);
+      Util.toast('Erro no ditado: ' + event.error, 'warning');
+      resetDitarButton();
+    };
+
+    recognition.onend = () => {
+      resetDitarButton();
+    };
+
+    btnDitar.addEventListener('click', () => {
+      if (isRecognizing) {
+        recognition.stop(); // interrompe se já estava gravando
+        resetDitarButton();
+      } else {
+        recognition.start();
+      }
+    });
+  }
+
+  function resetDitarButton() {
+    const btn = document.getElementById('btn-ditar-citacao');
+    if (btn) {
+      btn.innerHTML = '<i class="fas fa-microphone"></i>';
+      btn.classList.remove('btn-danger');
+      btn.classList.add('btn-outline-secondary');
+    }
+    isRecognizing = false;
   }
 
   function configurarForms() {
@@ -128,12 +197,25 @@ const Anotacoes = (() => {
           div.className = 'citacao-card';
           div.innerHTML = `
             <blockquote>${c.Trecho}</blockquote>
-            <div class="d-flex justify-content-between">
-              <small>Pág. ${c.Página || '-'}</small>
-              <small class="text-muted">${c.Comentario || ''}</small>
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <small>Pág. ${c.Página || '-'}</small>
+                <small class="text-muted ms-2">${c.Comentario || ''}</small>
+              </div>
+              <button class="btn btn-sm btn-outline-info btn-ouvir-citacao" data-trecho="${c.Trecho.replace(/"/g, '&quot;')}">
+                <i class="fas fa-volume-up"></i> Ouvir
+              </button>
             </div>
           `;
           container.appendChild(div);
+        });
+
+        // Adiciona eventos de leitura em voz alta
+        container.querySelectorAll('.btn-ouvir-citacao').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const texto = btn.dataset.trecho;
+            falarTexto(texto);
+          });
         });
       } else {
         container.innerHTML = `
@@ -144,6 +226,19 @@ const Anotacoes = (() => {
       }
     } catch (e) {
       console.error(e);
+    }
+  }
+
+  // Função para ler texto em voz alta (Text-to-Speech)
+  function falarTexto(texto) {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel(); // interrompe qualquer leitura anterior
+      const utterance = new SpeechSynthesisUtterance(texto);
+      utterance.lang = 'pt-BR';
+      utterance.rate = 1.0;  // velocidade normal
+      window.speechSynthesis.speak(utterance);
+    } else {
+      Util.toast('Seu navegador não suporta leitura em voz alta.', 'warning');
     }
   }
 
