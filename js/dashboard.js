@@ -22,7 +22,11 @@ const Dashboard = (() => {
     mostrarSkeletons();
     console.log('📊 Carregando dashboard...');
     try {
-      const dados = await API.enviar({ acao: 'dashboard' });
+      const hojeLocal = new Date();
+      const dataLocalISO = hojeLocal.getFullYear() + '-' +
+        String(hojeLocal.getMonth() + 1).padStart(2,'0') + '-' +
+        String(hojeLocal.getDate()).padStart(2,'0');
+      const dados = await API.enviar({ acao: 'dashboard', dataAtual: dataLocalISO });
       if (dados && !dados.erro) {
         ocultarSkeletons();
         preencherCards(dados);
