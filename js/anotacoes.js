@@ -2,7 +2,7 @@ const Anotacoes = (() => {
   // Variáveis para o reconhecimento de voz
   let recognition = null;
   let isRecognizing = false;
-  let currentTrechoField = null;   // referência ao campo de trecho que está sendo ditado
+  let currentTrechoField = null;
 
   async function init() {
     const page = document.getElementById('page-anotacoes');
@@ -44,7 +44,6 @@ const Anotacoes = (() => {
     const trechoField = document.getElementById('cit-trecho');
     if (!btnDitar || !trechoField) return;
 
-    // Verifica suporte do navegador
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
       btnDitar.disabled = true;
@@ -53,20 +52,19 @@ const Anotacoes = (() => {
     }
 
     recognition = new SpeechRecognition();
-    recognition.lang = 'pt-BR';         // português brasileiro
-    recognition.interimResults = false; // só retorna resultado final
-    recognition.continuous = false;     // para após uma fala
+    recognition.lang = 'pt-BR';
+    recognition.interimResults = false;
+    recognition.continuous = false;
 
     recognition.onstart = () => {
       isRecognizing = true;
-      btnDitar.innerHTML = '<i class="fas fa-microphone-alt text-danger"></i>'; // microfone pulsando
+      btnDitar.innerHTML = '<i class="fas fa-microphone-alt text-danger"></i>';
       btnDitar.classList.add('btn-danger');
       btnDitar.classList.remove('btn-outline-secondary');
     };
 
     recognition.onresult = (event) => {
       const transcript = event.results[0][0].transcript;
-      // Adiciona o texto reconhecido ao campo (não substitui, permite ditar várias vezes)
       const currentText = trechoField.value;
       trechoField.value = currentText + (currentText ? ' ' : '') + transcript;
     };
@@ -83,7 +81,7 @@ const Anotacoes = (() => {
 
     btnDitar.addEventListener('click', () => {
       if (isRecognizing) {
-        recognition.stop(); // interrompe se já estava gravando
+        recognition.stop();
         resetDitarButton();
       } else {
         recognition.start();
@@ -99,6 +97,31 @@ const Anotacoes = (() => {
       btn.classList.add('btn-outline-secondary');
     }
     isRecognizing = false;
+  }
+
+  // Função robusta para copiar texto para a área de transferência
+  function copiarTexto(texto) {
+    if (navigator.clipboard && window.isSecureContext) {
+      return navigator.clipboard.writeText(texto);
+    } else {
+      // Fallback usando textarea
+      return new Promise((resolve, reject) => {
+        const textarea = document.createElement('textarea');
+        textarea.value = texto;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        try {
+          document.execCommand('copy');
+          document.body.removeChild(textarea);
+          resolve();
+        } catch (e) {
+          document.body.removeChild(textarea);
+          reject(e);
+        }
+      });
+    }
   }
 
   function configurarForms() {
@@ -121,6 +144,8 @@ const Anotacoes = (() => {
           Util.toast('Anotação salva!', 'success');
           document.getElementById('form-anotacao').reset();
           listarAnotacoes();
+          // Recarrega citações também, pois uma nova anotação com categoria "Citação" pode ter sido criada
+          listarCitacoes();
         }
       } catch (err) {
         Util.toast('Erro ao salvar anotação', 'danger');
@@ -149,7 +174,6 @@ const Anotacoes = (() => {
       }
     });
 
-    // Filtro de livro nas anotações
     document.getElementById('filtro-livro-anot').addEventListener('change', listarAnotacoes);
   }
 
@@ -188,11 +212,46 @@ const Anotacoes = (() => {
 
   async function listarCitacoes() {
     try {
-      const resp = await API.enviar({ acao: 'listQuotes' });
+      // Busca as duas fontes de dados
+      const [quotes, notes] = await Promise.all([
+        API.enviar({ acao: 'listQuotes' }),
+        API.enviar({ acao: 'listNotes', livroID: '' }) // todas as anotações
+      ]);
+
+      // Processa citações puras
+      const citacoes = (Array.isArray(quotes) ? quotes : []).map(c => ({
+        Trecho: c.Trecho || '',
+        Página: c.Página || '',
+        Comentario: c.Comentario || '',
+        Data: c.Data || '',
+        LivroID: c.LivroID || '',
+        tipo: 'citacao'
+      }));
+
+      // Processa anotações com categoria "Citação"
+      const notasCitacao = (Array.isArray(notes) ? notes : [])
+        .filter(n => n.Categoria === 'Citação')
+        .map(n => ({
+          Trecho: n.Trecho || '',
+          Página: n.Página || '',
+          Comentario: n.Comentario || '',
+          Data: n.Data || '',
+          LivroID: n.LivroID || '',
+          tipo: 'anotacao'
+        }));
+
+      // Junta e ordena por data (mais recentes primeiro)
+      const todas = [...citacoes, ...notasCitacao].sort((a, b) => {
+        const dateA = a.Data ? new Date(a.Data) : new Date(0);
+        const dateB = b.Data ? new Date(b.Data) : new Date(0);
+        return dateB - dateA;
+      });
+
       const container = document.getElementById('lista-citacoes');
       container.innerHTML = '';
-      if (Array.isArray(resp) && resp.length > 0) {
-        resp.forEach(c => {
+
+      if (todas.length > 0) {
+        todas.forEach(c => {
           const div = document.createElement('div');
           div.className = 'citacao-card';
           div.innerHTML = `
@@ -201,16 +260,42 @@ const Anotacoes = (() => {
               <div>
                 <small>Pág. ${c.Página || '-'}</small>
                 <small class="text-muted ms-2">${c.Comentario || ''}</small>
+                ${c.tipo === 'anotacao' ? '<span class="badge bg-light text-muted ms-1 small">Anotação</span>' : ''}
               </div>
-              <button class="btn btn-sm btn-outline-info btn-ouvir-citacao" data-trecho="${c.Trecho.replace(/"/g, '&quot;')}">
-                <i class="fas fa-volume-up"></i> Ouvir
-              </button>
+              <div>
+                <button class="btn btn-sm btn-link p-1 btn-copiar-citacao" title="Copiar citação" data-trecho="${c.Trecho.replace(/"/g, '&quot;')}">
+                  <i class="fas fa-copy"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-info btn-ouvir-citacao" data-trecho="${c.Trecho.replace(/"/g, '&quot;')}">
+                  <i class="fas fa-volume-up"></i> Ouvir
+                </button>
+              </div>
             </div>
           `;
           container.appendChild(div);
         });
 
-        // Adiciona eventos de leitura em voz alta
+        // Eventos de cópia
+        container.querySelectorAll('.btn-copiar-citacao').forEach(btn => {
+          btn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const trecho = btn.dataset.trecho;
+            try {
+              await copiarTexto(trecho);
+              // Feedback visual temporário no ícone
+              const icon = btn.querySelector('i');
+              icon.className = 'fas fa-check text-success';
+              setTimeout(() => {
+                icon.className = 'fas fa-copy';
+              }, 1500);
+              Util.toast('Citação copiada!', 'success');
+            } catch (err) {
+              Util.toast('Erro ao copiar', 'danger');
+            }
+          });
+        });
+
+        // Eventos de leitura em voz alta
         container.querySelectorAll('.btn-ouvir-citacao').forEach(btn => {
           btn.addEventListener('click', () => {
             const texto = btn.dataset.trecho;
@@ -232,10 +317,10 @@ const Anotacoes = (() => {
   // Função para ler texto em voz alta (Text-to-Speech)
   function falarTexto(texto) {
     if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel(); // interrompe qualquer leitura anterior
+      window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(texto);
       utterance.lang = 'pt-BR';
-      utterance.rate = 1.0;  // velocidade normal
+      utterance.rate = 1.0;
       window.speechSynthesis.speak(utterance);
     } else {
       Util.toast('Seu navegador não suporta leitura em voz alta.', 'warning');
