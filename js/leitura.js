@@ -45,46 +45,49 @@ const Leitura = (() => {
 
   /* ========== INICIALIZAÇÃO ========== */
   function init() {
-    if (!form) return;
+  if (!form) return;
 
-    dataInput.valueAsDate = new Date();
+  // NOVO: data local correta, independentemente do fuso
+  const hojeLocal = new Date();
+  const offset = hojeLocal.getTimezoneOffset() * 60000;
+  const hojeLocalISO = new Date(hojeLocal.getTime() - offset).toISOString().split('T')[0];
+  dataInput.value = hojeLocalISO;
 
-    // Máscara e validação dos campos de hora
-    horaInicio.addEventListener('input', () => formatarHora(horaInicio));
-    horaFim.addEventListener('input', () => formatarHora(horaFim));
+  // Máscara e validação dos campos de hora
+  horaInicio.addEventListener('input', () => formatarHora(horaInicio));
+  horaFim.addEventListener('input', () => formatarHora(horaFim));
 
-    horaInicio.addEventListener('blur', () => {
-      if (horaInicio.value && !horaInicio.value.includes(':')) {
-        horaInicio.value = horaInicio.value.padEnd(2, '0') + ':00';
-        if (horaInicio.value.length > 5) horaInicio.value = horaInicio.value.slice(0, 5);
-      }
-      calcularTempo();
-    });
+  horaInicio.addEventListener('blur', () => {
+    if (horaInicio.value && !horaInicio.value.includes(':')) {
+      horaInicio.value = horaInicio.value.padEnd(2, '0') + ':00';
+      if (horaInicio.value.length > 5) horaInicio.value = horaInicio.value.slice(0, 5);
+    }
+    calcularTempo();
+  });
 
-    horaFim.addEventListener('blur', () => {
-      if (horaFim.value && !horaFim.value.includes(':')) {
-        horaFim.value = horaFim.value.padEnd(2, '0') + ':00';
-        if (horaFim.value.length > 5) horaFim.value = horaFim.value.slice(0, 5);
-      }
-      calcularTempo();
-    });
+  horaFim.addEventListener('blur', () => {
+    if (horaFim.value && !horaFim.value.includes(':')) {
+      horaFim.value = horaFim.value.padEnd(2, '0') + ':00';
+      if (horaFim.value.length > 5) horaFim.value = horaFim.value.slice(0, 5);
+    }
+    calcularTempo();
+  });
 
-    [pagInicial, pagFinal].forEach(el => el.addEventListener('input', calcularPaginas));
-    refreshBtn.addEventListener('click', carregarLivros);
-    form.addEventListener('submit', salvarSessao);
-    document.getElementById('clear-session-btn')?.addEventListener('click', limparFormulario);
+  [pagInicial, pagFinal].forEach(el => el.addEventListener('input', calcularPaginas));
+  refreshBtn.addEventListener('click', carregarLivros);
+  form.addEventListener('submit', salvarSessao);
+  document.getElementById('clear-session-btn')?.addEventListener('click', limparFormulario);
 
-    // Eventos do cronômetro
-    btnIniciar.addEventListener('click', iniciarCronometro);
-    btnPausar.addEventListener('click', pausarCronometro);
-    btnRetomar.addEventListener('click', retomarCronometro);
-    btnFinalizar.addEventListener('click', finalizarCronometro);
+  // Eventos do cronômetro
+  btnIniciar.addEventListener('click', iniciarCronometro);
+  btnPausar.addEventListener('click', pausarCronometro);
+  btnRetomar.addEventListener('click', retomarCronometro);
+  btnFinalizar.addEventListener('click', finalizarCronometro);
 
-    carregarLivros();
-    carregarHistorico();
-    console.log('✅ Módulo Leitura pronto (com cronômetro e máscara de hora).');
-  }
-
+  carregarLivros();
+  carregarHistorico();
+  console.log('✅ Módulo Leitura pronto (com cronômetro e máscara de hora).');
+}
   /* ========== CRONÔMETRO ========== */
   function atualizarDisplay(segundos) {
     const mins = Math.floor(segundos / 60);
@@ -256,58 +259,65 @@ const Leitura = (() => {
 
   /* ========== SALVAR SESSÃO ========== */
   async function salvarSessao(e) {
-    e.preventDefault();
-    if (!form.checkValidity()) {
-      form.classList.add('was-validated');
-      Util.toast('Preencha os campos obrigatórios.', 'warning');
-      return;
-    }
-    const livroID = livroSelect.value;
-    if (!livroID) {
-      Util.toast('Selecione um livro.', 'warning');
-      return;
-    }
-
-    const sessao = {
-      livroID,
-      data: dataInput.value,
-      horaInicio: horaInicio.value,
-      horaFim: horaFim.value,
-      paginaInicial: pagInicial.value,
-      paginaFinal: pagFinal.value,
-      local: document.getElementById('local-sessao').value,
-      humor: document.getElementById('humor').value,
-      clima: document.getElementById('clima').value,
-      distracoes: '',
-      observacoes: document.getElementById('observacoes-sessao').value
-    };
-
-    const btnSubmit = form.querySelector('button[type="submit"]');
-    btnSubmit.disabled = true;
-    btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Salvando...';
-
-    try {
-      let resposta;
-      if (editandoSessaoID) {
-        resposta = await API.enviar({ acao: 'updateSession', id: editandoSessaoID, sessao });
-      } else {
-        resposta = await API.enviar({ acao: 'addSession', sessao });
-      }
-      if (resposta && resposta.status === 'ok') {
-        Util.toast(editandoSessaoID ? 'Sessão atualizada!' : 'Sessão registrada!', 'success');
-        limparFormulario();
-        editandoSessaoID = null;
-        btnSubmit.innerHTML = '<i class="fas fa-save me-1"></i> Registrar Sessão';
-        carregarHistorico();
-        carregarLivros();
-      } else {
-        throw new Error(resposta?.erro || 'Falha no servidor');
-      }
-    } catch (erro) {
-      Util.toast('Erro ao salvar: ' + erro.message, 'danger');
-    }
-    btnSubmit.disabled = false;
+  e.preventDefault();
+  if (!form.checkValidity()) {
+    form.classList.add('was-validated');
+    Util.toast('Preencha os campos obrigatórios.', 'warning');
+    return;
   }
+  const livroID = livroSelect.value;
+  if (!livroID) {
+    Util.toast('Selecione um livro.', 'warning');
+    return;
+  }
+
+  // NOVO: alerta se data for futura (opcional, apenas avisa)
+  const dataSessao = new Date(dataInput.value + 'T00:00:00');
+  if (dataSessao.getTime() > new Date().setHours(23,59,59,999)) {
+    Util.toast('Atenção: a data da sessão está no futuro!', 'warning');
+  }
+
+  const sessao = {
+    livroID,
+    data: dataInput.value,
+    horaInicio: horaInicio.value,
+    horaFim: horaFim.value,
+    paginaInicial: pagInicial.value,
+    paginaFinal: pagFinal.value,
+    local: document.getElementById('local-sessao').value,
+    humor: document.getElementById('humor').value,
+    clima: document.getElementById('clima').value,
+    distracoes: '',
+    observacoes: document.getElementById('observacoes-sessao').value
+  };
+
+  const btnSubmit = form.querySelector('button[type="submit"]');
+  btnSubmit.disabled = true;
+  btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Salvando...';
+
+  try {
+    let resposta;
+    if (editandoSessaoID) {
+      resposta = await API.enviar({ acao: 'updateSession', id: editandoSessaoID, sessao });
+    } else {
+      resposta = await API.enviar({ acao: 'addSession', sessao });
+    }
+    if (resposta && resposta.status === 'ok') {
+      Util.toast(editandoSessaoID ? 'Sessão atualizada!' : 'Sessão registrada!', 'success');
+      limparFormulario();
+      editandoSessaoID = null;
+      btnSubmit.innerHTML = '<i class="fas fa-save me-1"></i> Registrar Sessão';
+      carregarHistorico();
+      carregarLivros();
+    } else {
+      throw new Error(resposta?.erro || 'Falha no servidor');
+    }
+  } catch (erro) {
+    Util.toast('Erro ao salvar: ' + erro.message, 'danger');
+  }
+  btnSubmit.disabled = false;
+}
+
 
   function limparFormulario() {
     form.reset();
