@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => {
     const splash = document.getElementById('splash-screen');
     if (splash) splash.remove();
-  }, 800);
+  }, 5000);
 
   // Inicializa módulos básicos
   Auth.init();
