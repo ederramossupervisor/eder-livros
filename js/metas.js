@@ -95,9 +95,14 @@ const Metas = (() => {
         'Diversidade literária': 'fa-rainbow',
         'Anotador': 'fa-pen',
         'Viajante literário': 'fa-map-marked-alt',
-        'Volta ao Mundo': 'fa-globe-americas'  // NOVO (pode usar ícone de globo)
+        'Volta ao Mundo': 'fa-globe-americas',
+        'Leitor Onívoro': 'fa-utensils',            // NOVO
+        'Madrugador Literário': 'fa-cloud-moon',   // NOVO
+        '100 Dias de Leitura': 'fa-calendar-plus', // NOVO
+        'Revisor Crítico': 'fa-star-half-alt',     // NOVO
+        'Emprestador Solidário': 'fa-hand-holding-heart' // NOVO
       };
-      // Descrições (tooltips) para cada conquista
+      
       const descricoes = {
         'Primeiro livro': 'Cadastrar o primeiro livro na biblioteca.',
         'Leitor iniciante': 'Finalizar a leitura de 3 livros.',
@@ -115,7 +120,12 @@ const Metas = (() => {
         'Diversidade literária': 'Ler livros de 10 gêneros diferentes.',
         'Anotador': 'Escrever 20 anotações de livros.',
         'Viajante literário': 'Ler livros em 3 idiomas diferentes.',
-        'Volta ao Mundo': 'Ler livros de autores de 5 nacionalidades diferentes.'  // NOVA
+        'Volta ao Mundo': 'Ler livros de autores de 5 nacionalidades diferentes.',
+        'Leitor Onívoro': 'Ler livros em 4 formatos diferentes (Físico, Kindle, PDF, Audiobook).',
+        'Madrugador Literário': 'Registrar uma sessão de leitura antes das 6h da manhã.',
+        '100 Dias de Leitura': 'Acumular 100 dias (não consecutivos) com pelo menos uma página lida.',
+        'Revisor Crítico': 'Atribuir nota (diferente de zero) a 10 livros finalizados.',
+        'Emprestador Solidário': 'Registrar 3 empréstimos de livros para outras pessoas.'
       };
       const nomesObtidos = (Array.isArray(resp) ? resp : []).map(c => c.Nome);
 
