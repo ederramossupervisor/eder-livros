@@ -94,9 +94,9 @@ const Metas = (() => {
         'Colecionador de clássicos': 'fa-landmark',
         'Diversidade literária': 'fa-rainbow',
         'Anotador': 'fa-pen',
-        'Viajante literário': 'fa-map-marked-alt'
+        'Viajante literário': 'fa-map-marked-alt',
+        'Volta ao Mundo': 'fa-globe-americas'  // NOVO (pode usar ícone de globo)
       };
-
       // Descrições (tooltips) para cada conquista
       const descricoes = {
         'Primeiro livro': 'Cadastrar o primeiro livro na biblioteca.',
@@ -114,9 +114,9 @@ const Metas = (() => {
         'Colecionador de clássicos': 'Ler 5 livros do gênero Literatura Clássica ou Clássico.',
         'Diversidade literária': 'Ler livros de 10 gêneros diferentes.',
         'Anotador': 'Escrever 20 anotações de livros.',
-        'Viajante literário': 'Ler livros em 3 idiomas diferentes.'
+        'Viajante literário': 'Ler livros em 3 idiomas diferentes.',
+        'Volta ao Mundo': 'Ler livros de autores de 5 nacionalidades diferentes.'  // NOVA
       };
-
       const nomesObtidos = (Array.isArray(resp) ? resp : []).map(c => c.Nome);
 
       Object.keys(icones).forEach(nome => {
