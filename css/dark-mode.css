@@ -115,3 +115,76 @@ body.dark-mode .text-muted {
 body.dark-mode .empty-state i {
   opacity: 0.5;
 }
+/* ========== FORÇA HERANÇA DE COR NO MODO ESCURO ========== */
+body.dark-mode,
+body.dark-mode p,
+body.dark-mode span,
+body.dark-mode li,
+body.dark-mode label,
+body.dark-mode small,
+body.dark-mode th,
+body.dark-mode td,
+body.dark-mode h1,
+body.dark-mode h2,
+body.dark-mode h3,
+body.dark-mode h4,
+body.dark-mode h5,
+body.dark-mode h6 {
+  color: var(--text-primary);
+}
+
+/* Mantém os textos secundários com a cor correta */
+body.dark-mode .text-muted,
+body.dark-mode small.text-muted,
+body.dark-mode .text-secondary {
+  color: var(--text-secondary) !important;
+}
+
+/* Badges */
+body.dark-mode .badge.bg-light {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-secondary) !important;
+}
+body.dark-mode .badge.bg-primary {
+  background-color: var(--primary) !important;
+  color: #fff !important;
+}
+body.dark-mode .badge.bg-secondary {
+  background-color: var(--secondary) !important;
+  color: #fff !important;
+}
+
+/* Tabelas (em qualquer lugar, não só no modal) */
+body.dark-mode table,
+body.dark-mode table td,
+body.dark-mode table th {
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+body.dark-mode table thead th {
+  background-color: var(--bg-secondary);
+}
+
+/* Input placeholders */
+body.dark-mode ::placeholder {
+  color: var(--text-secondary) !important;
+  opacity: 0.7;
+}
+
+/* Dropdowns e selects */
+body.dark-mode select option {
+  background-color: var(--bg-card);
+  color: var(--text-primary);
+}
+
+/* Pré-visualização de relatório e blocos de código */
+body.dark-mode pre,
+body.dark-mode #relatorio-conteudo {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Links dentro de conteúdo */
+body.dark-mode a:not(.btn):not(.nav-link) {
+  color: var(--primary);
+}
