@@ -24,8 +24,8 @@ body.app-loaded .splash {
 }
 
 .splash-logo {
-  width: 150px !important;
-  height: auto !important;
+  width: 150px;
+  height: auto;
   margin-bottom: 1.5rem;
   animation: splash-pulse 1.5s ease-in-out infinite;
 }
