@@ -157,7 +157,7 @@ const Dashboard = (() => {
         } else {
           textoPrevisao = `<i class="fa-solid fa-calendar-days"></i> Previsão: ${dataFormatada} (${diffDias} dias)`;
         }
-        previsaoEl.textContent = textoPrevisao;
+        previsaoEl.innerHTML = textoPrevisao;
         previsaoEl.classList.remove('d-none');
       } else {
         previsaoEl.classList.add('d-none');
