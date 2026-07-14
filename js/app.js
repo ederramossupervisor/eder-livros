@@ -5,12 +5,12 @@ document.addEventListener('DOMContentLoaded', () => {
   // Só adiciona a classe que inicia a transição de saída após 5 segundos
   setTimeout(() => {
     document.body.classList.add('app-loaded');
-  }, 5000);
+  }, 4000);
 
   // Remove o elemento do DOM depois que a transição terminar (5s + 0.5s)
   setTimeout(() => {
     if (splash) splash.remove();
-  }, 5500);
+  }, 4500);
 
   // Inicializa módulos básicos (independente da splash)
   Auth.init();
