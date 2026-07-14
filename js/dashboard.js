@@ -151,11 +151,11 @@ const Dashboard = (() => {
         const dataFormatada = dataPrev.toLocaleDateString('pt-BR');
         let textoPrevisao = '';
         if (diffDias <= 0) {
-          textoPrevisao = '🎉 Você deve terminar hoje!';
+          textoPrevisao = '<i class="fa-solid fa-hands-clapping"></i> Você deve terminar hoje!';
         } else if (diffDias === 1) {
-          textoPrevisao = '📅 Previsão: amanhã';
+          textoPrevisao = '<i class="fa-solid fa-calendar-days"></i> Previsão: amanhã';
         } else {
-          textoPrevisao = `📅 Previsão: ${dataFormatada} (${diffDias} dias)`;
+          textoPrevisao = `<i class="fa-solid fa-calendar-days"></i> Previsão: ${dataFormatada} (${diffDias} dias)`;
         }
         previsaoEl.textContent = textoPrevisao;
         previsaoEl.classList.remove('d-none');
