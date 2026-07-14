@@ -24,12 +24,11 @@ body.app-loaded .splash {
 }
 
 .splash-logo {
-  width: 15px;   /* novo tamanho */
-  height: auto;   /* mantém a proporção */
+  width: 150px !important;
+  height: auto !important;
   margin-bottom: 1.5rem;
   animation: splash-pulse 1.5s ease-in-out infinite;
 }
-
 .splash-title {
   font-size: 2rem;
   font-weight: 700;
