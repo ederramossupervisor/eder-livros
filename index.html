@@ -470,10 +470,11 @@
                   <!-- Botão para abrir o App Drive no Android -->
                   <div class="mt-2 pt-2 border-top">
                     <small class="text-muted d-block mb-1">Ou digitalize a capa com o Google Drive:</small>
-                    <a href="intent://drive.google.com/drive/folders/1Gn3UfUVWT4nrkgURWAPT7BZrRV2-tza7#Intent;scheme=https;package=com.google.android.apps.docs;end" 
-                       class="btn btn-outline-secondary btn-sm">
-                      <i class="fab fa-google-drive"></i> Abrir no App Drive
-                    </a>
+                    <a href="https://drive.google.com/drive/folders/1Gn3UfUVWT4nrkgURWAPT7BZrRV2-tza7" 
+                     target="_blank" 
+                     class="btn btn-outline-secondary btn-sm">
+                    <i class="fab fa-google-drive"></i> Abrir no App Drive
+                  </a>
                   </div>
                 </div>
               </div>
@@ -540,6 +541,7 @@
         </div>
 
         <!-- Formulário da sessão -->
+                <!-- Formulário da sessão -->
         <form id="session-form" novalidate>
           <div class="row g-3">
             <div class="col-md-6">
@@ -601,33 +603,17 @@
             </div>
           </div>
 
-          <div class="mt-3">
-              <label class="form-label">Anotação da sessão (será salva como anotação)</label>
-              <div class="row g-2 mb-2">
+          <!-- Contexto + Anotação da sessão -->
+          <div class="card mt-3">
+            <div class="card-header fw-bold">Contexto e anotação (opcional)</div>
+            <div class="card-body">
+              <div class="row g-2">
                 <div class="col-md-4">
-                  <select id="tipo-obs-sessao" class="form-select">
-                    <option value="">Tipo (opcional)</option>
-                    <option value="Geral">Geral</option>
-                    <option value="Reflexão">Reflexão</option>
-                    <option value="Personagem">Personagem</option>
-                    <option value="Enredo">Enredo</option>
-                    <option value="Citação">Citação</option>
-                  </select>
+                  <label for="local-sessao" class="form-label">Local</label>
+                  <input type="text" id="local-sessao" class="form-control" placeholder="Ex: Quarto, Biblioteca">
                 </div>
-                <div class="col-md-4">
-                  <input type="number" id="pagina-obs-sessao" class="form-control" placeholder="Página" min="1">
-                </div>
-              </div>
-              <div class="input-group">
-                <textarea id="observacoes-sessao" class="form-control" rows="2" placeholder="Alguma nota sobre esta sessão..."></textarea>
-                <button class="btn btn-outline-secondary" type="button" id="btn-voz-obs-sessao" title="Ditar observação">
-                  <i class="fas fa-microphone"></i>
-                </button>
-              </div>
-            </div>
                 <div class="col-md-4">
                   <label for="humor" class="form-label">Humor</label>
-                  <!-- Humor -->
                   <select id="humor" class="form-select">
                     <option value="">Selecione...</option>
                     <option>😊 Feliz</option>
@@ -646,7 +632,6 @@
                 </div>
                 <div class="col-md-4">
                   <label for="clima" class="form-label">Clima</label>
-                  <!-- Clima -->
                   <select id="clima" class="form-select">
                     <option value="">Selecione...</option>
                     <option>☀️ Ensolarado</option>
@@ -663,9 +648,32 @@
                   </select>
                 </div>
               </div>
+
+              <!-- Anotação da sessão -->
               <div class="mt-3">
-                <label for="observacoes-sessao" class="form-label">Observações</label>
-                <textarea id="observacoes-sessao" class="form-control" rows="2" placeholder="Alguma nota sobre esta sessão..."></textarea>
+                <label class="form-label fw-bold">📝 Anotação da sessão</label>
+                <small class="text-muted d-block mb-2">Será salva automaticamente como uma anotação vinculada ao livro.</small>
+                <div class="row g-2 mb-2">
+                  <div class="col-md-4">
+                    <select id="tipo-obs-sessao" class="form-select">
+                      <option value="">Tipo (opcional)</option>
+                      <option value="Geral">Geral</option>
+                      <option value="Reflexão">Reflexão</option>
+                      <option value="Personagem">Personagem</option>
+                      <option value="Enredo">Enredo</option>
+                      <option value="Citação">Citação</option>
+                    </select>
+                  </div>
+                  <div class="col-md-4">
+                    <input type="number" id="pagina-obs-sessao" class="form-control" placeholder="Página" min="1">
+                  </div>
+                </div>
+                <div class="input-group">
+                  <textarea id="observacoes-sessao" class="form-control" rows="2" placeholder="Alguma nota sobre esta sessão..."></textarea>
+                  <button class="btn btn-outline-secondary" type="button" id="btn-voz-obs-sessao" title="Ditar observação">
+                    <i class="fas fa-microphone"></i>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -681,7 +689,6 @@
         </div>
       </div>
     </div>
-
     <!-- ==================== PÁGINAS PLACEHOLDER ==================== -->
     <div id="page-estatisticas" class="page">
       <div class="container py-4">
