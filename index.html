@@ -601,14 +601,30 @@
             </div>
           </div>
 
-          <div class="card mt-3">
-            <div class="card-header fw-bold">Contexto (opcional)</div>
-            <div class="card-body">
-              <div class="row g-2">
+          <div class="mt-3">
+              <label class="form-label">Anotação da sessão (será salva como anotação)</label>
+              <div class="row g-2 mb-2">
                 <div class="col-md-4">
-                  <label for="local-sessao" class="form-label">Local</label>
-                  <input type="text" id="local-sessao" class="form-control" placeholder="Ex: Quarto, Biblioteca">
+                  <select id="tipo-obs-sessao" class="form-select">
+                    <option value="">Tipo (opcional)</option>
+                    <option value="Geral">Geral</option>
+                    <option value="Reflexão">Reflexão</option>
+                    <option value="Personagem">Personagem</option>
+                    <option value="Enredo">Enredo</option>
+                    <option value="Citação">Citação</option>
+                  </select>
                 </div>
+                <div class="col-md-4">
+                  <input type="number" id="pagina-obs-sessao" class="form-control" placeholder="Página" min="1">
+                </div>
+              </div>
+              <div class="input-group">
+                <textarea id="observacoes-sessao" class="form-control" rows="2" placeholder="Alguma nota sobre esta sessão..."></textarea>
+                <button class="btn btn-outline-secondary" type="button" id="btn-voz-obs-sessao" title="Ditar observação">
+                  <i class="fas fa-microphone"></i>
+                </button>
+              </div>
+            </div>
                 <div class="col-md-4">
                   <label for="humor" class="form-label">Humor</label>
                   <!-- Humor -->
@@ -891,79 +907,82 @@
 
     <div id="page-anotacoes" class="page">
       <div class="container py-4">
-        <!-- Abas: Anotações | Citações -->
-        <ul class="nav nav-tabs mb-4" id="anotacoesTabs" role="tablist">
-          <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="anotacoes-tab" data-bs-toggle="tab" data-bs-target="#anotacoes-painel" type="button" role="tab">Anotações</button>
-          </li>
-          <li class="nav-item" role="presentation">
-            <button class="nav-link" id="citacoes-tab" data-bs-toggle="tab" data-bs-target="#citacoes-painel" type="button" role="tab">Citações</button>
-          </li>
-        </ul>
-
-        <div class="tab-content">
-          <!-- Painel de Anotações -->
-          <div class="tab-pane fade show active" id="anotacoes-painel" role="tabpanel">
-            <div class="row g-3">
-              <div class="col-md-5">
-                <div class="card shadow-sm">
-                  <div class="card-header fw-bold">Nova anotação</div>
-                  <div class="card-body">
-                    <form id="form-anotacao">
-                      <div class="mb-3">
-                        <label for="anot-livro" class="form-label">Livro</label>
-                        <select id="anot-livro" class="form-select" required></select>
-                      </div>
-                      <div class="row g-2">
-                        <div class="col-6">
-                          <label for="anot-capitulo" class="form-label">Capítulo</label>
-                          <input type="text" id="anot-capitulo" class="form-control">
-                        </div>
-                        <div class="col-6">
-                          <label for="anot-pagina" class="form-label">Página</label>
-                          <input type="number" id="anot-pagina" class="form-control">
-                        </div>
-                      </div>
-                      <div class="mb-3 mt-2">
-                        <label for="anot-categoria" class="form-label">Categoria</label>
-                        <select id="anot-categoria" class="form-select">
-                          <option value="Geral">Geral</option>
-                          <option value="Reflexão">Reflexão</option>
-                          <option value="Personagem">Personagem</option>
-                          <option value="Enredo">Enredo</option>
-                          <option value="Citação">Citação</option>
-                        </select>
-                      </div>
-                      <div class="mb-3">
-                        <label for="anot-resumo" class="form-label">Resumo</label>
-                        <textarea id="anot-resumo" class="form-control" rows="2"></textarea>
-                      </div>
-                      <div class="mb-3">
-                        <label for="anot-trecho" class="form-label">Trecho</label>
-                        <textarea id="anot-trecho" class="form-control" rows="2"></textarea>
-                      </div>
-                      <div class="mb-3">
-                        <label for="anot-comentario" class="form-label">Comentário</label>
-                        <textarea id="anot-comentario" class="form-control" rows="2"></textarea>
-                      </div>
-                      <button type="submit" class="btn btn-primary">Salvar</button>
-                    </form>
+        <h1 class="mb-4">📝 Anotações</h1>
+    
+        <div class="row g-3">
+          <!-- Formulário de nova anotação -->
+          <div class="col-md-5">
+            <div class="card shadow-sm">
+              <div class="card-header fw-bold">Nova anotação</div>
+              <div class="card-body">
+                <form id="form-anotacao">
+                  <div class="mb-3">
+                    <label for="anot-livro" class="form-label">Livro</label>
+                    <select id="anot-livro" class="form-select" required></select>
                   </div>
-                </div>
-              </div>
-              <div class="col-md-7">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                  <h5>Minhas anotações</h5>
-                  <select id="filtro-livro-anot" class="form-select w-auto">
-                    <option value="">Todos os livros</option>
-                  </select>
-                </div>
-                <div id="lista-anotacoes">
-                  <!-- Preenchido dinamicamente -->
-                </div>
+                  <div class="row g-2">
+                    <div class="col-6">
+                      <label for="anot-capitulo" class="form-label">Capítulo</label>
+                      <input type="text" id="anot-capitulo" class="form-control">
+                    </div>
+                    <div class="col-6">
+                      <label for="anot-pagina" class="form-label">Página</label>
+                      <input type="number" id="anot-pagina" class="form-control">
+                    </div>
+                  </div>
+                  <div class="mb-3 mt-2">
+                    <label for="anot-categoria" class="form-label">Categoria</label>
+                    <select id="anot-categoria" class="form-select">
+                      <option value="Geral">Geral</option>
+                      <option value="Reflexão">Reflexão</option>
+                      <option value="Personagem">Personagem</option>
+                      <option value="Enredo">Enredo</option>
+                      <option value="Citação">Citação</option>
+                    </select>
+                  </div>
+                  <div class="mb-3">
+                    <label for="anot-resumo" class="form-label">Resumo</label>
+                    <textarea id="anot-resumo" class="form-control" rows="2"></textarea>
+                  </div>
+                  <div class="mb-3">
+                    <label for="anot-trecho" class="form-label">Trecho</label>
+                    <div class="input-group">
+                      <textarea id="anot-trecho" class="form-control" rows="2"></textarea>
+                      <button class="btn btn-outline-secondary" type="button" id="btn-voz-anot-trecho" title="Ditar trecho">
+                        <i class="fas fa-microphone"></i>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="mb-3">
+                    <label for="anot-comentario" class="form-label">Comentário</label>
+                    <div class="input-group">
+                      <textarea id="anot-comentario" class="form-control" rows="2"></textarea>
+                      <button class="btn btn-outline-secondary" type="button" id="btn-voz-anot-comentario" title="Ditar comentário">
+                        <i class="fas fa-microphone"></i>
+                      </button>
+                    </div>
+                  </div>
+                  <button type="submit" class="btn btn-primary">Salvar</button>
+                </form>
               </div>
             </div>
           </div>
+    
+          <!-- Lista de anotações -->
+          <div class="col-md-7">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h5>Minhas anotações</h5>
+              <select id="filtro-livro-anot" class="form-select w-auto">
+                <option value="">Todos os livros</option>
+              </select>
+            </div>
+            <div id="lista-anotacoes">
+              <!-- Preenchido dinamicamente -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
           <!-- Painel de Citações -->
           <div class="tab-pane fade" id="citacoes-painel" role="tabpanel">
