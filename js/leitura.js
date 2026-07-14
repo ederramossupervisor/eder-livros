@@ -1,5 +1,5 @@
 /**
- * Módulo de registro de sessões de leitura – com cronômetro e máscara de hora
+ * Módulo de registro de sessões de leitura – com cronômetro, máscara de hora e anotação integrada
  */
 const Leitura = (() => {
   const form = document.getElementById('session-form');
@@ -29,13 +29,50 @@ const Leitura = (() => {
 
   // Variáveis do cronômetro
   let cronometroAtivo = false;
-  let tempoAcumulado = 0;      // em segundos
+  let tempoAcumulado = 0;
   let inicioCronometro = null;
   let timerInterval = null;
 
-  /* ========== FORMATAÇÃO DE HORA ========== */
+  // Reconhecimento de voz para observação da sessão
+  let recognition = null;
+  let targetInput = null;
+
+  function initSpeech() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      console.warn('Speech Recognition não suportado neste navegador.');
+      return;
+    }
+    recognition = new SpeechRecognition();
+    recognition.lang = 'pt-BR';
+    recognition.interimResults = false;
+
+    recognition.addEventListener('result', (e) => {
+      const transcript = e.results[0][0].transcript;
+      if (targetInput) {
+        targetInput.value += (targetInput.value ? ' ' : '') + transcript;
+      }
+    });
+
+    recognition.addEventListener('end', () => {
+      const btn = document.getElementById('btn-voz-obs-sessao');
+      if (btn) {
+        btn.innerHTML = '<i class="fas fa-microphone"></i>';
+      }
+      targetInput = null;
+    });
+
+    recognition.addEventListener('error', () => {
+      const btn = document.getElementById('btn-voz-obs-sessao');
+      if (btn) {
+        btn.innerHTML = '<i class="fas fa-microphone"></i>';
+      }
+      targetInput = null;
+    });
+  }
+
   function formatarHora(input) {
-    let valor = input.value.replace(/\D/g, ''); // remove tudo que não for dígito
+    let valor = input.value.replace(/\D/g, '');
     if (valor.length > 4) valor = valor.slice(0, 4);
     if (valor.length > 2) {
       valor = valor.slice(0, 2) + ':' + valor.slice(2);
@@ -43,52 +80,67 @@ const Leitura = (() => {
     input.value = valor;
   }
 
-  /* ========== INICIALIZAÇÃO ========== */
   function init() {
-  if (!form) return;
+    if (!form) return;
 
-  // NOVO: data local correta, independentemente do fuso
-  const hojeLocal = new Date();
-  const offset = hojeLocal.getTimezoneOffset() * 60000;
-  const hojeLocalISO = new Date(hojeLocal.getTime() - offset).toISOString().split('T')[0];
-  dataInput.value = hojeLocalISO;
+    initSpeech();
+    dataInput.valueAsDate = new Date();
 
-  // Máscara e validação dos campos de hora
-  horaInicio.addEventListener('input', () => formatarHora(horaInicio));
-  horaFim.addEventListener('input', () => formatarHora(horaFim));
+    horaInicio.addEventListener('input', () => formatarHora(horaInicio));
+    horaFim.addEventListener('input', () => formatarHora(horaFim));
 
-  horaInicio.addEventListener('blur', () => {
-    if (horaInicio.value && !horaInicio.value.includes(':')) {
-      horaInicio.value = horaInicio.value.padEnd(2, '0') + ':00';
-      if (horaInicio.value.length > 5) horaInicio.value = horaInicio.value.slice(0, 5);
+    horaInicio.addEventListener('blur', () => {
+      if (horaInicio.value && !horaInicio.value.includes(':')) {
+        horaInicio.value = horaInicio.value.padEnd(2, '0') + ':00';
+        if (horaInicio.value.length > 5) horaInicio.value = horaInicio.value.slice(0, 5);
+      }
+      calcularTempo();
+    });
+
+    horaFim.addEventListener('blur', () => {
+      if (horaFim.value && !horaFim.value.includes(':')) {
+        horaFim.value = horaFim.value.padEnd(2, '0') + ':00';
+        if (horaFim.value.length > 5) horaFim.value = horaFim.value.slice(0, 5);
+      }
+      calcularTempo();
+    });
+
+    [pagInicial, pagFinal].forEach(el => el.addEventListener('input', calcularPaginas));
+    refreshBtn.addEventListener('click', carregarLivros);
+    form.addEventListener('submit', salvarSessao);
+    document.getElementById('clear-session-btn')?.addEventListener('click', limparFormulario);
+
+    btnIniciar.addEventListener('click', iniciarCronometro);
+    btnPausar.addEventListener('click', pausarCronometro);
+    btnRetomar.addEventListener('click', retomarCronometro);
+    btnFinalizar.addEventListener('click', finalizarCronometro);
+
+    // Microfone da observação da sessão
+    const btnVoz = document.getElementById('btn-voz-obs-sessao');
+    const obsInput = document.getElementById('observacoes-sessao');
+    if (btnVoz && obsInput) {
+      btnVoz.addEventListener('click', () => {
+        if (!recognition) {
+          Util.toast('Reconhecimento de voz não suportado.', 'warning');
+          return;
+        }
+        if (targetInput === obsInput) {
+          recognition.stop();
+          return;
+        }
+        if (targetInput) recognition.stop();
+        targetInput = obsInput;
+        btnVoz.innerHTML = '<i class="fas fa-stop"></i>';
+        recognition.start();
+      });
     }
-    calcularTempo();
-  });
 
-  horaFim.addEventListener('blur', () => {
-    if (horaFim.value && !horaFim.value.includes(':')) {
-      horaFim.value = horaFim.value.padEnd(2, '0') + ':00';
-      if (horaFim.value.length > 5) horaFim.value = horaFim.value.slice(0, 5);
-    }
-    calcularTempo();
-  });
+    carregarLivros();
+    carregarHistorico();
+    console.log('✅ Módulo Leitura pronto (com anotação integrada e microfone).');
+  }
 
-  [pagInicial, pagFinal].forEach(el => el.addEventListener('input', calcularPaginas));
-  refreshBtn.addEventListener('click', carregarLivros);
-  form.addEventListener('submit', salvarSessao);
-  document.getElementById('clear-session-btn')?.addEventListener('click', limparFormulario);
-
-  // Eventos do cronômetro
-  btnIniciar.addEventListener('click', iniciarCronometro);
-  btnPausar.addEventListener('click', pausarCronometro);
-  btnRetomar.addEventListener('click', retomarCronometro);
-  btnFinalizar.addEventListener('click', finalizarCronometro);
-
-  carregarLivros();
-  carregarHistorico();
-  console.log('✅ Módulo Leitura pronto (com cronômetro e máscara de hora).');
-}
-  /* ========== CRONÔMETRO ========== */
+  // ========== CRONÔMETRO ==========
   function atualizarDisplay(segundos) {
     const mins = Math.floor(segundos / 60);
     const secs = segundos % 60;
@@ -101,12 +153,10 @@ const Leitura = (() => {
     }
     inicioCronometro = Date.now();
     cronometroAtivo = true;
-
     btnIniciar.classList.add('d-none');
     btnPausar.classList.remove('d-none');
     btnRetomar.classList.add('d-none');
     btnFinalizar.classList.remove('d-none');
-
     horaInicio.disabled = true;
     horaFim.disabled = true;
 
@@ -121,10 +171,8 @@ const Leitura = (() => {
   function pausarCronometro() {
     if (!cronometroAtivo) return;
     clearInterval(timerInterval);
-    const agora = Date.now();
-    tempoAcumulado += Math.floor((agora - inicioCronometro) / 1000);
+    tempoAcumulado += Math.floor((Date.now() - inicioCronometro) / 1000);
     cronometroAtivo = false;
-
     btnPausar.classList.add('d-none');
     btnRetomar.classList.remove('d-none');
   }
@@ -132,10 +180,8 @@ const Leitura = (() => {
   function retomarCronometro() {
     inicioCronometro = Date.now();
     cronometroAtivo = true;
-
     btnRetomar.classList.add('d-none');
     btnPausar.classList.remove('d-none');
-
     timerInterval = setInterval(() => {
       const agora = Date.now();
       const decorrido = Math.floor((agora - inicioCronometro) / 1000);
@@ -147,19 +193,16 @@ const Leitura = (() => {
   function finalizarCronometro() {
     if (cronometroAtivo) {
       clearInterval(timerInterval);
-      const agora = Date.now();
-      tempoAcumulado += Math.floor((agora - inicioCronometro) / 1000);
+      tempoAcumulado += Math.floor((Date.now() - inicioCronometro) / 1000);
       cronometroAtivo = false;
     }
     horaFim.value = new Date().toTimeString().slice(0, 5);
     atualizarDisplay(tempoAcumulado);
     calcularTempo();
-
     btnIniciar.classList.remove('d-none');
     btnPausar.classList.add('d-none');
     btnRetomar.classList.add('d-none');
     btnFinalizar.classList.add('d-none');
-
     horaInicio.disabled = false;
     horaFim.disabled = false;
   }
@@ -170,19 +213,17 @@ const Leitura = (() => {
     tempoAcumulado = 0;
     inicioCronometro = null;
     atualizarDisplay(0);
-
     btnIniciar.classList.remove('d-none');
     btnPausar.classList.add('d-none');
     btnRetomar.classList.add('d-none');
     btnFinalizar.classList.add('d-none');
-
     horaInicio.disabled = false;
     horaFim.disabled = false;
     horaInicio.value = '';
     horaFim.value = '';
   }
 
-  /* ========== CARREGAMENTO DE LIVROS ========== */
+  // ========== LIVROS ==========
   async function carregarLivros() {
     try {
       livroSelect.innerHTML = '<option value="">Carregando...</option>';
@@ -190,42 +231,23 @@ const Leitura = (() => {
       if (resp && Array.isArray(resp)) {
         livrosCache = resp;
         renderizarListaLivros();
-      } else {
-        throw new Error(resp?.erro || 'Formato inesperado');
       }
     } catch (e) {
-      Util.toast('Erro ao carregar livros: ' + e.message, 'danger');
-      livroSelect.innerHTML = '<option value="">Erro ao carregar</option>';
+      Util.toast('Erro ao carregar livros', 'danger');
     }
   }
 
   function renderizarListaLivros() {
     livroSelect.innerHTML = '<option value="">Selecione um livro...</option>';
-    if (livrosCache.length === 0) {
-      livroSelect.innerHTML += '<option disabled>Nenhum livro cadastrado</option>';
-      return;
-    }
     livrosCache.forEach(livro => {
       const opt = document.createElement('option');
       opt.value = livro.ID;
       opt.textContent = `${livro.Título} - ${livro.Autor} (${livro.Status})`;
       livroSelect.appendChild(opt);
     });
-    livroSelect.addEventListener('change', () => {
-      const id = livroSelect.value;
-      const livro = livrosCache.find(l => l.ID === id);
-      if (livro) {
-        livroInfo.innerHTML = `
-          <strong>${livro.Título}</strong> | ${livro.Autor}<br>
-          Páginas totais: ${livro.NúmeroPáginas || '?'} | Status: ${livro.Status} | Lidas: ${livro.PáginasLidasAcumuladas || 0}
-        `;
-      } else {
-        livroInfo.innerHTML = '';
-      }
-    });
   }
 
-  /* ========== CÁLCULOS AUTOMÁTICOS ========== */
+  // ========== CÁLCULOS ==========
   function calcularTempo() {
     if (horaInicio.value && horaFim.value) {
       const [hi, mi] = horaInicio.value.split(':').map(Number);
@@ -235,11 +257,7 @@ const Leitura = (() => {
         if (minutos < 0) minutos += 1440;
         tempoMinSpan.textContent = minutos;
         tempoCalculadoDiv.classList.remove('d-none');
-      } else {
-        tempoCalculadoDiv.classList.add('d-none');
       }
-    } else {
-      tempoCalculadoDiv.classList.add('d-none');
     }
   }
 
@@ -249,75 +267,84 @@ const Leitura = (() => {
     if (pf > pi) {
       let lidas = pf - pi;
       if (pi > 0) lidas += 1;
-      lidas = Math.max(0, lidas);
-      pagLidasSpan.textContent = lidas;
+      pagLidasSpan.textContent = Math.max(0, lidas);
       pagLidasDiv.classList.remove('d-none');
-    } else {
-      pagLidasDiv.classList.add('d-none');
     }
   }
 
-  /* ========== SALVAR SESSÃO ========== */
+  // ========== SALVAR SESSÃO + ANOTAÇÃO ==========
   async function salvarSessao(e) {
-  e.preventDefault();
-  if (!form.checkValidity()) {
-    form.classList.add('was-validated');
-    Util.toast('Preencha os campos obrigatórios.', 'warning');
-    return;
-  }
-  const livroID = livroSelect.value;
-  if (!livroID) {
-    Util.toast('Selecione um livro.', 'warning');
-    return;
-  }
-
-  // NOVO: alerta se data for futura (opcional, apenas avisa)
-  const dataSessao = new Date(dataInput.value + 'T00:00:00');
-  if (dataSessao.getTime() > new Date().setHours(23,59,59,999)) {
-    Util.toast('Atenção: a data da sessão está no futuro!', 'warning');
-  }
-
-  const sessao = {
-    livroID,
-    data: dataInput.value,
-    horaInicio: horaInicio.value,
-    horaFim: horaFim.value,
-    paginaInicial: pagInicial.value,
-    paginaFinal: pagFinal.value,
-    local: document.getElementById('local-sessao').value,
-    humor: document.getElementById('humor').value,
-    clima: document.getElementById('clima').value,
-    distracoes: '',
-    observacoes: document.getElementById('observacoes-sessao').value
-  };
-
-  const btnSubmit = form.querySelector('button[type="submit"]');
-  btnSubmit.disabled = true;
-  btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Salvando...';
-
-  try {
-    let resposta;
-    if (editandoSessaoID) {
-      resposta = await API.enviar({ acao: 'updateSession', id: editandoSessaoID, sessao });
-    } else {
-      resposta = await API.enviar({ acao: 'addSession', sessao });
+    e.preventDefault();
+    if (!form.checkValidity()) {
+      form.classList.add('was-validated');
+      Util.toast('Preencha os campos obrigatórios.', 'warning');
+      return;
     }
-    if (resposta && resposta.status === 'ok') {
-      Util.toast(editandoSessaoID ? 'Sessão atualizada!' : 'Sessão registrada!', 'success');
-      limparFormulario();
-      editandoSessaoID = null;
-      btnSubmit.innerHTML = '<i class="fas fa-save me-1"></i> Registrar Sessão';
-      carregarHistorico();
-      carregarLivros();
-    } else {
-      throw new Error(resposta?.erro || 'Falha no servidor');
+    const livroID = livroSelect.value;
+    if (!livroID) {
+      Util.toast('Selecione um livro.', 'warning');
+      return;
     }
-  } catch (erro) {
-    Util.toast('Erro ao salvar: ' + erro.message, 'danger');
-  }
-  btnSubmit.disabled = false;
-}
 
+    const sessao = {
+      livroID,
+      data: dataInput.value,
+      horaInicio: horaInicio.value,
+      horaFim: horaFim.value,
+      paginaInicial: pagInicial.value,
+      paginaFinal: pagFinal.value,
+      local: document.getElementById('local-sessao').value,
+      humor: document.getElementById('humor').value,
+      clima: document.getElementById('clima').value,
+      distracoes: '',
+      observacoes: document.getElementById('observacoes-sessao').value
+    };
+
+    const btnSubmit = form.querySelector('button[type="submit"]');
+    btnSubmit.disabled = true;
+    btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Salvando...';
+
+    try {
+      let resposta;
+      if (editandoSessaoID) {
+        resposta = await API.enviar({ acao: 'updateSession', id: editandoSessaoID, sessao });
+      } else {
+        resposta = await API.enviar({ acao: 'addSession', sessao });
+      }
+
+      if (resposta && resposta.status === 'ok') {
+        // Se houver texto de observação e um tipo selecionado, criar anotação
+        const tipoObs = document.getElementById('tipo-obs-sessao').value;
+        const textoObs = sessao.observacoes.trim();
+        if (tipoObs && textoObs) {
+          const paginaAnot = document.getElementById('pagina-obs-sessao').value || '';
+          await API.enviar({
+            acao: 'addNote',
+            anotacao: {
+              livroID,
+              capitulo: '',
+              pagina: paginaAnot,
+              categoria: tipoObs,
+              resumo: '',
+              trecho: '',
+              comentario: textoObs,
+              imagem: ''
+            }
+          });
+        }
+
+        Util.toast(editandoSessaoID ? 'Sessão atualizada!' : 'Sessão registrada!', 'success');
+        limparFormulario();
+        editandoSessaoID = null;
+        btnSubmit.innerHTML = '<i class="fas fa-save me-1"></i> Registrar Sessão';
+        carregarHistorico();
+        carregarLivros();
+      }
+    } catch (erro) {
+      Util.toast('Erro ao salvar: ' + erro.message, 'danger');
+    }
+    btnSubmit.disabled = false;
+  }
 
   function limparFormulario() {
     form.reset();
@@ -327,12 +354,12 @@ const Leitura = (() => {
     pagLidasDiv.classList.add('d-none');
     livroInfo.innerHTML = '';
     editandoSessaoID = null;
-    const btnSubmit = form.querySelector('button[type="submit"]');
-    btnSubmit.innerHTML = '<i class="fas fa-save me-1"></i> Registrar Sessão';
+    document.getElementById('tipo-obs-sessao').value = '';
+    document.getElementById('pagina-obs-sessao').value = '';
     resetarCronometro();
   }
 
-  /* ========== HISTÓRICO ========== */
+  // ========== HISTÓRICO ==========
   async function carregarHistorico() {
     if (!historicoContainer) return;
     try {
@@ -340,29 +367,22 @@ const Leitura = (() => {
       if (Array.isArray(resp) && resp.length > 0) {
         historicoContainer.innerHTML = '';
         const mapaTitulos = {};
-        livrosCache.forEach(livro => {
-          mapaTitulos[livro.ID] = livro.Título || 'Livro sem título';
-        });
+        livrosCache.forEach(l => mapaTitulos[l.ID] = l.Título || 'Sem título');
 
         resp.forEach(sess => {
+          const dataFormatada = sess.Data ? new Date(sess.Data).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : '?';
+          const pi = sess.PáginaInicial || '?';
+          const pf = sess.PáginaFinal || '?';
+          const pagLidas = sess.PáginasLidas || 0;
+          const tempo = sess.Tempo ? `${sess.Tempo} min` : '';
+          const nomeLivro = mapaTitulos[sess.LivroID] || 'Desconhecido';
+
           const div = document.createElement('div');
           div.className = 'd-flex justify-content-between align-items-center p-2 border-bottom';
-          const dataFormatada = sess.Data
-            ? new Date(sess.Data).toLocaleDateString('pt-BR', { timeZone: 'UTC' })
-            : 'Data inválida';
-          const pagInicial = sess.PáginaInicial !== undefined && sess.PáginaInicial !== '' ? sess.PáginaInicial : '?';
-          const pagFinal = sess.PáginaFinal !== undefined && sess.PáginaFinal !== '' ? sess.PáginaFinal : '?';
-          const faixaPaginas = (pagInicial !== '?' || pagFinal !== '?')
-            ? `Pág. ${pagInicial}-${pagFinal}`
-            : 'Páginas não informadas';
-          const pagLidas = sess.PáginasLidas !== undefined ? sess.PáginasLidas : 0;
-          const tempo = sess.Tempo ? `${sess.Tempo} min` : '';
-          const nomeLivro = mapaTitulos[sess.LivroID] || 'Livro desconhecido';
-
           div.innerHTML = `
             <div>
               <strong>${nomeLivro}</strong><br>
-              <small>${dataFormatada} - ${faixaPaginas} (${pagLidas} pág) ${tempo ? '- ' + tempo : ''}</small>
+              <small>${dataFormatada} - Pág. ${pi}-${pf} (${pagLidas} pág) ${tempo}</small>
               ${sess.Local ? `<br><small class="text-muted">Local: ${sess.Local}</small>` : ''}
             </div>
             <div>
@@ -372,21 +392,11 @@ const Leitura = (() => {
           historicoContainer.appendChild(div);
         });
 
-        document.querySelectorAll('.btn-editar-sessao').forEach(btn => {
-          btn.addEventListener('click', () => editarSessao(btn.dataset.id, resp));
-        });
-        document.querySelectorAll('.btn-excluir-sessao').forEach(btn => {
-          btn.addEventListener('click', () => excluirSessao(btn.dataset.id));
-        });
-      } else {
-        historicoContainer.innerHTML = `
-          <div class="empty-state">
-            <i class="fas fa-clock fa-3x text-muted mb-3"></i>
-            <p class="text-muted">Nenhuma sessão registrada ainda.</p>
-          </div>`;
+        document.querySelectorAll('.btn-editar-sessao').forEach(btn => btn.addEventListener('click', () => editarSessao(btn.dataset.id, resp)));
+        document.querySelectorAll('.btn-excluir-sessao').forEach(btn => btn.addEventListener('click', () => excluirSessao(btn.dataset.id)));
       }
     } catch (e) {
-      console.error('Erro ao carregar histórico:', e);
+      console.error(e);
     }
   }
 
@@ -406,28 +416,22 @@ const Leitura = (() => {
     document.getElementById('observacoes-sessao').value = sess.Observações || '';
     calcularTempo();
     calcularPaginas();
-    const btnSubmit = form.querySelector('button[type="submit"]');
-    btnSubmit.innerHTML = '<i class="fas fa-save me-1"></i> Atualizar Sessão';
+    form.querySelector('button[type="submit"]').innerHTML = '<i class="fas fa-save me-1"></i> Atualizar Sessão';
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   async function excluirSessao(id) {
-    if (confirm('Excluir esta sessão permanentemente?')) {
-      try {
-        await API.enviar({ acao: 'deleteSession', id });
-        carregarHistorico();
-        carregarLivros();
-        Util.toast('Sessão excluída', 'info');
-      } catch (e) {
-        Util.toast('Erro ao excluir: ' + e.message, 'danger');
-      }
+    if (confirm('Excluir esta sessão?')) {
+      await API.enviar({ acao: 'deleteSession', id });
+      carregarHistorico();
+      carregarLivros();
+      Util.toast('Sessão excluída', 'info');
     }
   }
 
   return { init };
 })();
 
-// Inicialização segura
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', Leitura.init);
 } else {
