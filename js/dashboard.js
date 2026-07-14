@@ -69,6 +69,7 @@ const Dashboard = (() => {
   }
 
   function preencherCards(d) {
+      window.__previsaoTermino = d.previsaoTermino; // <-- NOVA LINHA
   containerCard = document.getElementById('livro-atual-card');
   if (!containerCard) return;
 
@@ -127,7 +128,7 @@ const Dashboard = (() => {
   const tituloEl = document.getElementById('livro-atual-titulo');
   const progressoEl = document.getElementById('livro-atual-progresso');
   const capaEl = document.getElementById('livro-atual-capa');
-  const previsaoEl = document.getElementById('livro-atual-previsao');
+  const previsaoEl = document.getElementById('livro-atual-previsao'); // já existe no HTML
 
   if (livro) {
     const progresso = livro.totalPag > 0 ? Math.round((livro.pagLidas / livro.totalPag) * 100) : 0;
@@ -138,17 +139,30 @@ const Dashboard = (() => {
         ? `<img src="${livro.urlCapa}" alt="Capa" class="img-fluid rounded" style="max-height:70px;">`
         : '';
     }
-    // Exibe previsão se disponível
+
+    // Previsão de conclusão (nova)
     if (previsaoEl) {
-      if (livro.dataTerminoEstimada) {
-        previsaoEl.textContent = `Previsão de término: ${livro.dataTerminoEstimada} (${livro.diasEstimados} dias)`;
+      // A previsão vem do dashboard, armazenada em window.__previsaoTermino ou similar
+      // Vamos obtê-la diretamente do objeto passado no último preencherCards
+      if (typeof window.__previsaoTermino !== 'undefined' && window.__previsaoTermino) {
+        const dataPrev = new Date(window.__previsaoTermino);
+        const hoje = new Date();
+        const diffDias = Math.ceil((dataPrev - hoje) / (1000 * 60 * 60 * 24));
+        const dataFormatada = dataPrev.toLocaleDateString('pt-BR');
+        let textoPrevisao = '';
+        if (diffDias <= 0) {
+          textoPrevisao = '🎉 Você deve terminar hoje!';
+        } else if (diffDias === 1) {
+          textoPrevisao = '📅 Previsão: amanhã';
+        } else {
+          textoPrevisao = `📅 Previsão: ${dataFormatada} (${diffDias} dias)`;
+        }
+        previsaoEl.textContent = textoPrevisao;
         previsaoEl.classList.remove('d-none');
       } else {
         previsaoEl.classList.add('d-none');
       }
     }
-    const indicador = document.getElementById('livro-atual-indicador');
-    if (indicador) indicador.textContent = `${currentLivroIndex + 1}/${livrosLendoList.length}`;
   } else {
     if (tituloEl) tituloEl.textContent = 'Nenhum livro em andamento';
     if (progressoEl) progressoEl.textContent = '';
@@ -156,7 +170,6 @@ const Dashboard = (() => {
     if (previsaoEl) previsaoEl.classList.add('d-none');
   }
 }
-
 
   function criarControlesNavegacao() {
     const oldLeft = document.getElementById('livro-atual-seta-left');
