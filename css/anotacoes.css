@@ -11,3 +11,15 @@
   padding-left: 1rem;
   margin: 0.5rem 0;
 }
+#cartao-citacao {
+  width: 400px;          /* largura base */
+  max-width: 100%;
+  transition: aspect-ratio 0.3s, width 0.3s;
+}
+.format-feed {
+  aspect-ratio: 1 / 1;
+}
+.format-stories {
+  aspect-ratio: 9 / 16;
+  width: 320px;          /* um pouco mais estreito para caber melhor em telas */
+}
