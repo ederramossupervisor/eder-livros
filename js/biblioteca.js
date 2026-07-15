@@ -93,40 +93,35 @@ const Biblioteca = (() => {
   }
 
   function renderizarGrade(livrosFiltrados) {
-    grid.innerHTML = '';
-    if (livrosFiltrados.length === 0) {
-      grid.innerHTML = '<div class="col-12 text-center text-muted py-5">Nenhum livro encontrado</div>';
-      return;
-    }
-
-    livrosFiltrados.forEach(livro => {
-      const col = document.createElement('div');
-      col.className = 'col-6 col-md-4 col-lg-3 col-xl-2';
-      const progresso = livro.NúmeroPáginas > 0 ? Math.round(((livro.PáginasLidas || 0) / livro.NúmeroPáginas) * 100) : 0;
-
-      col.innerHTML = `
-        <div class="livro-card h-100" data-id="${livro.ID}">
-          <div class="capa-wrapper">
-            ${livro.URLCapa ? `<img src="${livro.URLCapa}" alt="Capa" loading="lazy">` : '<i class="fas fa-book fa-3x position-absolute top-50 start-50 translate-middle text-muted"></i>'}
-            <span class="badge badge-status bg-primary">${livro.Status}</span>
-          </div>
-          <div class="card-body">
-            <div class="titulo" title="${livro.Título}">${livro.Título || 'Sem título'}</div>
-            <div class="autor">${livro.Autor || 'Desconhecido'}</div>
-            ${livro.Status === 'Lendo' || livro.Status === 'Finalizado' ? `
-            <div class="progress mt-2">
-              <div class="progress-bar bg-success" role="progressbar" style="width: ${progresso}%" aria-valuenow="${progresso}" aria-valuemin="0" aria-valuemax="100">${progresso}%</div>
-            </div>` : ''}
-          </div>
-        </div>`;
-      grid.appendChild(col);
-    });
-
-    grid.querySelectorAll('.livro-card').forEach(card => {
-      card.addEventListener('click', () => abrirModal(card.dataset.id));
-    });
+  grid.innerHTML = '';
+  if (livrosFiltrados.length === 0) {
+    grid.innerHTML = '<div class="col-12 text-center text-muted py-5">Nenhum livro encontrado</div>';
+    return;
   }
 
+  livrosFiltrados.forEach(livro => {
+    const col = document.createElement('div');
+    col.className = 'col-6 col-md-4 col-lg-3 col-xl-2';
+
+    col.innerHTML = `
+      <div class="livro-card h-100" data-id="${livro.ID}">
+        <div class="capa-wrapper">
+          ${livro.URLCapa ? `<img src="${livro.URLCapa}" alt="Capa" loading="lazy">` : '<i class="fas fa-book fa-3x position-absolute top-50 start-50 translate-middle text-muted"></i>'}
+          <span class="badge badge-status bg-primary">${livro.Status}</span>
+        </div>
+        <div class="card-body">
+          <div class="titulo" title="${livro.Título}">${livro.Título || 'Sem título'}</div>
+          <div class="autor">${livro.Autor || 'Desconhecido'}</div>
+          <!-- A barra de progresso foi removida -->
+        </div>
+      </div>`;
+    grid.appendChild(col);
+  });
+
+  grid.querySelectorAll('.livro-card').forEach(card => {
+    card.addEventListener('click', () => abrirModal(card.dataset.id));
+  });
+}
   function abrirModal(id) {
     const livro = livros.find(l => l.ID === id);
     if (!livro) return;
