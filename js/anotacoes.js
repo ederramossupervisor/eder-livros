@@ -176,9 +176,10 @@ const Anotacoes = (() => {
             <button class="btn btn-sm btn-outline-primary btn-compartilhar-anotacao"
                     data-trecho="${(a.Trecho || a['Comentário']).replace(/"/g, '&quot;')}"
                     data-livro="${nomeLivro}"
-                    data-autor="${nomeAutor}">
+                    data-autor="${nomeAutor}"
+                    data-capa="${livro?.URLCapa || livro?.ImagemCapa || ''}">
               <i class="fas fa-camera"></i> Compartilhar
-            </button>` : ''}
+            </button>
           </div>
         `;
         container.appendChild(div);
@@ -186,7 +187,12 @@ const Anotacoes = (() => {
 
       document.querySelectorAll('.btn-compartilhar-anotacao').forEach(btn => {
         btn.addEventListener('click', () => {
-          abrirModalCompartilhamento(btn.dataset.trecho, btn.dataset.livro, btn.dataset.autor);
+          abrirModalCompartilhamento(
+            btn.dataset.trecho,
+            btn.dataset.livro,
+            btn.dataset.autor,
+            btn.dataset.capa
+          );
         });
       });
     } else {
