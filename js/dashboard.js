@@ -1,6 +1,5 @@
 /**
- * Módulo Dashboard – cards dinâmicos, gráfico, navegação entre livros atuais,
- * animação de contagem e skeleton loading.
+ * Módulo Dashboard – com cache offline
  */
 const Dashboard = (() => {
   let chartInstance = null;
@@ -8,7 +7,6 @@ const Dashboard = (() => {
   let livrosLendoList = [];
   let livroAtualID = null;
   let containerCard = null;
-  // Elementos que receberão skeleton
   const skeletonIds = [
     'card-livros-mes', 'card-livros-ano', 'card-paginas-hoje',
     'card-paginas-semana', 'card-horas', 'card-sequencia',
@@ -16,51 +14,48 @@ const Dashboard = (() => {
   ];
 
   async function init() {
-  const dashPage = document.getElementById('page-dashboard');
-  if (!dashPage || !dashPage.classList.contains('active')) return;
+    const dashPage = document.getElementById('page-dashboard');
+    if (!dashPage || !dashPage.classList.contains('active')) return;
 
-  mostrarSkeletons();
-  console.log('📊 Carregando dashboard...');
-  try {
-    const dados = await API.enviar({ acao: 'dashboard' });
-    if (dados && !dados.erro) {
-      ocultarSkeletons();
-      preencherCards(dados);
-      criarGrafico(dados.paginasUltimos7Dias);
-      // Salva no cache local
-      DB.salvarDashboard(dados).catch(e => console.warn('Cache dashboard falhou:', e));
-    } else {
-      throw new Error(dados?.erro || 'Dados inválidos');
-    }
-  } catch (e) {
-    console.warn('Falha na API, tentando cache offline...');
-    const cached = await DB.obterDashboard();
-    if (cached) {
-      ocultarSkeletons();
-      preencherCards(cached);
-      if (cached.paginasUltimos7Dias) {
-        criarGrafico(cached.paginasUltimos7Dias);
+    mostrarSkeletons();
+    console.log('📊 Carregando dashboard...');
+    try {
+      const dados = await API.enviar({ acao: 'dashboard' });
+      if (dados && !dados.erro) {
+        ocultarSkeletons();
+        preencherCards(dados);
+        criarGrafico(dados.paginasUltimos7Dias);
+        DB.salvarDashboard(dados).catch(e => console.warn('Cache dashboard falhou:', e));
+      } else {
+        throw new Error(dados?.erro || 'Dados inválidos');
       }
-      Util.toast('Modo offline - dados do último acesso.', 'info');
-    } else {
-      ocultarSkeletons();
-      Util.toast('Sem conexão e nenhum dado em cache.', 'danger');
+    } catch (e) {
+      console.warn('Falha na API, tentando cache offline...');
+      const cached = await DB.obterDashboard();
+      if (cached) {
+        ocultarSkeletons();
+        preencherCards(cached);
+        if (cached.paginasUltimos7Dias) {
+          criarGrafico(cached.paginasUltimos7Dias);
+        }
+        Util.toast('Modo offline - dados do último acesso.', 'info');
+      } else {
+        ocultarSkeletons();
+        Util.toast('Sem conexão e nenhum dado em cache.', 'danger');
+      }
     }
   }
-}
+
   function mostrarSkeletons() {
     skeletonIds.forEach(id => {
       const el = document.getElementById(id);
       if (el) {
         el.classList.add('skeleton-placeholder');
-        // Para títulos, mantém um texto fantasma
         if (id === 'livro-atual-titulo') el.textContent = 'Carregando...';
         if (id === 'livro-atual-progresso') el.textContent = '';
-        // Para números, zera
         if (id.startsWith('card-')) el.textContent = '...';
       }
     });
-    // Adiciona skeleton também na capa
     const capa = document.getElementById('livro-atual-capa');
     if (capa) capa.innerHTML = '<div class="skeleton-placeholder" style="width:50px;height:70px;border-radius:4px;"></div>';
   }
@@ -75,44 +70,43 @@ const Dashboard = (() => {
   }
 
   function preencherCards(d) {
-      window.__previsaoTermino = d.previsaoTermino; // <-- NOVA LINHA
-  containerCard = document.getElementById('livro-atual-card');
-  if (!containerCard) return;
+    window.__previsaoTermino = d.previsaoTermino;
+    containerCard = document.getElementById('livro-atual-card');
+    if (!containerCard) return;
 
-  livrosLendoList = d.livrosLendo || [];
-  if (d.livroAtual && livrosLendoList.length > 0) {
-    currentLivroIndex = livrosLendoList.findIndex(l => l.ID === d.livroAtual.ID);
-    if (currentLivroIndex < 0) currentLivroIndex = 0;
-  } else {
-    currentLivroIndex = 0;
+    livrosLendoList = d.livrosLendo || [];
+    if (d.livroAtual && livrosLendoList.length > 0) {
+      currentLivroIndex = livrosLendoList.findIndex(l => l.ID === d.livroAtual.ID);
+      if (currentLivroIndex < 0) currentLivroIndex = 0;
+    } else {
+      currentLivroIndex = 0;
+    }
+    livroAtualID = d.livroAtual ? d.livroAtual.ID : null;
+
+    renderizarLivroAtual();
+    criarControlesNavegacao();
+    adicionarSwipe();
+
+    animarContador('card-livros-mes', d.livrosFinalizadosMes);
+    animarContador('card-livros-ano', d.livrosFinalizadosAno);
+    animarContador('card-paginas-hoje', d.paginasHoje);
+    animarContador('card-paginas-semana', d.paginasSemana);
+    animarContador('card-horas', d.horasTotal);
+    animarContador('card-sequencia', d.sequenciaAtual);
+
+    document.getElementById('meta-texto').textContent =
+      `${d.livrosFinalizadosAno} de ${d.metaLivros} livros (${d.percentualMeta}%)`;
+    const barra = document.getElementById('barra-meta');
+    barra.style.width = d.percentualMeta + '%';
+    barra.textContent = d.percentualMeta + '%';
+    barra.setAttribute('aria-valuenow', d.percentualMeta);
   }
-  livroAtualID = d.livroAtual ? d.livroAtual.ID : null;
 
-  renderizarLivroAtual();
-  criarControlesNavegacao();
-  adicionarSwipe();
-
-  // Animação de contagem para os números
-  animarContador('card-livros-mes', d.livrosFinalizadosMes);
-  animarContador('card-livros-ano', d.livrosFinalizadosAno);
-  animarContador('card-paginas-hoje', d.paginasHoje);
-  animarContador('card-paginas-semana', d.paginasSemana);
-  animarContador('card-horas', d.horasTotal);
-  animarContador('card-sequencia', d.sequenciaAtual);
-
-  // Meta (sem animação complexa, apenas texto)
-  document.getElementById('meta-texto').textContent =
-    `${d.livrosFinalizadosAno} de ${d.metaLivros} livros (${d.percentualMeta}%)`;
-  const barra = document.getElementById('barra-meta');
-  barra.style.width = d.percentualMeta + '%';
-  barra.textContent = d.percentualMeta + '%';
-  barra.setAttribute('aria-valuenow', d.percentualMeta);
-}
   function animarContador(id, valorFinal) {
     const el = document.getElementById(id);
     if (!el) return;
     const valorInicial = 0;
-    const duracao = 800; // ms
+    const duracao = 800;
     const inicio = performance.now();
     const passo = (agora) => {
       const decorrido = agora - inicio;
@@ -129,53 +123,49 @@ const Dashboard = (() => {
   }
 
   function renderizarLivroAtual() {
-  if (!containerCard) return;
-  const livro = livrosLendoList.length > 0 ? livrosLendoList[currentLivroIndex] : null;
-  const tituloEl = document.getElementById('livro-atual-titulo');
-  const progressoEl = document.getElementById('livro-atual-progresso');
-  const capaEl = document.getElementById('livro-atual-capa');
-  const previsaoEl = document.getElementById('livro-atual-previsao'); // já existe no HTML
+    if (!containerCard) return;
+    const livro = livrosLendoList.length > 0 ? livrosLendoList[currentLivroIndex] : null;
+    const tituloEl = document.getElementById('livro-atual-titulo');
+    const progressoEl = document.getElementById('livro-atual-progresso');
+    const capaEl = document.getElementById('livro-atual-capa');
+    const previsaoEl = document.getElementById('livro-atual-previsao');
 
-  if (livro) {
-    const progresso = livro.totalPag > 0 ? Math.round((livro.pagLidas / livro.totalPag) * 100) : 0;
-    if (tituloEl) tituloEl.textContent = livro.titulo;
-    if (progressoEl) progressoEl.textContent = `${livro.pagLidas || 0} de ${livro.totalPag} páginas (${progresso}%)`;
-    if (capaEl) {
-      capaEl.innerHTML = livro.urlCapa
-        ? `<img src="${livro.urlCapa}" alt="Capa" class="img-fluid rounded" style="max-height:70px;">`
-        : '';
-    }
-
-    // Previsão de conclusão (nova)
-    if (previsaoEl) {
-      // A previsão vem do dashboard, armazenada em window.__previsaoTermino ou similar
-      // Vamos obtê-la diretamente do objeto passado no último preencherCards
-      if (typeof window.__previsaoTermino !== 'undefined' && window.__previsaoTermino) {
-        const dataPrev = new Date(window.__previsaoTermino);
-        const hoje = new Date();
-        const diffDias = Math.ceil((dataPrev - hoje) / (1000 * 60 * 60 * 24));
-        const dataFormatada = dataPrev.toLocaleDateString('pt-BR');
-        let textoPrevisao = '';
-        if (diffDias <= 0) {
-          textoPrevisao = '<i class="fa-solid fa-hands-clapping"></i> Você deve terminar hoje!';
-        } else if (diffDias === 1) {
-          textoPrevisao = '<i class="fa-solid fa-calendar-days"></i> Previsão: amanhã';
-        } else {
-          textoPrevisao = `<i class="fa-solid fa-calendar-days"></i> Previsão: ${dataFormatada} (${diffDias} dias)`;
-        }
-        previsaoEl.innerHTML = textoPrevisao;
-        previsaoEl.classList.remove('d-none');
-      } else {
-        previsaoEl.classList.add('d-none');
+    if (livro) {
+      const progresso = livro.totalPag > 0 ? Math.round((livro.pagLidas / livro.totalPag) * 100) : 0;
+      if (tituloEl) tituloEl.textContent = livro.titulo;
+      if (progressoEl) progressoEl.textContent = `${livro.pagLidas || 0} de ${livro.totalPag} páginas (${progresso}%)`;
+      if (capaEl) {
+        capaEl.innerHTML = livro.urlCapa
+          ? `<img src="${livro.urlCapa}" alt="Capa" class="img-fluid rounded" style="max-height:70px;">`
+          : '';
       }
+      if (previsaoEl) {
+        if (typeof window.__previsaoTermino !== 'undefined' && window.__previsaoTermino) {
+          const dataPrev = new Date(window.__previsaoTermino);
+          const hoje = new Date();
+          const diffDias = Math.ceil((dataPrev - hoje) / (1000 * 60 * 60 * 24));
+          const dataFormatada = dataPrev.toLocaleDateString('pt-BR');
+          let textoPrevisao = '';
+          if (diffDias <= 0) {
+            textoPrevisao = '<i class="fa-solid fa-hands-clapping"></i> Você deve terminar hoje!';
+          } else if (diffDias === 1) {
+            textoPrevisao = '<i class="fa-solid fa-calendar-days"></i> Previsão: amanhã';
+          } else {
+            textoPrevisao = `<i class="fa-solid fa-calendar-days"></i> Previsão: ${dataFormatada} (${diffDias} dias)`;
+          }
+          previsaoEl.innerHTML = textoPrevisao;
+          previsaoEl.classList.remove('d-none');
+        } else {
+          previsaoEl.classList.add('d-none');
+        }
+      }
+    } else {
+      if (tituloEl) tituloEl.textContent = 'Nenhum livro em andamento';
+      if (progressoEl) progressoEl.textContent = '';
+      if (capaEl) capaEl.innerHTML = '';
+      if (previsaoEl) previsaoEl.classList.add('d-none');
     }
-  } else {
-    if (tituloEl) tituloEl.textContent = 'Nenhum livro em andamento';
-    if (progressoEl) progressoEl.textContent = '';
-    if (capaEl) capaEl.innerHTML = '';
-    if (previsaoEl) previsaoEl.classList.add('d-none');
   }
-}
 
   function criarControlesNavegacao() {
     const oldLeft = document.getElementById('livro-atual-seta-left');
@@ -223,7 +213,11 @@ const Dashboard = (() => {
     if (novoLivro && novoLivro.ID !== livroAtualID) {
       renderizarLivroAtual();
       livroAtualID = novoLivro.ID;
-      await API.enviar({ acao: 'setLivroAtual', livroID: novoLivro.ID });
+      if (navigator.onLine) {
+        await API.enviar({ acao: 'setLivroAtual', livroID: novoLivro.ID });
+      } else {
+        Util.toast('Modo offline - preferência será salva ao conectar.', 'info');
+      }
     }
   }
 
