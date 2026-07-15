@@ -65,22 +65,21 @@ const CalendarioLeitura = (() => {
       const dateStr = `${anoAtual}-${String(mesAtual).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
       const livros = dados[dateStr] || [];
 
+      // Dentro do for (dia = 1; dia <= ultimoDia; dia++):
       const div = document.createElement('div');
-      div.className = 'col text-center p-1 calendario-dia';
-      div.innerHTML = `<small class="d-block">${dia}</small>`;
-
+      div.className = 'col calendario-dia text-center p-1';
       if (livros.length > 0) {
-        // Exibe a capa do primeiro livro (ou empilha miniaturas)
+        div.classList.add('com-leitura');
         const livro = livros[0];
-        if (livro.urlCapa) {
-          div.innerHTML += `<img src="${livro.urlCapa}" alt="${livro.titulo}" class="img-fluid rounded" style="width:100%; height:auto; max-height:60px; object-fit:cover;" title="${livro.titulo}">`;
-        } else {
-          div.innerHTML += `<i class="fas fa-book text-primary" title="${livro.titulo}"></i>`;
-        }
-        div.style.backgroundColor = 'var(--primary-light)';
-        div.style.borderRadius = '6px';
+        div.innerHTML = `
+          <small class="d-block">${dia}</small>
+          ${livro.urlCapa
+            ? `<img src="${livro.urlCapa}" alt="${livro.titulo}" title="${livro.titulo}">`
+            : `<i class="fas fa-book text-primary" title="${livro.titulo}"></i>`}
+        `;
+      } else {
+        div.innerHTML = `<small>${dia}</small>`;
       }
-
       grid.appendChild(div);
     }
   }
