@@ -336,49 +336,81 @@ document.getElementById('btn-fundo-capa').onclick = async () => {
 
     // --- BAIXAR IMAGEM ---
     document.getElementById('btn-baixar-citacao').onclick = async () => {
+      console.log('🖼️ Iniciando download da citação...');
+      console.log('Cartão:', cartao);
+      console.log('html2canvas disponível:', typeof html2canvas);
+    
+      if (!cartao) {
+        Util.toast('Erro: cartão não encontrado.', 'danger');
+        return;
+      }
+    
+      // Salva o estado original
+      const originalMaxHeight = cartao.style.maxHeight;
+      const originalWidth = cartao.style.width;
+      const originalHeight = cartao.style.height;
+      const originalOverflow = cartao.style.overflow;
+    
+      // Prepara o cartão para captura
+      cartao.style.maxHeight = 'none';
+      cartao.style.overflow = 'visible'; // garante que nada seja cortado
+    
+      // Força dimensões exatas baseadas no formato
+      if (cartao.classList.contains('format-feed')) {
+        cartao.style.width = '400px';
+        cartao.style.height = '400px';
+      } else if (cartao.classList.contains('format-stories')) {
+        cartao.style.width = '360px';
+        cartao.style.height = '640px';
+      } else {
+        // fallback: usa o tamanho atual se nenhum formato estiver ativo
+        cartao.style.width = cartao.scrollWidth + 'px';
+        cartao.style.height = cartao.scrollHeight + 'px';
+      }
+    
       try {
-        // Guarda o max-height original para restaurar depois
-        const originalMaxHeight = cartao.style.maxHeight;
-        cartao.style.maxHeight = 'none'; // remove limite de altura
-    
-        // Força as dimensões exatas do formato (caso as classes não estejam aplicando)
-        if (cartao.classList.contains('format-feed')) {
-          cartao.style.width = '400px';
-          cartao.style.height = '400px';
-        } else if (cartao.classList.contains('format-stories')) {
-          cartao.style.width = '360px';
-          cartao.style.height = '640px';
-        }
-    
         const canvas = await html2canvas(cartao, {
           backgroundColor: null,
           scale: 2,
           useCORS: true,
           allowTaint: true,
-          width: cartao.offsetWidth,   // usa a largura real do elemento
-          height: cartao.offsetHeight   // usa a altura real
+          width: cartao.offsetWidth,
+          height: cartao.offsetHeight,
+          logging: true  // ajuda a ver erros no console
         });
     
-        // Restaura o max-height original
-        cartao.style.maxHeight = originalMaxHeight;
+        console.log('✅ Canvas criado:', canvas.width, 'x', canvas.height);
     
+        // Cria link de download
         const link = document.createElement('a');
         link.download = `citacao-${livro.replace(/\s+/g, '-').toLowerCase()}.png`;
         link.href = canvas.toDataURL('image/png');
+        document.body.appendChild(link);
         link.click();
+        document.body.removeChild(link);
     
+        // Compartilhamento nativo (opcional)
         if (navigator.share) {
           canvas.toBlob(async (blob) => {
             if (blob) {
               const file = new File([blob], 'citacao.png', { type: 'image/png' });
-              try { await navigator.share({ files: [file], title: 'Citação do Eder Livros' }); } catch (e) {}
+              try {
+                await navigator.share({ files: [file], title: 'Citação do Eder Livros' });
+              } catch (e) { /* usuário cancelou */ }
             }
           });
         }
+    
         Util.toast('Imagem baixada!', 'success');
       } catch (err) {
-        console.error('Erro ao gerar imagem:', err);
-        Util.toast('Falha ao gerar imagem.', 'danger');
+        console.error('❌ Erro ao gerar imagem:', err);
+        Util.toast('Falha ao gerar imagem: ' + err.message, 'danger');
+      } finally {
+        // Restaura o estado original
+        cartao.style.maxHeight = originalMaxHeight;
+        cartao.style.width = originalWidth;
+        cartao.style.height = originalHeight;
+        cartao.style.overflow = originalOverflow;
       }
     };
     const modal = new bootstrap.Modal(document.getElementById('modal-compartilhar-citacao'));
