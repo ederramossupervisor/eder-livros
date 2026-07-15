@@ -1,13 +1,8 @@
-/**
- * Módulo de Anotações – unificado, com microfone, compartilhamento personalizado,
- * seleção de formato (feed/stories) e fundo com capa do livro corrigido.
- */
 const Anotacoes = (() => {
   let recognition = null;
   let targetInput = null;
   let livrosCache = [];
 
-  /* ========== RECONHECIMENTO DE VOZ ========== */
   function initSpeech() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
@@ -70,7 +65,6 @@ const Anotacoes = (() => {
     }
   }
 
-  /* ========== INICIALIZAÇÃO ========== */
   async function init() {
     const page = document.getElementById('page-anotacoes');
     if (!page || !page.classList.contains('active')) return;
@@ -83,7 +77,6 @@ const Anotacoes = (() => {
     console.log('✅ Módulo Anotações pronto (com compartilhamento).');
   }
 
-  /* ========== CARREGAR LIVROS (dropdown + cache) ========== */
   async function carregarLivrosDropdown() {
     try {
       const resp = await API.enviar({ acao: 'listBooks' });
@@ -106,7 +99,6 @@ const Anotacoes = (() => {
     }
   }
 
-  /* ========== FORMULÁRIO DE ANOTAÇÃO + MICROFONES ========== */
   function configurarForms() {
     document.getElementById('form-anotacao').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -142,7 +134,6 @@ const Anotacoes = (() => {
     document.getElementById('filtro-livro-anot').addEventListener('change', listarAnotacoes);
   }
 
-  /* ========== LISTAR ANOTAÇÕES COM BOTÃO DE COMPARTILHAR ========== */
   async function listarAnotacoes() {
     const filtro = document.getElementById('filtro-livro-anot')?.value || '';
     let anotacoes = [];
@@ -188,8 +179,7 @@ const Anotacoes = (() => {
                     data-autor="${nomeAutor}"
                     data-capa="${livro?.URLCapa || livro?.ImagemCapa || ''}">
               <i class="fas fa-camera"></i> Compartilhar
-            </button>
-            ` : ''}
+            </button>` : ''}
           </div>
         `;
         container.appendChild(div);
@@ -214,7 +204,6 @@ const Anotacoes = (() => {
     }
   }
 
-  /* ========== MODAL DE COMPARTILHAMENTO ========== */
   function abrirModalCompartilhamento(trecho, livro, autor, urlCapa) {
     document.getElementById('citacao-texto').textContent = `"${trecho}"`;
     document.getElementById('citacao-livro').textContent = livro;
@@ -222,7 +211,7 @@ const Anotacoes = (() => {
 
     const cartao = document.getElementById('cartao-citacao');
 
-    // --- CONTROLES DE FUNDO ---
+    // --- CORES DE FUNDO ---
     const coresPredefinidas = [
       { nome: 'Escuro padrão', valor: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', corTexto: '#fff' },
       { nome: 'Roxo elegante', valor: 'linear-gradient(135deg, #4c1d95 0%, #1e1b4b 100%)', corTexto: '#fff' },
@@ -237,20 +226,15 @@ const Anotacoes = (() => {
     const containerCores = document.getElementById('cores-predefinidas');
     if (containerCores) {
       containerCores.innerHTML = '';
-      coresPredefinidas.forEach((tema) => {
+      coresPredefinidas.forEach(tema => {
         const btn = document.createElement('button');
         btn.className = 'btn btn-sm btn-outline-secondary';
         btn.style.background = tema.valor.startsWith('linear') ? 'var(--bg-secondary)' : tema.valor;
-        btn.style.color = tema.valor.startsWith('linear') ? 'var(--text-primary)' : (tema.corTexto);
+        btn.style.color = tema.valor.startsWith('linear') ? 'var(--text-primary)' : tema.corTexto;
         btn.style.border = '1px solid var(--border-color)';
         btn.textContent = tema.nome;
         btn.addEventListener('click', () => {
-          // Limpa fundo anterior (imagem + overlay)
-          const imgFundo = document.getElementById('img-fundo-capa');
-          if (imgFundo) imgFundo.remove();
-          const overlayFundo = document.getElementById('overlay-fundo');
-          if (overlayFundo) overlayFundo.remove();
-          cartao.style.position = '';
+          limparFundo(cartao);
           cartao.style.background = tema.valor;
           cartao.style.color = tema.corTexto;
         });
@@ -258,21 +242,19 @@ const Anotacoes = (() => {
       });
     }
 
-    // Botão "Usar capa do livro"
-    const btnFundoCapa = document.getElementById('btn-fundo-capa');
-    if (btnFundoCapa) {
-      btnFundoCapa.onclick = () => {
-        if (urlCapa) {
-          // Remove imagem e overlay antigos
-          const imgAntiga = document.getElementById('img-fundo-capa');
-          if (imgAntiga) imgAntiga.remove();
-          const overlayAntigo = document.getElementById('overlay-fundo');
-          if (overlayAntigo) overlayAntigo.remove();
-
+    // --- CAPA DO LIVRO (proxy) ---
+    document.getElementById('btn-fundo-capa').onclick = async () => {
+      if (!urlCapa) {
+        Util.toast('Este livro não possui capa cadastrada.', 'warning');
+        return;
+      }
+      try {
+        const resp = await API.enviar({ acao: 'proxyImage', url: urlCapa });
+        if (resp && resp.dataUrl) {
+          limparFundo(cartao);
           const img = document.createElement('img');
           img.id = 'img-fundo-capa';
-          img.src = urlCapa;
-          img.crossOrigin = 'anonymous';
+          img.src = resp.dataUrl;
           img.style.cssText = 'position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0;';
 
           const overlay = document.createElement('div');
@@ -282,45 +264,32 @@ const Anotacoes = (() => {
           cartao.style.position = 'relative';
           cartao.style.background = '';
           cartao.style.backgroundImage = '';
-          cartao.style.boxShadow = '';
           cartao.insertBefore(img, cartao.firstChild);
           cartao.insertBefore(overlay, cartao.children[1]);
           cartao.style.color = '#ffffff';
-        } else {
-          Util.toast('Este livro não possui capa cadastrada.', 'warning');
         }
-      };
-    }
+      } catch (err) {
+        console.error('Erro ao carregar capa:', err);
+        Util.toast('Não foi possível carregar a capa.', 'danger');
+      }
+    };
 
-    // Botão "Gradiente aleatório"
-    const btnFundoGradiente = document.getElementById('btn-fundo-gradiente');
-    if (btnFundoGradiente) {
-      btnFundoGradiente.onclick = () => {
-        const imgFundo = document.getElementById('img-fundo-capa');
-        if (imgFundo) imgFundo.remove();
-        const overlayFundo = document.getElementById('overlay-fundo');
-        if (overlayFundo) overlayFundo.remove();
-        cartao.style.position = '';
+    // --- GRADIENTE ALEATÓRIO ---
+    document.getElementById('btn-fundo-gradiente').onclick = () => {
+      limparFundo(cartao);
+      const cores = ['#1e293b', '#0f172a', '#4c1d95', '#1e3a5f', '#064e3b', '#4c0519', '#1e1b4b'];
+      const c1 = cores[Math.floor(Math.random() * cores.length)];
+      const c2 = cores[Math.floor(Math.random() * cores.length)];
+      cartao.style.background = `linear-gradient(135deg, ${c1} 0%, ${c2} 100%)`;
+      cartao.style.color = '#ffffff';
+    };
 
-        const cores = ['#1e293b', '#0f172a', '#4c1d95', '#1e3a5f', '#064e3b', '#4c0519', '#1e1b4b'];
-        const c1 = cores[Math.floor(Math.random() * cores.length)];
-        const c2 = cores[Math.floor(Math.random() * cores.length)];
-        cartao.style.background = `linear-gradient(135deg, ${c1} 0%, ${c2} 100%)`;
-        cartao.style.backgroundImage = '';
-        cartao.style.boxShadow = '';
-        cartao.style.color = '#ffffff';
-      };
-    }
+    // --- TAMANHO DA FONTE ---
+    document.getElementById('range-tamanho-fonte').addEventListener('input', (e) => {
+      document.getElementById('citacao-texto').style.fontSize = e.target.value / 16 + 'rem';
+    });
 
-    // --- CONTROLE DE TAMANHO DA FONTE ---
-    const rangeFonte = document.getElementById('range-tamanho-fonte');
-    if (rangeFonte) {
-      rangeFonte.addEventListener('input', (e) => {
-        document.getElementById('citacao-texto').style.fontSize = e.target.value / 16 + 'rem';
-      });
-    }
-
-    // --- CONTROLE DE ALINHAMENTO ---
+    // --- ALINHAMENTO ---
     document.querySelectorAll('[data-align]').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('[data-align]').forEach(b => b.classList.remove('active'));
@@ -329,27 +298,22 @@ const Anotacoes = (() => {
       });
     });
 
-    // --- CONTROLE DE FORMATO (FEED / STORIES) ---
-    const btnFeed = document.querySelector('[data-format="feed"]');
-    const btnStories = document.querySelector('[data-format="stories"]');
-    if (btnFeed && btnStories) {
-      btnFeed.addEventListener('click', () => {
-        btnFeed.classList.add('active');
-        btnStories.classList.remove('active');
-        cartao.classList.add('format-feed');
-        cartao.classList.remove('format-stories');
-      });
-      btnStories.addEventListener('click', () => {
-        btnStories.classList.add('active');
-        btnFeed.classList.remove('active');
-        cartao.classList.add('format-stories');
-        cartao.classList.remove('format-feed');
-      });
-      // Inicia com formato feed (padrão)
+    // --- FORMATO (FEED/STORIES) ---
+    document.querySelector('[data-format="feed"]').addEventListener('click', function() {
+      this.classList.add('active');
+      document.querySelector('[data-format="stories"]').classList.remove('active');
       cartao.classList.add('format-feed');
-    }
+      cartao.classList.remove('format-stories');
+    });
+    document.querySelector('[data-format="stories"]').addEventListener('click', function() {
+      this.classList.add('active');
+      document.querySelector('[data-format="feed"]').classList.remove('active');
+      cartao.classList.add('format-stories');
+      cartao.classList.remove('format-feed');
+    });
+    cartao.classList.add('format-feed'); // padrão
 
-    // --- BOTÃO BAIXAR ---
+    // --- BAIXAR IMAGEM ---
     document.getElementById('btn-baixar-citacao').onclick = async () => {
       try {
         cartao.style.display = 'flex';
@@ -369,9 +333,7 @@ const Anotacoes = (() => {
           canvas.toBlob(async (blob) => {
             if (blob) {
               const file = new File([blob], 'citacao.png', { type: 'image/png' });
-              try {
-                await navigator.share({ files: [file], title: 'Citação do Eder Livros' });
-              } catch (shareError) { /* usuário cancelou */ }
+              try { await navigator.share({ files: [file], title: 'Citação do Eder Livros' }); } catch (e) {}
             }
           });
         }
@@ -382,9 +344,19 @@ const Anotacoes = (() => {
       }
     };
 
-    // Exibe o modal
     const modal = new bootstrap.Modal(document.getElementById('modal-compartilhar-citacao'));
     modal.show();
+  }
+
+  function limparFundo(cartao) {
+    const img = document.getElementById('img-fundo-capa');
+    if (img) img.remove();
+    const overlay = document.getElementById('overlay-fundo');
+    if (overlay) overlay.remove();
+    cartao.style.background = '';
+    cartao.style.backgroundImage = '';
+    cartao.style.boxShadow = '';
+    cartao.style.position = '';
   }
 
   return { init };
