@@ -22,7 +22,6 @@
   margin: 0 auto;            /* centraliza */
   min-height: 250px;
   position: relative;
-  overflow-y: auto;          /* rolagem se o conteúdo for maior que a altura máxima */
   transition: width 0.3s, height 0.3s;
 }
 
@@ -42,10 +41,9 @@
   max-width: 360px;
 }
 
-/* Em telas pequenas (celulares) */
+/* Em telas pequenas (celulares) – removemos max-height */
 @media (max-width: 575px) {
   #cartao-citacao {
-    max-height: 45vh;        /* altura máxima para manter os controles visíveis */
     width: 100%;
     max-width: 100%;
   }
@@ -54,6 +52,6 @@
 /* Em tablets */
 @media (min-width: 576px) and (max-width: 991px) {
   #cartao-citacao {
-    max-height: 55vh;
+    max-height: 55vh; /* opcional, se quiser um limite sutil no tablet */
   }
 }
