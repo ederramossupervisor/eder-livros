@@ -335,84 +335,99 @@ document.getElementById('btn-fundo-capa').onclick = async () => {
     cartao.classList.add('format-feed'); // padrão
 
     // --- BAIXAR IMAGEM ---
-    document.getElementById('btn-baixar-citacao').onclick = async () => {
-      console.log('🖼️ Iniciando download da citação...');
-      console.log('Cartão:', cartao);
-      console.log('html2canvas disponível:', typeof html2canvas);
-    
-      if (!cartao) {
-        Util.toast('Erro: cartão não encontrado.', 'danger');
+    // --- BAIXAR IMAGEM ---
+document.getElementById('btn-baixar-citacao').onclick = async () => {
+  console.log('🖼️ Iniciando download da citação...');
+  console.log('Cartão:', cartao);
+  console.log('html2canvas disponível:', typeof html2canvas);
+
+  if (!cartao) {
+    Util.toast('Erro: cartão não encontrado.', 'danger');
+    return;
+  }
+
+  // Garante que todas as imagens dentro do cartão tenham crossOrigin
+  cartao.querySelectorAll('img').forEach(img => {
+    if (!img.crossOrigin) img.crossOrigin = 'anonymous';
+  });
+
+  // Salva o estado original
+  const originalMaxHeight = cartao.style.maxHeight;
+  const originalWidth = cartao.style.width;
+  const originalHeight = cartao.style.height;
+  const originalOverflow = cartao.style.overflow;
+
+  // Prepara o cartão para captura
+  cartao.style.maxHeight = 'none';
+  cartao.style.overflow = 'visible';
+
+  if (cartao.classList.contains('format-feed')) {
+    cartao.style.width = '400px';
+    cartao.style.height = '400px';
+  } else if (cartao.classList.contains('format-stories')) {
+    cartao.style.width = '360px';
+    cartao.style.height = '640px';
+  } else {
+    cartao.style.width = cartao.scrollWidth + 'px';
+    cartao.style.height = cartao.scrollHeight + 'px';
+  }
+
+  console.log('⏳ Aguardando html2canvas...');
+  try {
+    const canvas = await html2canvas(cartao, {
+      backgroundColor: null,
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      width: cartao.offsetWidth,
+      height: cartao.offsetHeight,
+      logging: false,
+      imageTimeout: 15000,
+      onclone: function(clonedDoc) {
+        // Garante que as imagens clonadas também tenham crossOrigin
+        clonedDoc.querySelectorAll('img').forEach(img => {
+          if (!img.crossOrigin) img.crossOrigin = 'anonymous';
+        });
+      }
+    });
+
+    console.log('✅ Canvas criado:', canvas.width, 'x', canvas.height);
+
+    // Converte para blob e inicia download (evita problemas com data URL gigante)
+    canvas.toBlob(function(blob) {
+      if (!blob) {
+        Util.toast('Erro ao gerar imagem.', 'danger');
         return;
       }
-    
-      // Salva o estado original
-      const originalMaxHeight = cartao.style.maxHeight;
-      const originalWidth = cartao.style.width;
-      const originalHeight = cartao.style.height;
-      const originalOverflow = cartao.style.overflow;
-    
-      // Prepara o cartão para captura
-      cartao.style.maxHeight = 'none';
-      cartao.style.overflow = 'visible'; // garante que nada seja cortado
-    
-      // Força dimensões exatas baseadas no formato
-      if (cartao.classList.contains('format-feed')) {
-        cartao.style.width = '400px';
-        cartao.style.height = '400px';
-      } else if (cartao.classList.contains('format-stories')) {
-        cartao.style.width = '360px';
-        cartao.style.height = '640px';
-      } else {
-        // fallback: usa o tamanho atual se nenhum formato estiver ativo
-        cartao.style.width = cartao.scrollWidth + 'px';
-        cartao.style.height = cartao.scrollHeight + 'px';
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `citacao-${livro.replace(/\s+/g, '-').toLowerCase()}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      // Compartilhamento nativo (opcional)
+      if (navigator.share && canvas) {
+        const file = new File([blob], 'citacao.png', { type: 'image/png' });
+        navigator.share({ files: [file], title: 'Citação do Eder Livros' }).catch(e => {});
       }
-    
-      try {
-        const canvas = await html2canvas(cartao, {
-          backgroundColor: null,
-          scale: 2,
-          useCORS: true,
-          allowTaint: true,
-          width: cartao.offsetWidth,
-          height: cartao.offsetHeight,
-          logging: true  // ajuda a ver erros no console
-        });
-    
-        console.log('✅ Canvas criado:', canvas.width, 'x', canvas.height);
-    
-        // Cria link de download
-        const link = document.createElement('a');
-        link.download = `citacao-${livro.replace(/\s+/g, '-').toLowerCase()}.png`;
-        link.href = canvas.toDataURL('image/png');
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    
-        // Compartilhamento nativo (opcional)
-        if (navigator.share) {
-          canvas.toBlob(async (blob) => {
-            if (blob) {
-              const file = new File([blob], 'citacao.png', { type: 'image/png' });
-              try {
-                await navigator.share({ files: [file], title: 'Citação do Eder Livros' });
-              } catch (e) { /* usuário cancelou */ }
-            }
-          });
-        }
-    
-        Util.toast('Imagem baixada!', 'success');
-      } catch (err) {
-        console.error('❌ Erro ao gerar imagem:', err);
-        Util.toast('Falha ao gerar imagem: ' + err.message, 'danger');
-      } finally {
-        // Restaura o estado original
-        cartao.style.maxHeight = originalMaxHeight;
-        cartao.style.width = originalWidth;
-        cartao.style.height = originalHeight;
-        cartao.style.overflow = originalOverflow;
-      }
-    };
+
+      Util.toast('Imagem baixada!', 'success');
+    }, 'image/png');
+
+  } catch (err) {
+    console.error('❌ Erro ao gerar imagem:', err);
+    Util.toast('Falha ao gerar imagem: ' + err.message, 'danger');
+  } finally {
+    // Restaura o estado original
+    cartao.style.maxHeight = originalMaxHeight;
+    cartao.style.width = originalWidth;
+    cartao.style.height = originalHeight;
+    cartao.style.overflow = originalOverflow;
+  }
+};
     const modal = new bootstrap.Modal(document.getElementById('modal-compartilhar-citacao'));
     modal.show();
   }
