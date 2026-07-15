@@ -337,19 +337,36 @@ document.getElementById('btn-fundo-capa').onclick = async () => {
     // --- BAIXAR IMAGEM ---
     document.getElementById('btn-baixar-citacao').onclick = async () => {
       try {
-        cartao.style.display = 'flex';
+        // Guarda o max-height original para restaurar depois
+        const originalMaxHeight = cartao.style.maxHeight;
+        cartao.style.maxHeight = 'none'; // remove limite de altura
+    
+        // Força as dimensões exatas do formato (caso as classes não estejam aplicando)
+        if (cartao.classList.contains('format-feed')) {
+          cartao.style.width = '400px';
+          cartao.style.height = '400px';
+        } else if (cartao.classList.contains('format-stories')) {
+          cartao.style.width = '360px';
+          cartao.style.height = '640px';
+        }
+    
         const canvas = await html2canvas(cartao, {
           backgroundColor: null,
           scale: 2,
           useCORS: true,
-          allowTaint: true
+          allowTaint: true,
+          width: cartao.offsetWidth,   // usa a largura real do elemento
+          height: cartao.offsetHeight   // usa a altura real
         });
-
+    
+        // Restaura o max-height original
+        cartao.style.maxHeight = originalMaxHeight;
+    
         const link = document.createElement('a');
         link.download = `citacao-${livro.replace(/\s+/g, '-').toLowerCase()}.png`;
         link.href = canvas.toDataURL('image/png');
         link.click();
-
+    
         if (navigator.share) {
           canvas.toBlob(async (blob) => {
             if (blob) {
@@ -364,7 +381,6 @@ document.getElementById('btn-fundo-capa').onclick = async () => {
         Util.toast('Falha ao gerar imagem.', 'danger');
       }
     };
-
     const modal = new bootstrap.Modal(document.getElementById('modal-compartilhar-citacao'));
     modal.show();
   }
