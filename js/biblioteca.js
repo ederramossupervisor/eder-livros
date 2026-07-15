@@ -1,6 +1,3 @@
-/**
- * Módulo Biblioteca - grade de livros com filtros e detalhes
- */
 const Biblioteca = (() => {
   let livros = [];
   const grid = document.getElementById('biblioteca-grid');
@@ -22,18 +19,29 @@ const Biblioteca = (() => {
       const resp = await API.enviar({ acao: 'listAllBooks' });
       if (Array.isArray(resp)) {
         livros = resp;
+        DB.salvarLivros(resp).catch(e => console.warn('Cache livros falhou:', e));
         preencherFiltroGeneros();
         aplicarFiltros();
       } else if (resp && resp.erro) {
-        Util.toast('Erro: ' + resp.erro, 'danger');
+        throw new Error(resp.erro);
       }
     } catch (e) {
-      Util.toast('Falha ao carregar livros', 'danger');
+      console.warn('Falha na API, tentando cache offline...');
+      const cached = await DB.obterLivros();
+      if (cached && cached.length > 0) {
+        livros = cached;
+        preencherFiltroGeneros();
+        aplicarFiltros();
+        Util.toast('Modo offline - dados do último acesso.', 'info');
+      } else {
+        Util.toast('Sem conexão e nenhum dado em cache.', 'danger');
+      }
     }
   }
 
   function preencherFiltroGeneros() {
     const generos = [...new Set(livros.map(l => l.Gênero).filter(Boolean))].sort();
+    filtroGenero.innerHTML = '<option value="">Todos os gêneros</option>';
     generos.forEach(g => {
       const opt = document.createElement('option');
       opt.value = g;
@@ -87,13 +95,7 @@ const Biblioteca = (() => {
   function renderizarGrade(livrosFiltrados) {
     grid.innerHTML = '';
     if (livrosFiltrados.length === 0) {
-      grid.innerHTML = `
-      <div class="col-12 text-center py-5">
-        <div class="empty-state">
-          <i class="fas fa-book-open fa-3x text-muted mb-3"></i>
-          <p class="text-muted">Nenhum livro encontrado</p>
-        </div>
-      </div>`;
+      grid.innerHTML = '<div class="col-12 text-center text-muted py-5">Nenhum livro encontrado</div>';
       return;
     }
 
@@ -124,19 +126,7 @@ const Biblioteca = (() => {
       card.addEventListener('click', () => abrirModal(card.dataset.id));
     });
   }
-  function formatarData(dataISO) {
-    if (!dataISO) return '-';
-    try {
-      const data = new Date(dataISO);
-      // Ajusta para o fuso horário local (evita a data aparecer um dia antes)
-      const dia = data.getUTCDate().toString().padStart(2, '0');
-      const mes = (data.getUTCMonth() + 1).toString().padStart(2, '0');
-      const ano = data.getUTCFullYear();
-      return `${dia}/${mes}/${ano}`;
-    } catch (e) {
-      return dataISO; // fallback: se não conseguir formatar, mostra o valor original
-    }
-  }
+
   function abrirModal(id) {
     const livro = livros.find(l => l.ID === id);
     if (!livro) return;
@@ -177,34 +167,19 @@ const Biblioteca = (() => {
     const modal = new bootstrap.Modal(document.getElementById('livro-modal'));
     modal.show();
 
-    // Adicionar eventos aos botões após o modal ser inserido no DOM
     document.querySelector('.btn-editar-livro').addEventListener('click', () => {
-  const modalInstance = bootstrap.Modal.getInstance(document.getElementById('livro-modal'));
-  modalInstance.hide();
-
-  // Verifica se o módulo Livros e a função editarLivro estão disponíveis
-  if (typeof Livros !== 'undefined' && typeof Livros.editarLivro === 'function') {
-    Livros.editarLivro(livro);
-  } else {
-    // Tenta inicializar o módulo Livros manualmente, se necessário
-    if (typeof Livros !== 'undefined' && typeof Livros.init === 'function') {
-      Livros.init();
-      // Aguarda um pequeno tempo e tenta novamente
-      setTimeout(() => {
-        if (typeof Livros.editarLivro === 'function') {
-          Livros.editarLivro(livro);
-        } else {
-          Util.toast('Módulo de edição não disponível. Recarregue a página.', 'danger');
-        }
-      }, 300);
-    } else {
-      Util.toast('Módulo de edição não disponível.', 'danger');
-    }
-  }
-});
+      modal.hide();
+      if (typeof Livros !== 'undefined' && Livros.editarLivro) {
+        Livros.editarLivro(livro);
+      }
+    });
 
     document.querySelector('.btn-excluir-livro').addEventListener('click', async () => {
       if (confirm('Tem certeza que deseja excluir este livro e todos os seus registros?')) {
+        if (!navigator.onLine) {
+          Util.toast('Você está offline. Conecte-se para excluir.', 'warning');
+          return;
+        }
         try {
           await API.enviar({ acao: 'deleteBook', id: livro.ID });
           modal.hide();
@@ -217,10 +192,22 @@ const Biblioteca = (() => {
     });
   }
 
+  function formatarData(dataISO) {
+    if (!dataISO) return '-';
+    try {
+      const data = new Date(dataISO);
+      const dia = data.getUTCDate().toString().padStart(2, '0');
+      const mes = (data.getUTCMonth() + 1).toString().padStart(2, '0');
+      const ano = data.getUTCFullYear();
+      return `${dia}/${mes}/${ano}`;
+    } catch (e) {
+      return dataISO;
+    }
+  }
+
   return { init };
 })();
 
-// Inicialização segura
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', Biblioteca.init);
 } else {
