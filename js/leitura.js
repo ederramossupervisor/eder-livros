@@ -1,9 +1,7 @@
-/**
- * Módulo de registro de sessões de leitura – com cronômetro, máscara de hora e anotação integrada
- */
 const Leitura = (() => {
   const form = document.getElementById('session-form');
-  const livroSelect = document.getElementById('livro-select');
+  const livroInput = document.getElementById('livro-select-input');
+  const livroDatalist = document.getElementById('livros-datalist');
   const livroInfo = document.getElementById('livro-info');
   const refreshBtn = document.getElementById('refresh-books-btn');
   const dataInput = document.getElementById('data-sessao');
@@ -16,10 +14,7 @@ const Leitura = (() => {
   const pagLidasDiv = document.getElementById('paginas-calculadas');
   const pagLidasSpan = document.getElementById('paginas-lidas');
   const historicoContainer = document.getElementById('historico-sessoes');
-  const livroInput = document.getElementById('livro-select-input');
-  const livroDatalist = document.getElementById('livros-datalist');
-  
-  // Elementos do cronômetro
+
   const display = document.getElementById('cronometro-display');
   const btnIniciar = document.getElementById('btn-iniciar');
   const btnPausar = document.getElementById('btn-pausar');
@@ -28,14 +23,11 @@ const Leitura = (() => {
 
   let livrosCache = [];
   let editandoSessaoID = null;
-  let livroMap = {}; // mapa título -> ID
-  // Variáveis do cronômetro
+  let livroMap = {};
   let cronometroAtivo = false;
   let tempoAcumulado = 0;
   let inicioCronometro = null;
   let timerInterval = null;
-
-  // Reconhecimento de voz para observação da sessão
   let recognition = null;
   let targetInput = null;
 
@@ -58,17 +50,13 @@ const Leitura = (() => {
 
     recognition.addEventListener('end', () => {
       const btn = document.getElementById('btn-voz-obs-sessao');
-      if (btn) {
-        btn.innerHTML = '<i class="fas fa-microphone"></i>';
-      }
+      if (btn) btn.innerHTML = '<i class="fas fa-microphone"></i>';
       targetInput = null;
     });
 
     recognition.addEventListener('error', () => {
       const btn = document.getElementById('btn-voz-obs-sessao');
-      if (btn) {
-        btn.innerHTML = '<i class="fas fa-microphone"></i>';
-      }
+      if (btn) btn.innerHTML = '<i class="fas fa-microphone"></i>';
       targetInput = null;
     });
   }
@@ -76,10 +64,14 @@ const Leitura = (() => {
   function formatarHora(input) {
     let valor = input.value.replace(/\D/g, '');
     if (valor.length > 4) valor = valor.slice(0, 4);
-    if (valor.length > 2) {
-      valor = valor.slice(0, 2) + ':' + valor.slice(2);
-    }
+    if (valor.length > 2) valor = valor.slice(0, 2) + ':' + valor.slice(2);
     input.value = valor;
+  }
+
+  function sanitizarHora(valor) {
+    if (!valor) return '';
+    const match = valor.match(/(\d{2}):(\d{2})/);
+    return match ? match[1] + ':' + match[2] : '';
   }
 
   function init() {
@@ -133,7 +125,6 @@ const Leitura = (() => {
     btnRetomar.addEventListener('click', retomarCronometro);
     btnFinalizar.addEventListener('click', finalizarCronometro);
 
-    // Microfone da observação da sessão
     const btnVoz = document.getElementById('btn-voz-obs-sessao');
     const obsInput = document.getElementById('observacoes-sessao');
     if (btnVoz && obsInput) {
@@ -155,27 +146,15 @@ const Leitura = (() => {
 
     carregarLivros();
     carregarHistorico();
-    console.log('✅ Módulo Leitura pronto (com anotação integrada e microfone).');
+    console.log('✅ Módulo Leitura pronto.');
   }
 
-  // ========== CRONÔMETRO ==========
   function atualizarDisplay(segundos) {
     const mins = Math.floor(segundos / 60);
     const secs = segundos % 60;
     display.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   }
 
-function sanitizarHora(valor) {
-  if (!valor) return '';
-  // Se for uma data ISO completa, extrai apenas a hora e minutos
-  const match = valor.match(/(\d{2}):(\d{2})/);
-  if (match) {
-    return match[1] + ':' + match[2];
-  }
-  return ''; // se não conseguir extrair, retorna vazio (evita enviar lixo)
-}
-
-  
   function iniciarCronometro() {
     if (tempoAcumulado === 0) {
       horaInicio.value = new Date().toTimeString().slice(0, 5);
@@ -252,44 +231,32 @@ function sanitizarHora(valor) {
     horaFim.value = '';
   }
 
-  // ========== LIVROS ==========
   async function carregarLivros() {
-  try {
-    livroInput.value = '';
-    livroDatalist.innerHTML = '';
-    const resp = await API.enviar({ acao: 'listBooks' });
-    if (resp && Array.isArray(resp)) {
-      livrosCache = resp;
-      renderizarDatalist();
+    try {
+      livroInput.value = '';
+      livroDatalist.innerHTML = '';
+      const resp = await API.enviar({ acao: 'listBooks' });
+      if (resp && Array.isArray(resp)) {
+        livrosCache = resp;
+        renderizarDatalist();
+      }
+    } catch (e) {
+      Util.toast('Erro ao carregar livros', 'danger');
     }
-  } catch (e) {
-    Util.toast('Erro ao carregar livros', 'danger');
   }
-}
 
-function renderizarDatalist() {
-  livroDatalist.innerHTML = '';
-  livroMap = {};
-  livrosCache.forEach(livro => {
-    const option = document.createElement('option');
-    const texto = `${livro.Título} - ${livro.Autor} (${livro.Status})`;
-    option.value = texto;
-    livroMap[texto] = livro.ID;
-    livroDatalist.appendChild(option);
-  });
-}
-  
-  function renderizarListaLivros() {
-    livroSelect.innerHTML = '<option value="">Selecione um livro...</option>';
+  function renderizarDatalist() {
+    livroDatalist.innerHTML = '';
+    livroMap = {};
     livrosCache.forEach(livro => {
-      const opt = document.createElement('option');
-      opt.value = livro.ID;
-      opt.textContent = `${livro.Título} - ${livro.Autor} (${livro.Status})`;
-      livroSelect.appendChild(opt);
+      const option = document.createElement('option');
+      const texto = `${livro.Título} - ${livro.Autor} (${livro.Status})`;
+      option.value = texto;
+      livroMap[texto] = livro.ID;
+      livroDatalist.appendChild(option);
     });
   }
 
-  // ========== CÁLCULOS ==========
   function calcularTempo() {
     if (horaInicio.value && horaFim.value) {
       const [hi, mi] = horaInicio.value.split(':').map(Number);
@@ -314,87 +281,90 @@ function renderizarDatalist() {
     }
   }
 
-  // ========== SALVAR SESSÃO + ANOTAÇÃO ==========
   async function salvarSessao(e) {
-  e.preventDefault();
+    e.preventDefault();
 
-  if (!form.checkValidity()) {
-    form.classList.add('was-validated');
-    Util.toast('Preencha os campos obrigatórios.', 'warning');
-    return;
-  }
-
-  const textoSelecionado = livroInput.value.trim();
-  const livroID = livroMap[textoSelecionado] || '';
-  if (!livroID) {
-    Util.toast('Selecione um livro.', 'warning');
-    return;
-  }
-
-  const sessao = {
-    livroID,
-    data: dataInput.value,
-    horaInicio: sanitizarHora(horaInicio.value),
-    horaFim: sanitizarHora(horaFim.value),
-    paginaInicial: pagInicial.value,
-    paginaFinal: pagFinal.value,
-    local: document.getElementById('local-sessao').value,
-    humor: document.getElementById('humor').value,
-    clima: document.getElementById('clima').value,
-    distracoes: '',
-    observacoes: document.getElementById('observacoes-sessao').value
-  };
-
-  const btnSubmit = form.querySelector('button[type="submit"]');
-  btnSubmit.disabled = true;
-  btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Salvando...';
-
-  try {
-    let resposta;
-    if (editandoSessaoID) {
-      resposta = await API.enviar({ acao: 'updateSession', id: editandoSessaoID, sessao });
-    } else {
-      resposta = await API.enviar({ acao: 'addSession', sessao });
+    if (!form.checkValidity()) {
+      form.classList.add('was-validated');
+      Util.toast('Preencha os campos obrigatórios.', 'warning');
+      return;
     }
 
-    if (resposta && resposta.status === 'ok') {
-      // Criação da anotação automática
-      const tipoObs = document.getElementById('tipo-obs-sessao')?.value || '';
-      const textoObs = document.getElementById('observacoes-sessao')?.value?.trim() || '';
+    if (!navigator.onLine) {
+      Util.toast('Você está offline. Conecte-se para registrar sessões.', 'warning');
+      return;
+    }
 
-      if (tipoObs && textoObs) {
-        const paginaAnot = document.getElementById('pagina-obs-sessao')?.value || '';
-        await API.enviar({
-          acao: 'addNote',
-          anotacao: {
-            livroID,
-            capitulo: '',
-            pagina: paginaAnot,
-            categoria: tipoObs,
-            resumo: '',
-            trecho: '',
-            comentario: textoObs,
-            imagem: ''
-          }
-        });
+    const textoSelecionado = livroInput.value.trim();
+    const livroID = livroMap[textoSelecionado] || '';
+    if (!livroID) {
+      Util.toast('Selecione um livro.', 'warning');
+      return;
+    }
+
+    const sessao = {
+      livroID,
+      data: dataInput.value,
+      horaInicio: sanitizarHora(horaInicio.value),
+      horaFim: sanitizarHora(horaFim.value),
+      paginaInicial: pagInicial.value,
+      paginaFinal: pagFinal.value,
+      local: document.getElementById('local-sessao').value,
+      humor: document.getElementById('humor').value,
+      clima: document.getElementById('clima').value,
+      distracoes: '',
+      observacoes: document.getElementById('observacoes-sessao').value
+    };
+
+    const btnSubmit = form.querySelector('button[type="submit"]');
+    btnSubmit.disabled = true;
+    btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Salvando...';
+
+    try {
+      let resposta;
+      if (editandoSessaoID) {
+        resposta = await API.enviar({ acao: 'updateSession', id: editandoSessaoID, sessao });
+      } else {
+        resposta = await API.enviar({ acao: 'addSession', sessao });
       }
 
-      Util.toast(editandoSessaoID ? 'Sessão atualizada!' : 'Sessão registrada!', 'success');
-      limparFormulario();
-      editandoSessaoID = null;
-      carregarHistorico();
-      carregarLivros();
-    } else {
-      throw new Error(resposta?.erro || 'Falha no servidor');
+      if (resposta && resposta.status === 'ok') {
+        const tipoObs = document.getElementById('tipo-obs-sessao')?.value || '';
+        const textoObs = document.getElementById('observacoes-sessao')?.value?.trim() || '';
+
+        if (tipoObs && textoObs) {
+          const paginaAnot = document.getElementById('pagina-obs-sessao')?.value || '';
+          await API.enviar({
+            acao: 'addNote',
+            anotacao: {
+              livroID,
+              capitulo: '',
+              pagina: paginaAnot,
+              categoria: tipoObs,
+              resumo: '',
+              trecho: '',
+              comentario: textoObs,
+              imagem: ''
+            }
+          });
+        }
+
+        Util.toast(editandoSessaoID ? 'Sessão atualizada!' : 'Sessão registrada!', 'success');
+        limparFormulario();
+        editandoSessaoID = null;
+        carregarHistorico();
+        carregarLivros();
+      } else {
+        throw new Error(resposta?.erro || 'Falha no servidor');
+      }
+    } catch (erro) {
+      Util.toast('Erro ao salvar: ' + erro.message, 'danger');
+    } finally {
+      btnSubmit.disabled = false;
+      btnSubmit.innerHTML = '<i class="fas fa-save me-1"></i> ' + (editandoSessaoID ? 'Atualizar Sessão' : 'Registrar Sessão');
     }
-  } catch (erro) {
-    Util.toast('Erro ao salvar: ' + erro.message, 'danger');
-  } finally {
-    // Sempre restaura o botão, independentemente do resultado
-    btnSubmit.disabled = false;
-    btnSubmit.innerHTML = '<i class="fas fa-save me-1"></i> ' + (editandoSessaoID ? 'Atualizar Sessão' : 'Registrar Sessão');
   }
-}
+
   function limparFormulario() {
     form.reset();
     form.classList.remove('was-validated');
@@ -408,44 +378,53 @@ function renderizarDatalist() {
     resetarCronometro();
   }
 
-  // ========== HISTÓRICO ==========
   async function carregarHistorico() {
     if (!historicoContainer) return;
+    let sessoes = [];
     try {
       const resp = await API.enviar({ acao: 'listRecentSessions' });
-      if (Array.isArray(resp) && resp.length > 0) {
-        historicoContainer.innerHTML = '';
-        const mapaTitulos = {};
-        livrosCache.forEach(l => mapaTitulos[l.ID] = l.Título || 'Sem título');
-
-        resp.forEach(sess => {
-          const dataFormatada = sess.Data ? new Date(sess.Data).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : '?';
-          const pi = sess.PáginaInicial || '?';
-          const pf = sess.PáginaFinal || '?';
-          const pagLidas = sess.PáginasLidas || 0;
-          const tempo = sess.Tempo ? `${sess.Tempo} min` : '';
-          const nomeLivro = mapaTitulos[sess.LivroID] || 'Desconhecido';
-
-          const div = document.createElement('div');
-          div.className = 'd-flex justify-content-between align-items-center p-2 border-bottom';
-          div.innerHTML = `
-            <div>
-              <strong>${nomeLivro}</strong><br>
-              <small>${dataFormatada} - Pág. ${pi}-${pf} (${pagLidas} pág) ${tempo}</small>
-              ${sess.Local ? `<br><small class="text-muted">Local: ${sess.Local}</small>` : ''}
-            </div>
-            <div>
-              <button class="btn btn-sm btn-outline-secondary btn-editar-sessao" data-id="${sess.ID}"><i class="fas fa-edit"></i></button>
-              <button class="btn btn-sm btn-outline-danger btn-excluir-sessao" data-id="${sess.ID}"><i class="fas fa-trash"></i></button>
-            </div>`;
-          historicoContainer.appendChild(div);
-        });
-
-        document.querySelectorAll('.btn-editar-sessao').forEach(btn => btn.addEventListener('click', () => editarSessao(btn.dataset.id, resp)));
-        document.querySelectorAll('.btn-excluir-sessao').forEach(btn => btn.addEventListener('click', () => excluirSessao(btn.dataset.id)));
+      if (Array.isArray(resp)) {
+        sessoes = resp;
+        DB.salvarSessoes(resp).catch(e => console.warn('Cache sessões falhou:', e));
       }
     } catch (e) {
-      console.error(e);
+      console.warn('Falha na API, tentando cache offline...');
+      sessoes = await DB.obterSessoes();
+      if (sessoes.length > 0) {
+        Util.toast('Modo offline - dados do último acesso.', 'info');
+      }
+    }
+
+    if (sessoes.length > 0) {
+      historicoContainer.innerHTML = '';
+      const mapaTitulos = {};
+      livrosCache.forEach(l => mapaTitulos[l.ID] = l.Título || 'Sem título');
+
+      sessoes.slice(0, 20).forEach(sess => {
+        const dataFormatada = sess.Data ? new Date(sess.Data).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : '?';
+        const pi = sess.PáginaInicial || '?';
+        const pf = sess.PáginaFinal || '?';
+        const pagLidas = sess.PáginasLidas || 0;
+        const tempo = sess.Tempo ? `${sess.Tempo} min` : '';
+        const nomeLivro = mapaTitulos[sess.LivroID] || 'Desconhecido';
+
+        const div = document.createElement('div');
+        div.className = 'd-flex justify-content-between align-items-center p-2 border-bottom';
+        div.innerHTML = `
+          <div>
+            <strong>${nomeLivro}</strong><br>
+            <small>${dataFormatada} - Pág. ${pi}-${pf} (${pagLidas} pág) ${tempo}</small>
+            ${sess.Local ? `<br><small class="text-muted">Local: ${sess.Local}</small>` : ''}
+          </div>
+          <div>
+            <button class="btn btn-sm btn-outline-secondary btn-editar-sessao" data-id="${sess.ID}"><i class="fas fa-edit"></i></button>
+            <button class="btn btn-sm btn-outline-danger btn-excluir-sessao" data-id="${sess.ID}"><i class="fas fa-trash"></i></button>
+          </div>`;
+        historicoContainer.appendChild(div);
+      });
+
+      document.querySelectorAll('.btn-editar-sessao').forEach(btn => btn.addEventListener('click', () => editarSessao(btn.dataset.id, sessoes)));
+      document.querySelectorAll('.btn-excluir-sessao').forEach(btn => btn.addEventListener('click', () => excluirSessao(btn.dataset.id)));
     }
   }
 
@@ -473,11 +452,19 @@ function renderizarDatalist() {
   }
 
   async function excluirSessao(id) {
+    if (!navigator.onLine) {
+      Util.toast('Você está offline. Conecte-se para excluir sessões.', 'warning');
+      return;
+    }
     if (confirm('Excluir esta sessão?')) {
-      await API.enviar({ acao: 'deleteSession', id });
-      carregarHistorico();
-      carregarLivros();
-      Util.toast('Sessão excluída', 'info');
+      try {
+        await API.enviar({ acao: 'deleteSession', id });
+        carregarHistorico();
+        carregarLivros();
+        Util.toast('Sessão excluída', 'info');
+      } catch (e) {
+        Util.toast('Erro ao excluir: ' + e.message, 'danger');
+      }
     }
   }
 
