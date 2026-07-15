@@ -334,11 +334,12 @@ const Leitura = (() => {
 
         if (tipoObs && textoObs) {
           const paginaAnot = document.getElementById('pagina-obs-sessao')?.value || '';
+          const capituloAnot = document.getElementById('capitulo-obs-sessao')?.value || '';
           await API.enviar({
             acao: 'addNote',
             anotacao: {
               livroID,
-              capitulo: '',
+              capitulo: capituloAnot,  // ← adicionado
               pagina: paginaAnot,
               categoria: tipoObs,
               resumo: '',
@@ -348,7 +349,6 @@ const Leitura = (() => {
             }
           });
         }
-
         Util.toast(editandoSessaoID ? 'Sessão atualizada!' : 'Sessão registrada!', 'success');
         limparFormulario();
         editandoSessaoID = null;
