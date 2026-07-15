@@ -531,9 +531,8 @@
           <div class="card-body">
             <h5 class="card-title">Selecione o livro</h5>
             <div class="input-group mb-2">
-              <select id="livro-select" class="form-select" required>
-                <option value="">Carregando livros...</option>
-              </select>
+              <input type="text" id="livro-select-input" class="form-control" list="livros-datalist" placeholder="Digite o nome do livro..." autocomplete="off" required>
+              <datalist id="livros-datalist"></datalist>
               <button class="btn btn-outline-secondary" id="refresh-books-btn" title="Atualizar lista"><i class="fas fa-sync-alt"></i></button>
             </div>
             <div id="livro-info" class="small text-muted"></div>
