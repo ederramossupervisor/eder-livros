@@ -1,8 +1,13 @@
+/**
+ * Módulo de Anotações – unificado, com microfone, compartilhamento personalizado,
+ * seleção de formato (feed/stories) e fundo com capa do livro corrigido.
+ */
 const Anotacoes = (() => {
   let recognition = null;
   let targetInput = null;
   let livrosCache = [];
 
+  /* ========== RECONHECIMENTO DE VOZ ========== */
   function initSpeech() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
@@ -65,6 +70,7 @@ const Anotacoes = (() => {
     }
   }
 
+  /* ========== INICIALIZAÇÃO ========== */
   async function init() {
     const page = document.getElementById('page-anotacoes');
     if (!page || !page.classList.contains('active')) return;
@@ -77,6 +83,7 @@ const Anotacoes = (() => {
     console.log('✅ Módulo Anotações pronto (com compartilhamento).');
   }
 
+  /* ========== CARREGAR LIVROS (dropdown + cache) ========== */
   async function carregarLivrosDropdown() {
     try {
       const resp = await API.enviar({ acao: 'listBooks' });
@@ -99,6 +106,7 @@ const Anotacoes = (() => {
     }
   }
 
+  /* ========== FORMULÁRIO DE ANOTAÇÃO + MICROFONES ========== */
   function configurarForms() {
     document.getElementById('form-anotacao').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -134,6 +142,7 @@ const Anotacoes = (() => {
     document.getElementById('filtro-livro-anot').addEventListener('change', listarAnotacoes);
   }
 
+  /* ========== LISTAR ANOTAÇÕES COM BOTÃO DE COMPARTILHAR ========== */
   async function listarAnotacoes() {
     const filtro = document.getElementById('filtro-livro-anot')?.value || '';
     let anotacoes = [];
@@ -205,138 +214,179 @@ const Anotacoes = (() => {
     }
   }
 
+  /* ========== MODAL DE COMPARTILHAMENTO ========== */
   function abrirModalCompartilhamento(trecho, livro, autor, urlCapa) {
-  // Preenche os campos editáveis
-  document.getElementById('citacao-texto').textContent = `"${trecho}"`;
-  document.getElementById('citacao-livro').textContent = livro;
-  document.getElementById('citacao-autor').textContent = autor;
+    document.getElementById('citacao-texto').textContent = `"${trecho}"`;
+    document.getElementById('citacao-livro').textContent = livro;
+    document.getElementById('citacao-autor').textContent = autor;
 
-  const cartao = document.getElementById('cartao-citacao');
+    const cartao = document.getElementById('cartao-citacao');
 
-  // --- CONTROLES DE FUNDO ---
-  const coresPredefinidas = [
-    { nome: 'Escuro padrão', valor: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', corTexto: '#fff' },
-    { nome: 'Roxo elegante', valor: 'linear-gradient(135deg, #4c1d95 0%, #1e1b4b 100%)', corTexto: '#fff' },
-    { nome: 'Azul sereno', valor: 'linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%)', corTexto: '#fff' },
-    { nome: 'Verde natureza', valor: 'linear-gradient(135deg, #064e3b 0%, #022c22 100%)', corTexto: '#fff' },
-    { nome: 'Vinho', valor: 'linear-gradient(135deg, #4c0519 0%, #1f0808 100%)', corTexto: '#fff' },
-    { nome: 'Claro limpo', valor: '#f8f9fa', corTexto: '#1e293b' },
-    { nome: 'Sépia', valor: '#f5e6d3', corTexto: '#3e2723' },
-    { nome: 'Preto', valor: '#000000', corTexto: '#ffffff' }
-  ];
+    // --- CONTROLES DE FUNDO ---
+    const coresPredefinidas = [
+      { nome: 'Escuro padrão', valor: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', corTexto: '#fff' },
+      { nome: 'Roxo elegante', valor: 'linear-gradient(135deg, #4c1d95 0%, #1e1b4b 100%)', corTexto: '#fff' },
+      { nome: 'Azul sereno', valor: 'linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%)', corTexto: '#fff' },
+      { nome: 'Verde natureza', valor: 'linear-gradient(135deg, #064e3b 0%, #022c22 100%)', corTexto: '#fff' },
+      { nome: 'Vinho', valor: 'linear-gradient(135deg, #4c0519 0%, #1f0808 100%)', corTexto: '#fff' },
+      { nome: 'Claro limpo', valor: '#f8f9fa', corTexto: '#1e293b' },
+      { nome: 'Sépia', valor: '#f5e6d3', corTexto: '#3e2723' },
+      { nome: 'Preto', valor: '#000000', corTexto: '#ffffff' }
+    ];
 
-  const containerCores = document.getElementById('cores-predefinidas');
-  containerCores.innerHTML = '';
-  coresPredefinidas.forEach((tema, index) => {
-    const btn = document.createElement('button');
-    btn.className = 'btn btn-sm btn-outline-secondary';
-    btn.style.background = tema.valor.startsWith('linear') ? 'var(--bg-secondary)' : tema.valor;
-    btn.style.color = tema.valor.startsWith('linear') ? 'var(--text-primary)' : (tema.corTexto);
-    btn.style.border = '1px solid var(--border-color)';
-    btn.textContent = tema.nome;
-    btn.addEventListener('click', () => {
-      cartao.style.background = tema.valor;
-      cartao.style.color = tema.corTexto;
-    });
-    containerCores.appendChild(btn);
-  });
-
-  // Botão "Usar capa do livro"
-  document.getElementById('btn-fundo-capa').onclick = () => {
-    if (urlCapa) {
-      cartao.style.backgroundImage = `url(${urlCapa})`;
-      cartao.style.backgroundSize = 'cover';
-      cartao.style.backgroundPosition = 'center';
-      cartao.style.position = 'relative';
-      // Adiciona overlay escuro para legibilidade
-      cartao.style.setProperty('--overlay', 'rgba(0,0,0,0.6)');
-      cartao.style.boxShadow = 'inset 0 0 0 2000px var(--overlay)';
-      cartao.style.color = '#ffffff';
-    } else {
-      Util.toast('Este livro não possui capa cadastrada.', 'warning');
-    }
-  };
-
-  // Botão "Gradiente aleatório"
-  document.getElementById('btn-fundo-gradiente').onclick = () => {
-    const cores = ['#1e293b', '#0f172a', '#4c1d95', '#1e3a5f', '#064e3b', '#4c0519', '#1e1b4b'];
-    const c1 = cores[Math.floor(Math.random() * cores.length)];
-    const c2 = cores[Math.floor(Math.random() * cores.length)];
-    cartao.style.background = `linear-gradient(135deg, ${c1} 0%, ${c2} 100%)`;
-    cartao.style.backgroundImage = ''; // remove capa
-    cartao.style.boxShadow = '';
-    cartao.style.color = '#ffffff';
-  };
-
-  // --- CONTROLE DE TAMANHO DA FONTE ---
-  document.getElementById('range-tamanho-fonte').addEventListener('input', (e) => {
-    document.getElementById('citacao-texto').style.fontSize = e.target.value / 16 + 'rem';
-  });
-
-  // --- CONTROLE DE ALINHAMENTO ---
-  document.querySelectorAll('[data-align]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('[data-align]').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      cartao.style.textAlign = btn.dataset.align;
-    });
-  });
-    // --- CONTROLE DE FORMATO ---
-  const btnFeed = document.querySelector('[data-format="feed"]');
-  const btnStories = document.querySelector('[data-format="stories"]');
-  btnFeed.addEventListener('click', () => {
-    btnFeed.classList.add('active');
-    btnStories.classList.remove('active');
-    cartao.classList.add('format-feed');
-    cartao.classList.remove('format-stories');
-  });
-  btnStories.addEventListener('click', () => {
-    btnStories.classList.add('active');
-    btnFeed.classList.remove('active');
-    cartao.classList.add('format-stories');
-    cartao.classList.remove('format-feed');
-  });
-  // Inicia com formato feed (padrão)
-  cartao.classList.add('format-feed');
-
-  // --- BOTÃO BAIXAR ---
-  document.getElementById('btn-baixar-citacao').onclick = async () => {
-    try {
-      // Garante que o cartão esteja visível
-      cartao.style.display = 'flex';
-      const canvas = await html2canvas(cartao, {
-        backgroundColor: null,
-        scale: 2,
-        useCORS: true,
-        allowTaint: true
-      });
-
-      const link = document.createElement('a');
-      link.download = `citacao-${livro.replace(/\s+/g, '-').toLowerCase()}.png`;
-      link.href = canvas.toDataURL('image/png');
-      link.click();
-
-      if (navigator.share) {
-        canvas.toBlob(async (blob) => {
-          if (blob) {
-            const file = new File([blob], 'citacao.png', { type: 'image/png' });
-            try {
-              await navigator.share({ files: [file], title: 'Citação do Eder Livros' });
-            } catch (shareError) { /* usuário cancelou */ }
-          }
+    const containerCores = document.getElementById('cores-predefinidas');
+    if (containerCores) {
+      containerCores.innerHTML = '';
+      coresPredefinidas.forEach((tema) => {
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-sm btn-outline-secondary';
+        btn.style.background = tema.valor.startsWith('linear') ? 'var(--bg-secondary)' : tema.valor;
+        btn.style.color = tema.valor.startsWith('linear') ? 'var(--text-primary)' : (tema.corTexto);
+        btn.style.border = '1px solid var(--border-color)';
+        btn.textContent = tema.nome;
+        btn.addEventListener('click', () => {
+          // Limpa fundo anterior (imagem + overlay)
+          const imgFundo = document.getElementById('img-fundo-capa');
+          if (imgFundo) imgFundo.remove();
+          const overlayFundo = document.getElementById('overlay-fundo');
+          if (overlayFundo) overlayFundo.remove();
+          cartao.style.position = '';
+          cartao.style.background = tema.valor;
+          cartao.style.color = tema.corTexto;
         });
-      }
-      Util.toast('Imagem baixada!', 'success');
-    } catch (err) {
-      console.error('Erro ao gerar imagem:', err);
-      Util.toast('Falha ao gerar imagem.', 'danger');
+        containerCores.appendChild(btn);
+      });
     }
-  };
 
-  // Exibe o modal
-  const modal = new bootstrap.Modal(document.getElementById('modal-compartilhar-citacao'));
-  modal.show();
-}
+    // Botão "Usar capa do livro"
+    const btnFundoCapa = document.getElementById('btn-fundo-capa');
+    if (btnFundoCapa) {
+      btnFundoCapa.onclick = () => {
+        if (urlCapa) {
+          // Remove imagem e overlay antigos
+          const imgAntiga = document.getElementById('img-fundo-capa');
+          if (imgAntiga) imgAntiga.remove();
+          const overlayAntigo = document.getElementById('overlay-fundo');
+          if (overlayAntigo) overlayAntigo.remove();
+
+          const img = document.createElement('img');
+          img.id = 'img-fundo-capa';
+          img.src = urlCapa;
+          img.crossOrigin = 'anonymous';
+          img.style.cssText = 'position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0;';
+
+          const overlay = document.createElement('div');
+          overlay.id = 'overlay-fundo';
+          overlay.style.cssText = 'position: absolute; inset: 0; background: rgba(0,0,0,0.6); z-index: 1;';
+
+          cartao.style.position = 'relative';
+          cartao.style.background = '';
+          cartao.style.backgroundImage = '';
+          cartao.style.boxShadow = '';
+          cartao.insertBefore(img, cartao.firstChild);
+          cartao.insertBefore(overlay, cartao.children[1]);
+          cartao.style.color = '#ffffff';
+        } else {
+          Util.toast('Este livro não possui capa cadastrada.', 'warning');
+        }
+      };
+    }
+
+    // Botão "Gradiente aleatório"
+    const btnFundoGradiente = document.getElementById('btn-fundo-gradiente');
+    if (btnFundoGradiente) {
+      btnFundoGradiente.onclick = () => {
+        const imgFundo = document.getElementById('img-fundo-capa');
+        if (imgFundo) imgFundo.remove();
+        const overlayFundo = document.getElementById('overlay-fundo');
+        if (overlayFundo) overlayFundo.remove();
+        cartao.style.position = '';
+
+        const cores = ['#1e293b', '#0f172a', '#4c1d95', '#1e3a5f', '#064e3b', '#4c0519', '#1e1b4b'];
+        const c1 = cores[Math.floor(Math.random() * cores.length)];
+        const c2 = cores[Math.floor(Math.random() * cores.length)];
+        cartao.style.background = `linear-gradient(135deg, ${c1} 0%, ${c2} 100%)`;
+        cartao.style.backgroundImage = '';
+        cartao.style.boxShadow = '';
+        cartao.style.color = '#ffffff';
+      };
+    }
+
+    // --- CONTROLE DE TAMANHO DA FONTE ---
+    const rangeFonte = document.getElementById('range-tamanho-fonte');
+    if (rangeFonte) {
+      rangeFonte.addEventListener('input', (e) => {
+        document.getElementById('citacao-texto').style.fontSize = e.target.value / 16 + 'rem';
+      });
+    }
+
+    // --- CONTROLE DE ALINHAMENTO ---
+    document.querySelectorAll('[data-align]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('[data-align]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        cartao.style.textAlign = btn.dataset.align;
+      });
+    });
+
+    // --- CONTROLE DE FORMATO (FEED / STORIES) ---
+    const btnFeed = document.querySelector('[data-format="feed"]');
+    const btnStories = document.querySelector('[data-format="stories"]');
+    if (btnFeed && btnStories) {
+      btnFeed.addEventListener('click', () => {
+        btnFeed.classList.add('active');
+        btnStories.classList.remove('active');
+        cartao.classList.add('format-feed');
+        cartao.classList.remove('format-stories');
+      });
+      btnStories.addEventListener('click', () => {
+        btnStories.classList.add('active');
+        btnFeed.classList.remove('active');
+        cartao.classList.add('format-stories');
+        cartao.classList.remove('format-feed');
+      });
+      // Inicia com formato feed (padrão)
+      cartao.classList.add('format-feed');
+    }
+
+    // --- BOTÃO BAIXAR ---
+    document.getElementById('btn-baixar-citacao').onclick = async () => {
+      try {
+        cartao.style.display = 'flex';
+        const canvas = await html2canvas(cartao, {
+          backgroundColor: null,
+          scale: 2,
+          useCORS: true,
+          allowTaint: true
+        });
+
+        const link = document.createElement('a');
+        link.download = `citacao-${livro.replace(/\s+/g, '-').toLowerCase()}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+
+        if (navigator.share) {
+          canvas.toBlob(async (blob) => {
+            if (blob) {
+              const file = new File([blob], 'citacao.png', { type: 'image/png' });
+              try {
+                await navigator.share({ files: [file], title: 'Citação do Eder Livros' });
+              } catch (shareError) { /* usuário cancelou */ }
+            }
+          });
+        }
+        Util.toast('Imagem baixada!', 'success');
+      } catch (err) {
+        console.error('Erro ao gerar imagem:', err);
+        Util.toast('Falha ao gerar imagem.', 'danger');
+      }
+    };
+
+    // Exibe o modal
+    const modal = new bootstrap.Modal(document.getElementById('modal-compartilhar-citacao'));
+    modal.show();
+  }
+
   return { init };
 })();
 
