@@ -13,29 +13,19 @@ const Estatisticas = (() => {
       preencherResumo(dados);
       criarInsights(dados.insights);
 
-      // Aguarda a página ficar realmente visível e com altura antes de criar gráficos
-      await aguardarPaginaVisivel(page);
-
-      console.log('📐 Página visível, criando gráficos...');
-      try { criarGraficoFinalizadosMes(dados.finalizadosPorMes); } catch(e) { console.warn(e); }
-      try { criarGraficoPaginasDia(dados.paginasPorDia); } catch(e) { console.warn(e); }
-      try { criarGraficoGeneros(dados.generos); } catch(e) { console.warn(e); }
-      try { criarGraficoDiaSemana(dados.tempoPorDiaSemana); } catch(e) { console.warn(e); }
-      try { criarHeatmap(dados.heatmap); } catch(e) { console.warn(e); }
-
-      // Redimensiona após tudo pronto
+      // Pequeno atraso para garantir que os canvas estejam visíveis
       setTimeout(() => {
-        Object.values(graficos).forEach(chart => {
-          if (chart && chart.canvas) {
-            chart.resize();
-          }
-        });
-      }, 200);
+        try { criarGraficoFinalizadosMes(dados.finalizadosPorMes); } catch(e) { console.warn(e); }
+        try { criarGraficoPaginasDia(dados.paginasPorDia); } catch(e) { console.warn(e); }
+        try { criarGraficoGeneros(dados.generos); } catch(e) { console.warn(e); }
+        try { criarGraficoDiaSemana(dados.tempoPorDiaSemana); } catch(e) { console.warn(e); }
+        try { criarHeatmap(dados.heatmap); } catch(e) { console.warn(e); }
+      }, 100);
 
       preencherTopAutores(dados.topAutores);
       preencherTopEditoras(dados.topEditoras);
 
-      // ✅ Inicializa o Calendário de Leitura (mês e ano atuais)
+      // Inicializa o Calendário de Leitura (mês e ano atuais)
       if (typeof CalendarioLeitura !== 'undefined' && CalendarioLeitura.init) {
         const hoje = new Date();
         CalendarioLeitura.init(hoje.getFullYear(), hoje.getMonth() + 1);
