@@ -41,14 +41,17 @@
 
 /* Célula do dia */
 .calendario-dia {
-  aspect-ratio: 1;
+  aspect-ratio: auto;               /* remove a proporção quadrada */
+  min-height: 80px;                 /* altura mínima confortável */
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  border-radius: 6px;
-  font-size: 0.85rem;
+  justify-content: flex-start;      /* conteúdo começa no topo */
+  border-radius: 8px;
+  font-size: 0.8rem;
+  padding: 4px 2px;
   transition: background-color 0.2s;
+  overflow: hidden;
 }
 
 /* Dia com leitura */
@@ -56,10 +59,17 @@
   background-color: var(--primary-light);
 }
 
-/* Capa do livro no dia */
+/* Capa do livro – contida e centralizada */
 .calendario-dia img {
   width: 100%;
-  max-height: 45px;
-  object-fit: cover;
+  max-height: 55px;                 /* altura máxima da imagem */
+  object-fit: contain;             /* 👈 mostra a capa inteira, sem cortar */
   border-radius: 4px;
+  margin-top: 2px;
+}
+
+/* Ajuste opcional: ícone de livro quando não há capa */
+.calendario-dia i {
+  font-size: 1.2rem;
+  margin-top: 4px;
 }
