@@ -1,6 +1,5 @@
 /* ========== ANOTAÇÕES ========== */
 
-/* Cartão da lista de anotações */
 .anotacao-card, .citacao-card {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
@@ -16,54 +15,43 @@
   margin: 0.5rem 0;
 }
 
-/* --- Cartão de citação no modal de compartilhamento --- */
+/* Cartão de citação no modal de compartilhamento */
 #cartao-citacao {
-  width: 100%;               /* ocupa a largura disponível no modal */
-  max-width: 400px;          /* limite para não ficar gigante em desktop */
-  margin: 0 auto;            /* centraliza horizontalmente */
-  min-height: 250px;         /* altura mínima para o texto */
+  width: 100%;
+  max-width: 400px;          /* limite para desktop */
+  margin: 0 auto;            /* centraliza */
+  min-height: 250px;
   position: relative;
-  overflow: hidden;          /* evita barras de rolagem desnecessárias */
+  overflow-y: auto;          /* rolagem se o conteúdo for maior que a altura máxima */
   transition: width 0.3s, height 0.3s;
 }
 
-/* A imagem de fundo se ajusta ao cartão sem extrapolar */
+/* A imagem de fundo se ajusta sem extrapolar */
 #img-fundo-capa {
   object-fit: cover;
 }
 
-/* --- Formatos de imagem --- */
-/* Feed (1:1) */
+/* --- Formatos (apenas largura máxima, sem altura fixa) --- */
 .format-feed {
-  aspect-ratio: 1 / 1;
   width: 100%;
   max-width: 400px;
-  height: auto;
 }
 
-/* Stories (9:16) */
 .format-stories {
-  aspect-ratio: 9 / 16;
   width: 100%;
   max-width: 360px;
-  height: auto;
 }
 
-/* Em telas menores que 576px (celulares) */
+/* Em telas pequenas (celulares) */
 @media (max-width: 575px) {
   #cartao-citacao {
-    max-height: 45vh;        /* limita a altura para não empurrar os controles */
+    max-height: 45vh;        /* altura máxima para manter os controles visíveis */
     width: 100%;
     max-width: 100%;
   }
-  
-  .format-feed,
-  .format-stories {
-    max-width: 100%;
-  }
 }
 
-/* Em telas médias (tablets) */
+/* Em tablets */
 @media (min-width: 576px) and (max-width: 991px) {
   #cartao-citacao {
     max-height: 55vh;
