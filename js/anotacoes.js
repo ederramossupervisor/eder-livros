@@ -342,31 +342,27 @@ document.getElementById('btn-baixar-citacao').onclick = async () => {
   btnDownload.disabled = true;
   btnDownload.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Gerando imagem...';
 
-  const loadingOverlay = document.createElement('div');
-  loadingOverlay.id = 'loading-download-overlay';
-  loadingOverlay.style.cssText = 'position: absolute; inset: 0; background: rgba(0,0,0,0.5); z-index: 10; display: flex; align-items: center; justify-content: center; border-radius: inherit;';
-  loadingOverlay.innerHTML = '<div class="text-center text-white"><div class="spinner-border mb-2" role="status"></div><br>Processando...</div>';
-  cartao.style.position = 'relative';
-  cartao.appendChild(loadingOverlay);
-
-  // Dimensões-alvo (mesmas de antes)
+  // Dimensões-alvo baseadas no formato
   let targetWidth, targetHeight;
   if (cartao.classList.contains('format-feed')) {
     targetWidth = 400; targetHeight = 400;
   } else if (cartao.classList.contains('format-stories')) {
     targetWidth = 360; targetHeight = 640;
   } else {
-    targetWidth = cartao.scrollWidth; targetHeight = cartao.scrollHeight;
+    targetWidth = cartao.scrollWidth || 400;
+    targetHeight = cartao.scrollHeight || 400;
   }
 
-  // Clona o cartão pra um contêiner isolado — a captura deixa de depender
-  // do scroll do modal, que era o que cortava a imagem no celular
+  // 1. Clona o cartão **antes** de adicionar qualquer overlay
   const clone = cartao.cloneNode(true);
   const textoClone = clone.querySelector('#citacao-texto');
+  // Remove IDs para evitar conflitos
   clone.removeAttribute('id');
   clone.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
+  // Garante crossOrigin nas imagens do clone
   clone.querySelectorAll('img').forEach(img => { if (!img.crossOrigin) img.crossOrigin = 'anonymous'; });
 
+  // Posiciona o clone fora da tela, mas visível para o html2canvas
   clone.style.position = 'fixed';
   clone.style.top = '0';
   clone.style.left = '-9999px';
@@ -378,7 +374,15 @@ document.getElementById('btn-baixar-citacao').onclick = async () => {
   clone.style.height = targetHeight + 'px';
   document.body.appendChild(clone);
 
-  // Encolhe a fonte da citação até tudo caber — nome do livro e logo nunca ficam pra fora
+  // 2. Agora adiciona o overlay **apenas no original**, para feedback visual
+  const loadingOverlay = document.createElement('div');
+  loadingOverlay.id = 'loading-download-overlay';
+  loadingOverlay.style.cssText = 'position: absolute; inset: 0; background: rgba(0,0,0,0.5); z-index: 10; display: flex; align-items: center; justify-content: center; border-radius: inherit;';
+  loadingOverlay.innerHTML = '<div class="text-center text-white"><div class="spinner-border mb-2" role="status"></div><br>Processando...</div>';
+  cartao.style.position = 'relative';
+  cartao.appendChild(loadingOverlay);
+
+  // Ajusta a fonte para caber no cartão, se necessário
   let fontSize = parseFloat(getComputedStyle(document.getElementById('citacao-texto')).fontSize);
   while (clone.scrollHeight > targetHeight && fontSize > 10) {
     fontSize -= 1;
@@ -386,7 +390,7 @@ document.getElementById('btn-baixar-citacao').onclick = async () => {
   }
 
   try {
-    console.log('🖼️ Iniciando download da citação...');
+    console.log('🖼️ Iniciando download da citação (clone sem overlay)...');
     console.log('⏳ Aguardando html2canvas...');
     const canvas = await html2canvas(clone, {
       backgroundColor: null,
@@ -432,6 +436,7 @@ document.getElementById('btn-baixar-citacao').onclick = async () => {
     console.error('❌ Erro ao gerar imagem:', err);
     Util.toast('Falha ao gerar imagem: ' + err.message, 'danger');
   } finally {
+    // Remove o clone e o overlay do original
     clone.remove();
     const finalOverlay = document.getElementById('loading-download-overlay');
     if (finalOverlay) finalOverlay.remove();
