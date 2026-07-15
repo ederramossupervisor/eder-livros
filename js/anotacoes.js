@@ -243,37 +243,58 @@ const Anotacoes = (() => {
     }
 
     // --- CAPA DO LIVRO (proxy) ---
-    document.getElementById('btn-fundo-capa').onclick = async () => {
-      if (!urlCapa) {
-        Util.toast('Este livro não possui capa cadastrada.', 'warning');
-        return;
-      }
-      try {
-        const resp = await API.enviar({ acao: 'proxyImage', url: urlCapa });
-        if (resp && resp.dataUrl) {
-          limparFundo(cartao);
-          const img = document.createElement('img');
-          img.id = 'img-fundo-capa';
-          img.src = resp.dataUrl;
-          img.style.cssText = 'position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0;';
+document.getElementById('btn-fundo-capa').onclick = async () => {
+  if (!urlCapa) {
+    Util.toast('Este livro não possui capa cadastrada.', 'warning');
+    return;
+  }
 
-          const overlay = document.createElement('div');
-          overlay.id = 'overlay-fundo';
-          overlay.style.cssText = 'position: absolute; inset: 0; background: rgba(0,0,0,0.6); z-index: 1;';
+  const btn = document.getElementById('btn-fundo-capa');
+  const textoOriginal = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Carregando...';
 
-          cartao.style.position = 'relative';
-          cartao.style.background = '';
-          cartao.style.backgroundImage = '';
-          cartao.insertBefore(img, cartao.firstChild);
-          cartao.insertBefore(overlay, cartao.children[1]);
-          cartao.style.color = '#ffffff';
-        }
-      } catch (err) {
-        console.error('Erro ao carregar capa:', err);
-        Util.toast('Não foi possível carregar a capa.', 'danger');
-      }
-    };
+  // Mostra um overlay de carregamento sobre o cartão
+  const loadingOverlay = document.createElement('div');
+  loadingOverlay.id = 'loading-capa-overlay';
+  loadingOverlay.style.cssText = 'position: absolute; inset: 0; background: rgba(0,0,0,0.5); z-index: 5; display: flex; align-items: center; justify-content: center;';
+  loadingOverlay.innerHTML = '<div class="spinner-border text-light" role="status"></div>';
+  cartao.style.position = 'relative';
+  cartao.appendChild(loadingOverlay);
 
+  try {
+    const resp = await API.enviar({ acao: 'proxyImage', url: urlCapa });
+    if (resp && resp.dataUrl) {
+      limparFundo(cartao);
+
+      const img = document.createElement('img');
+      img.id = 'img-fundo-capa';
+      img.src = resp.dataUrl;
+      img.style.cssText = 'position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0;';
+
+      const overlay = document.createElement('div');
+      overlay.id = 'overlay-fundo';
+      overlay.style.cssText = 'position: absolute; inset: 0; background: rgba(0,0,0,0.6); z-index: 1;';
+
+      cartao.style.background = '';
+      cartao.style.backgroundImage = '';
+      cartao.insertBefore(img, cartao.firstChild);
+      cartao.insertBefore(overlay, cartao.children[1]);
+      cartao.style.color = '#ffffff';
+    } else {
+      throw new Error('Proxy não retornou dados');
+    }
+  } catch (err) {
+    console.error('Erro ao carregar capa:', err);
+    Util.toast('Não foi possível carregar a capa.', 'danger');
+  } finally {
+    // Remove o overlay e restaura o botão
+    const loadOverlay = document.getElementById('loading-capa-overlay');
+    if (loadOverlay) loadOverlay.remove();
+    btn.disabled = false;
+    btn.innerHTML = textoOriginal;
+  }
+};
     // --- GRADIENTE ALEATÓRIO ---
     document.getElementById('btn-fundo-gradiente').onclick = () => {
       limparFundo(cartao);
