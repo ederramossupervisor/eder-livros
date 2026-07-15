@@ -164,7 +164,7 @@ const Anotacoes = (() => {
             </div>
             ${a.Resumo ? `<p class="mt-2"><strong>Resumo:</strong> ${a.Resumo}</p>` : ''}
             ${a.Trecho ? `<blockquote>${a.Trecho}</blockquote>` : ''}
-            ${a.Comentario ? `<p><em>${a.Comentario}</em></p>` : ''}
+            ${a['Comentário'] ? `<p><em>${a['Comentário']}</em></p>` : ''}
             <div class="text-end mt-2">
               ${a.Trecho ? `
               <button class="btn btn-sm btn-outline-primary btn-compartilhar-anotacao"
