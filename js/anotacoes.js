@@ -338,12 +338,10 @@ document.getElementById('btn-fundo-capa').onclick = async () => {
 document.getElementById('btn-baixar-citacao').onclick = async () => {
   const btnDownload = document.getElementById('btn-baixar-citacao');
   const textoOriginal = btnDownload.innerHTML;
-  
-  // Ativa estado de carregamento no botão
+
   btnDownload.disabled = true;
   btnDownload.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Gerando imagem...';
 
-  // Cria overlay de carregamento sobre o cartão
   const loadingOverlay = document.createElement('div');
   loadingOverlay.id = 'loading-download-overlay';
   loadingOverlay.style.cssText = 'position: absolute; inset: 0; background: rgba(0,0,0,0.5); z-index: 10; display: flex; align-items: center; justify-content: center; border-radius: inherit;';
@@ -351,47 +349,52 @@ document.getElementById('btn-baixar-citacao').onclick = async () => {
   cartao.style.position = 'relative';
   cartao.appendChild(loadingOverlay);
 
+  // Dimensões-alvo (mesmas de antes)
+  let targetWidth, targetHeight;
+  if (cartao.classList.contains('format-feed')) {
+    targetWidth = 400; targetHeight = 400;
+  } else if (cartao.classList.contains('format-stories')) {
+    targetWidth = 360; targetHeight = 640;
+  } else {
+    targetWidth = cartao.scrollWidth; targetHeight = cartao.scrollHeight;
+  }
+
+  // Clona o cartão pra um contêiner isolado — a captura deixa de depender
+  // do scroll do modal, que era o que cortava a imagem no celular
+  const clone = cartao.cloneNode(true);
+  const textoClone = clone.querySelector('#citacao-texto');
+  clone.removeAttribute('id');
+  clone.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
+  clone.querySelectorAll('img').forEach(img => { if (!img.crossOrigin) img.crossOrigin = 'anonymous'; });
+
+  clone.style.position = 'fixed';
+  clone.style.top = '0';
+  clone.style.left = '-9999px';
+  clone.style.margin = '0';
+  clone.style.maxWidth = 'none';
+  clone.style.maxHeight = 'none';
+  clone.style.overflow = 'visible';
+  clone.style.width = targetWidth + 'px';
+  clone.style.height = targetHeight + 'px';
+  document.body.appendChild(clone);
+
+  // Encolhe a fonte da citação até tudo caber — nome do livro e logo nunca ficam pra fora
+  let fontSize = parseFloat(getComputedStyle(document.getElementById('citacao-texto')).fontSize);
+  while (clone.scrollHeight > targetHeight && fontSize > 10) {
+    fontSize -= 1;
+    if (textoClone) textoClone.style.fontSize = fontSize + 'px';
+  }
+
   try {
     console.log('🖼️ Iniciando download da citação...');
-    
-    // Garante crossOrigin para todas as imagens
-    cartao.querySelectorAll('img').forEach(img => {
-      if (!img.crossOrigin) img.crossOrigin = 'anonymous';
-    });
-
-    // Salva estado original
-    const originalMaxHeight = cartao.style.maxHeight;
-    const originalWidth = cartao.style.width;
-    const originalHeight = cartao.style.height;
-    const originalOverflow = cartao.style.overflow;
-
-    // Prepara para captura (dimensões exatas)
-    cartao.style.maxHeight = 'none';
-    cartao.style.overflow = 'visible';
-
-    if (cartao.classList.contains('format-feed')) {
-      cartao.style.width = '400px';
-      cartao.style.height = '400px';
-    } else if (cartao.classList.contains('format-stories')) {
-      cartao.style.width = '360px';
-      cartao.style.height = '640px';
-    } else {
-      cartao.style.width = cartao.scrollWidth + 'px';
-      cartao.style.height = cartao.scrollHeight + 'px';
-    }
-
-    // 🔥 REMOVE o overlay de carregamento ANTES da captura
-    const overlay = document.getElementById('loading-download-overlay');
-    if (overlay) overlay.remove();
-
     console.log('⏳ Aguardando html2canvas...');
-    const canvas = await html2canvas(cartao, {
+    const canvas = await html2canvas(clone, {
       backgroundColor: null,
       scale: 2,
       useCORS: true,
       allowTaint: true,
-      width: cartao.offsetWidth,
-      height: cartao.offsetHeight,
+      width: targetWidth,
+      height: targetHeight,
       logging: false,
       imageTimeout: 15000,
       onclone: function(clonedDoc) {
@@ -403,7 +406,6 @@ document.getElementById('btn-baixar-citacao').onclick = async () => {
 
     console.log('✅ Canvas criado:', canvas.width, 'x', canvas.height);
 
-    // Download via Blob
     canvas.toBlob(function(blob) {
       if (!blob) {
         Util.toast('Erro ao gerar imagem.', 'danger');
@@ -426,17 +428,11 @@ document.getElementById('btn-baixar-citacao').onclick = async () => {
       Util.toast('Imagem baixada!', 'success');
     }, 'image/png');
 
-    // Restaura o estado original do cartão
-    cartao.style.maxHeight = originalMaxHeight;
-    cartao.style.width = originalWidth;
-    cartao.style.height = originalHeight;
-    cartao.style.overflow = originalOverflow;
-
   } catch (err) {
     console.error('❌ Erro ao gerar imagem:', err);
     Util.toast('Falha ao gerar imagem: ' + err.message, 'danger');
   } finally {
-    // Remove qualquer resquício do overlay e restaura o botão
+    clone.remove();
     const finalOverlay = document.getElementById('loading-download-overlay');
     if (finalOverlay) finalOverlay.remove();
     btnDownload.disabled = false;
