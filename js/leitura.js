@@ -274,104 +274,84 @@ const Leitura = (() => {
 
   // ========== SALVAR SESSÃO + ANOTAÇÃO ==========
   async function salvarSessao(e) {
-    e.preventDefault();
-    if (!form.checkValidity()) {
-      form.classList.add('was-validated');
-      Util.toast('Preencha os campos obrigatórios.', 'warning');
-      return;
+  e.preventDefault();
+
+  if (!form.checkValidity()) {
+    form.classList.add('was-validated');
+    Util.toast('Preencha os campos obrigatórios.', 'warning');
+    return;
+  }
+
+  const livroID = livroSelect.value;
+  if (!livroID) {
+    Util.toast('Selecione um livro.', 'warning');
+    return;
+  }
+
+  const sessao = {
+    livroID,
+    data: dataInput.value,
+    horaInicio: sanitizarHora(horaInicio.value),
+    horaFim: sanitizarHora(horaFim.value),
+    paginaInicial: pagInicial.value,
+    paginaFinal: pagFinal.value,
+    local: document.getElementById('local-sessao').value,
+    humor: document.getElementById('humor').value,
+    clima: document.getElementById('clima').value,
+    distracoes: '',
+    observacoes: document.getElementById('observacoes-sessao').value
+  };
+
+  const btnSubmit = form.querySelector('button[type="submit"]');
+  btnSubmit.disabled = true;
+  btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Salvando...';
+
+  try {
+    let resposta;
+    if (editandoSessaoID) {
+      resposta = await API.enviar({ acao: 'updateSession', id: editandoSessaoID, sessao });
+    } else {
+      resposta = await API.enviar({ acao: 'addSession', sessao });
     }
-    const livroID = livroSelect.value;
-    if (!livroID) {
-      Util.toast('Selecione um livro.', 'warning');
-      return;
-    }
 
-    const sessao = {
-      livroID,
-      data: dataInput.value,
-      horaInicio: sanitizarHora(horaInicio.value),
-      horaFim: sanitizarHora(horaFim.value),
-      paginaInicial: pagInicial.value,
-      paginaFinal: pagFinal.value,
-      local: document.getElementById('local-sessao').value,
-      humor: document.getElementById('humor').value,
-      clima: document.getElementById('clima').value,
-      distracoes: '',
-      observacoes: document.getElementById('observacoes-sessao').value
-    };
+    if (resposta && resposta.status === 'ok') {
+      // Criação da anotação automática
+      const tipoObs = document.getElementById('tipo-obs-sessao')?.value || '';
+      const textoObs = document.getElementById('observacoes-sessao')?.value?.trim() || '';
 
-    const btnSubmit = form.querySelector('button[type="submit"]');
-    btnSubmit.disabled = true;
-    btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Salvando...';
-
-    try {
-      let resposta;
-      if (editandoSessaoID) {
-        resposta = await API.enviar({ acao: 'updateSession', id: editandoSessaoID, sessao });
-      } else {
-        resposta = await API.enviar({ acao: 'addSession', sessao });
+      if (tipoObs && textoObs) {
+        const paginaAnot = document.getElementById('pagina-obs-sessao')?.value || '';
+        await API.enviar({
+          acao: 'addNote',
+          anotacao: {
+            livroID,
+            capitulo: '',
+            pagina: paginaAnot,
+            categoria: tipoObs,
+            resumo: '',
+            trecho: '',
+            comentario: textoObs,
+            imagem: ''
+          }
+        });
       }
 
-            if (resposta && resposta.status === 'ok') {
-  // Aguarda um ciclo de renderização
-  await new Promise(r => setTimeout(r, 200));
-
-  // Lê diretamente do DOM e loga TUDO
-  const tipoObsEl = document.getElementById('tipo-obs-sessao');
-  const textoObsEl = document.getElementById('observacoes-sessao');
-  const paginaObsEl = document.getElementById('pagina-obs-sessao');
-
-  console.log('🔬 DIAGNÓSTICO DA ANOTAÇÃO AUTOMÁTICA:');
-  console.log('   tipoObsEl:', tipoObsEl);
-  console.log('   tipoObsEl.value:', tipoObsEl ? tipoObsEl.value : 'elemento não encontrado');
-  console.log('   textoObsEl:', textoObsEl);
-  console.log('   textoObsEl.value:', textoObsEl ? textoObsEl.value : 'elemento não encontrado');
-  console.log('   textoObsEl.value (trim):', textoObsEl ? textoObsEl.value.trim() : '');
-
-  const tipoObs = tipoObsEl?.value || '';
-  const textoObs = textoObsEl?.value?.trim() || '';
-  const paginaAnot = paginaObsEl?.value || '';
-
-  console.log('   ➡️ tipoObs final:', tipoObs);
-  console.log('   ➡️ textoObs final:', textoObs);
-
-  if (tipoObs && textoObs) {
-    console.log('   📤 Enviando anotação...');
-    try {
-      const respAnot = await API.enviar({
-        acao: 'addNote',
-        anotacao: {
-          livroID,
-          capitulo: '',
-          pagina: paginaAnot,
-          categoria: tipoObs,
-          resumo: '',
-          trecho: '',
-          comentario: textoObs,
-          imagem: ''
-        }
-      });
-      console.log('   ✅ Resposta da API de anotação:', respAnot);
-    } catch (err) {
-      console.error('   ❌ Erro ao enviar anotação:', err);
+      Util.toast(editandoSessaoID ? 'Sessão atualizada!' : 'Sessão registrada!', 'success');
+      limparFormulario();
+      editandoSessaoID = null;
+      carregarHistorico();
+      carregarLivros();
+    } else {
+      throw new Error(resposta?.erro || 'Falha no servidor');
     }
-  } else {
-    console.warn('   ⚠️ Anotação não enviada: tipo ou texto vazio.');
-  }
-
-  Util.toast(editandoSessaoID ? 'Sessão atualizada!' : 'Sessão registrada!', 'success');
-  limparFormulario();
-  editandoSessaoID = null;
-  btnSubmit.innerHTML = '<i class="fas fa-save me-1"></i> Registrar Sessão';
-  carregarHistorico();
-  carregarLivros();
-}
-    } catch (erro) {
-      Util.toast('Erro ao salvar: ' + erro.message, 'danger');
-    }
+  } catch (erro) {
+    Util.toast('Erro ao salvar: ' + erro.message, 'danger');
+  } finally {
+    // Sempre restaura o botão, independentemente do resultado
     btnSubmit.disabled = false;
+    btnSubmit.innerHTML = '<i class="fas fa-save me-1"></i> ' + (editandoSessaoID ? 'Atualizar Sessão' : 'Registrar Sessão');
   }
-
+}
   function limparFormulario() {
     form.reset();
     form.classList.remove('was-validated');
