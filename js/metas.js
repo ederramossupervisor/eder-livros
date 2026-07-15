@@ -16,6 +16,10 @@ const Metas = (() => {
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+      if (!navigator.onLine) {
+        Util.toast('Você está offline. Conecte-se para salvar metas.', 'warning');
+        return;
+      }
       const meta = {
         ano: Number(document.getElementById('meta-ano').value) || new Date().getFullYear(),
         metaLivros: Number(document.getElementById('meta-livros').value) || 0,
@@ -29,8 +33,6 @@ const Metas = (() => {
         if (resp && resp.status === 'ok') {
           Util.toast('Metas salvas!', 'success');
           carregarMetas();
-        } else {
-          throw new Error(resp?.erro || 'Falha no servidor');
         }
       } catch (err) {
         Util.toast('Erro ao salvar metas: ' + err.message, 'danger');
@@ -42,147 +44,124 @@ const Metas = (() => {
     try {
       const resp = await API.enviar({ acao: 'getGoals' });
       if (resp && resp.progresso) {
-        document.getElementById('meta-livros').value = resp.meta.metaLivros || 0;
-        document.getElementById('meta-paginas').value = resp.meta.metaPaginas || 0;
-        document.getElementById('meta-mensal').value = resp.meta.metaMensal || 0;
-        document.getElementById('meta-semanal').value = resp.meta.metaSemanal || 0;
-        document.getElementById('meta-diaria').value = resp.meta.metaDiaria || 0;
-
-        const progLivros = document.getElementById('prog-livros');
-        progLivros.style.width = resp.progresso.percentualLivros + '%';
-        progLivros.textContent = resp.progresso.percentualLivros + '%';
-        document.getElementById('texto-prog-livros').textContent =
-          `${resp.progresso.livrosFinalizados} de ${resp.meta.metaLivros} livros`;
-
-        const progPaginas = document.getElementById('prog-paginas');
-        progPaginas.style.width = resp.progresso.percentualPaginas + '%';
-        progPaginas.textContent = resp.progresso.percentualPaginas + '%';
-        document.getElementById('texto-prog-paginas').textContent =
-          `${resp.progresso.paginasLidasAno.toLocaleString('pt-BR')} de ${resp.meta.metaPaginas.toLocaleString('pt-BR')} páginas`;
-
-        document.getElementById('info-meta-mensal').textContent =
-          `Faltam ${resp.progresso.paginasParaMetaMensal.toLocaleString('pt-BR')} páginas para bater a meta mensal. ` +
-          (resp.progresso.paginasPorDiaNecessarias > 0
-            ? `Leia ${resp.progresso.paginasPorDiaNecessarias} páginas por dia.`
-            : 'Meta mensal já batida! 🎉');
+        DB.salvarMetas(resp.meta).catch(e => console.warn('Cache metas falhou:', e));
+        exibirProgresso(resp.meta, resp.progresso);
       }
     } catch (e) {
-      console.error(e);
+      console.warn('Falha na API, tentando cache offline...');
+      const ano = new Date().getFullYear();
+      const cached = await DB.obterMetas(ano);
+      if (cached) {
+        // Simula um progresso mínimo para exibição
+        const progresso = {
+          livrosFinalizados: 0,
+          paginasLidasAno: 0,
+          paginasLidasMes: 0,
+          percentualLivros: 0,
+          percentualPaginas: 0,
+          paginasParaMetaMensal: cached.metaMensal || 0,
+          paginasPorDiaNecessarias: 0
+        };
+        exibirProgresso(cached, progresso);
+        Util.toast('Modo offline - metas do último acesso.', 'info');
+      }
     }
   }
 
+  function exibirProgresso(meta, prog) {
+    document.getElementById('meta-ano').value = meta.ano;
+    document.getElementById('meta-livros').value = meta.metaLivros || 0;
+    document.getElementById('meta-paginas').value = meta.metaPaginas || 0;
+    document.getElementById('meta-mensal').value = meta.metaMensal || 0;
+    document.getElementById('meta-semanal').value = meta.metaSemanal || 0;
+    document.getElementById('meta-diaria').value = meta.metaDiaria || 0;
+
+    const progLivros = document.getElementById('prog-livros');
+    progLivros.style.width = prog.percentualLivros + '%';
+    progLivros.textContent = prog.percentualLivros + '%';
+    document.getElementById('texto-prog-livros').textContent =
+      `${prog.livrosFinalizados} de ${meta.metaLivros} livros`;
+
+    const progPaginas = document.getElementById('prog-paginas');
+    progPaginas.style.width = prog.percentualPaginas + '%';
+    progPaginas.textContent = prog.percentualPaginas + '%';
+    document.getElementById('texto-prog-paginas').textContent =
+      `${prog.paginasLidasAno.toLocaleString('pt-BR')} de ${meta.metaPaginas.toLocaleString('pt-BR')} páginas`;
+
+    document.getElementById('info-meta-mensal').textContent =
+      `Faltam ${prog.paginasParaMetaMensal.toLocaleString('pt-BR')} páginas para bater a meta mensal. ` +
+      (prog.paginasPorDiaNecessarias > 0
+        ? `Leia ${prog.paginasPorDiaNecessarias} páginas por dia.`
+        : 'Meta mensal já batida! 🎉');
+  }
+
   async function carregarConquistas() {
+    let conquistas = [];
     try {
       const resp = await API.enviar({ acao: 'listAchievements' });
-      const grid = document.getElementById('conquistas-grid');
-      grid.innerHTML = '';
-
-      // Mapeamento de ícones (emojis) para cada conquista
-      const icones = {
-        'Primeiro livro': 'fa-book',
-        'Leitor iniciante': 'fa-book-open',
-        'Leitor dedicado': 'fa-award',
-        'Devorador de livros': 'fa-fire',
-        'Página 1000': 'fa-file-alt',
-        'Página 5000': 'fa-copy',
-        'Maratona de 7 dias': 'fa-calendar-check',
-        'Maratona de 30 dias': 'fa-calendar-alt',
-        'Livro gigante': 'fa-weight-hanging',
-        'Favorito': 'fa-star',
-        'Leitor global': 'fa-globe-americas',
-        'Leitor noturno': 'fa-moon',
-        'Colecionador de clássicos': 'fa-landmark',
-        'Diversidade literária': 'fa-rainbow',
-        'Anotador': 'fa-pen',
-        'Viajante literário': 'fa-map-marked-alt',
-        'Volta ao Mundo': 'fa-globe-africa',
-        'Leitor Onívoro': 'fa-utensils',
-        'Madrugador Literário': 'fa-cloud-moon',
-        '100 Dias de Leitura': 'fa-calendar-plus',
-        'Revisor Crítico': 'fa-star-half-alt',
-        'Emprestador Solidário': 'fa-hand-holding-heart',
-        'Biblioteca Viva': 'fa-archive',
-        'Decano da Leitura': 'fa-calendar-check',
-        'Poliglota Supremo': 'fa-language',
-        'Leitor do Milênio': 'fa-trophy',
-        'Fã Clube': 'fa-user-friends',
-        'Cronista': 'fa-quill',
-        'Fotógrafo Literário': 'fa-camera-retro',
-        'Mochileiro Literário': 'fa-suitcase-rolling',
-        'Noite em Claro': 'fa-cloud-moon-rain',
-        'Tríplice Coroa': 'fa-crown',
-        'Leitor Completo': 'fa-check-double',
-        'Equilibrista': 'fa-balance-scale',
-        'Amante do Papel': 'fa-book',
-        'Leitor Moderno': 'fa-tablet-alt'
-      };
-      
-      const descricoes = {
-        'Primeiro livro': 'Cadastrar o primeiro livro na biblioteca.',
-        'Leitor iniciante': 'Finalizar a leitura de 3 livros.',
-        'Leitor dedicado': 'Finalizar a leitura de 25 livros.',
-        'Devorador de livros': 'Finalizar a leitura de 100 livros.',
-        'Página 1000': 'Acumular 1.000 páginas lidas.',
-        'Página 5000': 'Acumular 10.000 páginas lidas.',
-        'Maratona de 7 dias': 'Ler por 7 dias consecutivos.',
-        'Maratona de 30 dias': 'Ler por 60 dias consecutivos.',
-        'Livro gigante': 'Ler um livro com mais de 1.000 páginas.',
-        'Favorito': 'Marcar um livro como favorito.',
-        'Leitor global': 'Ler um livro em outro idioma.',
-        'Leitor noturno': 'Registrar uma sessão após as 23h.',
-        'Colecionador de clássicos': 'Marcar 5 livros como Clássicos.',
-        'Diversidade literária': 'Ler livros de 15 gêneros diferentes.',
-        'Anotador': 'Escrever 20 anotações.',
-        'Viajante literário': 'Ler livros em 5 idiomas diferentes.',
-        'Volta ao Mundo': 'Ler autores de 10 nacionalidades diferentes.',
-        'Leitor Onívoro': 'Ler em 4 formatos (Físico, Kindle, PDF, Audiobook).',
-        'Madrugador Literário': 'Ler antes das 6h da manhã.',
-        '100 Dias de Leitura': 'Acumular 100 dias com pelo menos uma página lida.',
-        'Revisor Crítico': 'Dar nota a 25 livros finalizados.',
-        'Emprestador Solidário': 'Registrar 10 empréstimos de livros.',
-        'Biblioteca Viva': 'Ter 200 livros na sua biblioteca.',
-        'Decano da Leitura': 'Ler 365 dias consecutivos.',
-        'Poliglota Supremo': 'Ler em 7 idiomas diferentes.',
-        'Leitor do Milênio': 'Acumular 100.000 páginas lidas.',
-        'Fã Clube': 'Finalizar 5 livros do mesmo autor.',
-        'Cronista': 'Escrever 100 anotações.',
-        'Fotógrafo Literário': 'Ter 50 livros com capa cadastrada.',
-        'Mochileiro Literário': 'Autores de 15 nacionalidades diferentes.',
-        'Noite em Claro': 'Registrar 20 sessões após as 23h.',
-        'Tríplice Coroa': 'Ter ao mesmo tempo um Favorito, um Clássico e um livro nota 10.',
-        'Leitor Completo': 'Bater a meta anual de livros por 3 anos consecutivos.',
-        'Equilibrista': 'Finalizar o mesmo número de livros físicos e digitais.',
-        'Amante do Papel': 'Finalizar 10 livros no formato Físico.',
-        'Leitor Moderno': 'Finalizar 10 livros digitais (Kindle/PDF).'
-      };
-      const nomesObtidos = (Array.isArray(resp) ? resp : []).map(c => c.Nome);
-
-      Object.keys(icones).forEach(nome => {
-        const obtida = nomesObtidos.includes(nome);
-        const descricao = descricoes[nome] || 'Conquista do sistema.';
-        const col = document.createElement('div');
-        col.className = 'col-6 col-md-4 col-lg-3 col-xl-2';
-        col.innerHTML = `
-          <div class="conquista-card ${obtida ? 'conquistada' : ''}" title="${descricao}" style="cursor: help;">
-            <div class="conquista-badge mx-auto mb-2"><i class="fas ${icones[nome]} fa-2x"></i></div>
-            <strong>${nome} <i class="fas fa-question-circle text-muted small"></i></strong>
-            ${obtida ? '<span class="badge bg-success d-block mt-1">Conquistada</span>' : '<span class="badge bg-light text-muted d-block mt-1">Bloqueada</span>'}
-          </div>`;
-        grid.appendChild(col);
-      });
-
-      document.getElementById('verificar-conquistas-btn').onclick = async () => {
-        const novas = await API.enviar({ acao: 'checkAchievements' });
-        if (Array.isArray(novas) && novas.length > 0) {
-          Util.toast(`${novas.length} nova(s) conquista(s)! 🎉`, 'success');
-          carregarConquistas();
-        } else {
-          Util.toast('Nenhuma conquista nova.', 'info');
-        }
-      };
+      if (Array.isArray(resp)) {
+        conquistas = resp;
+        DB.salvarConquistas(resp).catch(e => console.warn('Cache conquistas falhou:', e));
+      }
     } catch (e) {
-      console.error('Erro conquistas:', e);
+      console.warn('Falha na API, tentando cache offline...');
+      conquistas = await DB.obterConquistas();
+      if (conquistas.length > 0) {
+        Util.toast('Modo offline - conquistas do último acesso.', 'info');
+      }
     }
+
+    const grid = document.getElementById('conquistas-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+
+    const icones = {
+      'Primeiro livro': 'fa-book',
+      'Leitor iniciante': 'fa-book-open',
+      'Leitor dedicado': 'fa-award',
+      'Devorador de livros': 'fa-fire',
+      'Página 1000': 'fa-file-alt',
+      'Página 5000': 'fa-copy',
+      'Maratona de 7 dias': 'fa-calendar-check',
+      'Maratona de 30 dias': 'fa-calendar-alt',
+      'Livro gigante': 'fa-weight-hanging',
+      'Favorito': 'fa-star',
+      'Leitor global': 'fa-globe-americas',
+      'Leitor noturno': 'fa-moon',
+      'Colecionador de clássicos': 'fa-landmark',
+      'Diversidade literária': 'fa-rainbow',
+      'Anotador': 'fa-pen',
+      'Viajante literário': 'fa-map-marked-alt'
+    };
+
+    const nomesObtidos = conquistas.map(c => c.Nome);
+
+    Object.keys(icones).forEach(nome => {
+      const obtida = nomesObtidos.includes(nome);
+      const col = document.createElement('div');
+      col.className = 'col-6 col-md-4 col-lg-3 col-xl-2';
+      col.innerHTML = `
+        <div class="conquista-card ${obtida ? 'conquistada' : ''}">
+          <div class="conquista-badge mx-auto mb-2"><i class="fas ${icones[nome]} fa-2x"></i></div>
+          <strong>${nome}</strong>
+          ${obtida ? '<span class="badge bg-success d-block mt-1">Conquistada</span>' : '<span class="badge bg-light text-muted d-block mt-1">Bloqueada</span>'}
+        </div>`;
+      grid.appendChild(col);
+    });
+
+    document.getElementById('verificar-conquistas-btn').onclick = async () => {
+      if (!navigator.onLine) {
+        Util.toast('Você está offline. Conecte-se para verificar conquistas.', 'warning');
+        return;
+      }
+      const novas = await API.enviar({ acao: 'checkAchievements' });
+      if (Array.isArray(novas) && novas.length > 0) {
+        Util.toast(`${novas.length} nova(s) conquista(s)! 🎉`, 'success');
+        carregarConquistas();
+      } else {
+        Util.toast('Nenhuma conquista nova.', 'info');
+      }
+    };
   }
 
   return { init };
