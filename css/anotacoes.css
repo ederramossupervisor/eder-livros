@@ -1,5 +1,6 @@
 /* ========== ANOTAÇÕES ========== */
 
+/* Cartão da lista de anotações */
 .anotacao-card, .citacao-card {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
@@ -15,30 +16,15 @@
   margin: 0.5rem 0;
 }
 
-/* Cartão de citação no modal de compartilhamento */
+/* --- Cartão de citação no modal de compartilhamento --- */
 #cartao-citacao {
-  width: 400px;              /* largura base */
-  max-width: 100%;
-  max-height: 70vh;          /* altura máxima relativa à tela */
+  width: 100%;               /* ocupa a largura disponível no modal */
+  max-width: 400px;          /* limite para não ficar gigante em desktop */
+  margin: 0 auto;            /* centraliza horizontalmente */
   min-height: 250px;         /* altura mínima para o texto */
-  overflow-y: auto;          /* rolagem caso o texto ultrapasse */
   position: relative;
-  transition: aspect-ratio 0.3s, width 0.3s;
-}
-
-/* Formatos de imagem */
-.format-feed {
-  width: 400px;
-  height: 400px;
-  aspect-ratio: 1 / 1;
-  max-height: none;          /* remove limite de altura para captura */
-}
-
-.format-stories {
-  width: 360px;
-  height: 640px;
-  aspect-ratio: 9 / 16;
-  max-height: none;
+  overflow: hidden;          /* evita barras de rolagem desnecessárias */
+  transition: width 0.3s, height 0.3s;
 }
 
 /* A imagem de fundo se ajusta ao cartão sem extrapolar */
@@ -46,9 +32,40 @@
   object-fit: cover;
 }
 
-/* Em telas pequenas, reduz um pouco a altura máxima */
+/* --- Formatos de imagem --- */
+/* Feed (1:1) */
+.format-feed {
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  max-width: 400px;
+  height: auto;
+}
+
+/* Stories (9:16) */
+.format-stories {
+  aspect-ratio: 9 / 16;
+  width: 100%;
+  max-width: 360px;
+  height: auto;
+}
+
+/* Em telas menores que 576px (celulares) */
 @media (max-width: 575px) {
   #cartao-citacao {
-    max-height: 50vh;
+    max-height: 45vh;        /* limita a altura para não empurrar os controles */
+    width: 100%;
+    max-width: 100%;
+  }
+  
+  .format-feed,
+  .format-stories {
+    max-width: 100%;
+  }
+}
+
+/* Em telas médias (tablets) */
+@media (min-width: 576px) and (max-width: 991px) {
+  #cartao-citacao {
+    max-height: 55vh;
   }
 }
