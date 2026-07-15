@@ -313,28 +313,30 @@ const Leitura = (() => {
       }
 
       if (resposta && resposta.status === 'ok') {
-        // Se houver texto de observação e um tipo selecionado, criar anotação
-        const tipoObs = document.getElementById('tipo-obs-sessao').value;
-        const textoObs = sessao.observacoes.trim();
-        if (tipoObs && textoObs) {
-          const paginaAnot = document.getElementById('pagina-obs-sessao').value || '';
-          await API.enviar({
-            acao: 'addNote',
-            anotacao: {
-              livroID,
-              capitulo: '',
-              pagina: paginaAnot,
-              categoria: tipoObs,
-              resumo: '',
-              trecho: '',
-              comentario: textoObs,
-              imagem: ''
-            }
-          });
-        }
+  // Lê diretamente do DOM para garantir valor atualizado
+  const tipoObs = document.getElementById('tipo-obs-sessao')?.value || '';
+  const textoObs = document.getElementById('observacoes-sessao')?.value?.trim() || '';
 
-        Util.toast(editandoSessaoID ? 'Sessão atualizada!' : 'Sessão registrada!', 'success');
-        limparFormulario();
+  if (tipoObs && textoObs) {
+    const paginaAnot = document.getElementById('pagina-obs-sessao')?.value || '';
+    await API.enviar({
+      acao: 'addNote',
+      anotacao: {
+        livroID,
+        capitulo: '',
+        pagina: paginaAnot,
+        categoria: tipoObs,
+        resumo: '',
+        trecho: '',
+        comentario: textoObs,
+        imagem: ''
+      }
+    });
+  }
+
+  Util.toast(editandoSessaoID ? 'Sessão atualizada!' : 'Sessão registrada!', 'success');
+  limparFormulario();
+
         editandoSessaoID = null;
         btnSubmit.innerHTML = '<i class="fas fa-save me-1"></i> Registrar Sessão';
         carregarHistorico();
