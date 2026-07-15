@@ -463,3 +463,12 @@ if (document.readyState === 'loading') {
 } else {
   Leitura.init();
 }
+function sanitizarHora(valor) {
+  if (!valor) return '';
+  // Se for uma data ISO completa, extrai apenas a hora e minutos
+  const match = valor.match(/(\d{2}):(\d{2})/);
+  if (match) {
+    return match[1] + ':' + match[2];
+  }
+  return ''; // se não conseguir extrair, retorna vazio (evita enviar lixo)
+}
