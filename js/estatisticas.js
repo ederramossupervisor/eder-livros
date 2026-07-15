@@ -2,51 +2,53 @@ const Estatisticas = (() => {
   const graficos = {};
 
   async function init() {
-    const page = document.getElementById('page-estatisticas');
-    if (!page || !page.classList.contains('active')) return;
+  const page = document.getElementById('page-estatisticas');
+  if (!page || !page.classList.contains('active')) return;
 
-    console.log('📊 Carregando estatísticas...');
-    try {
-      const dados = await API.enviar({ acao: 'stats' });
-      console.log('📈 Dados recebidos:', dados);
-      if (dados && !dados.erro) {
-        preencherResumo(dados);
-        criarInsights(dados.insights);
+  console.log('📊 Carregando estatísticas...');
+  try {
+    const dados = await API.enviar({ acao: 'stats' });
+    console.log('📈 Dados recebidos:', dados);
+    if (dados && !dados.erro) {
+      preencherResumo(dados);
+      criarInsights(dados.insights);
 
-        prepararContainers();
+      // Aguarda a página ficar realmente visível e com altura antes de criar gráficos
+      await aguardarPaginaVisivel(page);
 
-        await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      console.log('📐 Página visível, criando gráficos...');
+      try { criarGraficoFinalizadosMes(dados.finalizadosPorMes); } catch(e) { console.warn(e); }
+      try { criarGraficoPaginasDia(dados.paginasPorDia); } catch(e) { console.warn(e); }
+      try { criarGraficoGeneros(dados.generos); } catch(e) { console.warn(e); }
+      try { criarGraficoDiaSemana(dados.tempoPorDiaSemana); } catch(e) { console.warn(e); }
+      try { criarHeatmap(dados.heatmap); } catch(e) { console.warn(e); }
 
-        console.log('📐 Criando gráficos...');
-        try { criarGraficoFinalizadosMes(dados.finalizadosPorMes); } catch(e) { console.warn(e); }
-        try { criarGraficoPaginasDia(dados.paginasPorDia); } catch(e) { console.warn(e); }
-        try { criarGraficoGeneros(dados.generos); } catch(e) { console.warn(e); }
-        try { criarGraficoDiaSemana(dados.tempoPorDiaSemana); } catch(e) { console.warn(e); }
-        // NOVO GRÁFICO
-        try { criarGraficoVelocidadeMensal(dados.velocidadeMensal); } catch(e) { console.warn(e); }
-        try { criarHeatmap(dados.heatmap); } catch(e) { console.warn(e); }
+      // Redimensiona após tudo pronto
+      setTimeout(() => {
+        Object.values(graficos).forEach(chart => {
+          if (chart && chart.canvas) {
+            chart.resize();
+          }
+        });
+      }, 200);
 
-        setTimeout(() => {
-          Object.values(graficos).forEach(chart => {
-            if (chart && chart.canvas) chart.resize();
-          });
-          document.querySelectorAll('canvas').forEach(c => {
-            console.log(`📏 Final ${c.id}: ${c.clientWidth}x${c.clientHeight}`);
-          });
-        }, 200);
+      preencherTopAutores(dados.topAutores);
+      preencherTopEditoras(dados.topEditoras);
 
-        preencherTopAutores(dados.topAutores);
-        preencherTopEditoras(dados.topEditoras);
-      } else {
-        Util.toast('Erro ao carregar estatísticas', 'danger');
+      // ✅ Inicializa o Calendário de Leitura (mês e ano atuais)
+      if (typeof CalendarioLeitura !== 'undefined' && CalendarioLeitura.init) {
+        const hoje = new Date();
+        CalendarioLeitura.init(hoje.getFullYear(), hoje.getMonth() + 1);
       }
-    } catch (e) {
-      console.error('Erro stats:', e);
-      Util.toast('Falha na conexão', 'danger');
+    } else {
+      Util.toast('Erro ao carregar estatísticas', 'danger');
     }
-    console.log('✅ Módulo Estatísticas pronto.');
+  } catch (e) {
+    console.error('Erro stats:', e);
+    Util.toast('Falha na conexão', 'danger');
   }
-
+  console.log('✅ Módulo Estatísticas pronto (com calendário).');
+}
   function prepararContainers() {
     document.querySelectorAll('#page-estatisticas .card-body').forEach(cardBody => {
       if (cardBody.querySelector('canvas')) {
