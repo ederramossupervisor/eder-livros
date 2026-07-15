@@ -1,5 +1,5 @@
 const API = (() => {
-  const BASE_URL = 'https://script.google.com/macros/s/AKfycbzTqBGdFu372Z_7fXeUuXuqEgaIV-DDTU1n1SDkh6cLrnY3UAaZuXqmXzNMiAvhtCk5pg/exec';
+  const BASE_URL = 'https://script.google.com/macros/s/AKfycbxeC5orW_66rJp8nwCSvIFZZBMVwq867BVuhby-i5LWHd3qYgT4ghAgrcArUrji7mdvjA/exec';
 
   async function enviar(dados, timeoutMs = 15000) {
     const controller = new AbortController();
