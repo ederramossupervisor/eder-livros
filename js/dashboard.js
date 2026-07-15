@@ -16,32 +16,38 @@ const Dashboard = (() => {
   ];
 
   async function init() {
-    const dashPage = document.getElementById('page-dashboard');
-    if (!dashPage || !dashPage.classList.contains('active')) return;
+  const dashPage = document.getElementById('page-dashboard');
+  if (!dashPage || !dashPage.classList.contains('active')) return;
 
-    mostrarSkeletons();
-    console.log('📊 Carregando dashboard...');
-    try {
-      const hojeLocal = new Date();
-      const dataLocalISO = hojeLocal.getFullYear() + '-' +
-        String(hojeLocal.getMonth() + 1).padStart(2,'0') + '-' +
-        String(hojeLocal.getDate()).padStart(2,'0');
-      const dados = await API.enviar({ acao: 'dashboard', dataAtual: dataLocalISO });
-      if (dados && !dados.erro) {
-        ocultarSkeletons();
-        preencherCards(dados);
-        criarGrafico(dados.paginasUltimos7Dias);
-      } else {
-        ocultarSkeletons();
-        Util.toast('Erro ao carregar dashboard', 'danger');
-      }
-    } catch (e) {
+  mostrarSkeletons();
+  console.log('📊 Carregando dashboard...');
+  try {
+    const dados = await API.enviar({ acao: 'dashboard' });
+    if (dados && !dados.erro) {
       ocultarSkeletons();
-      console.error('Erro dashboard:', e);
-      Util.toast('Falha na conexão', 'danger');
+      preencherCards(dados);
+      criarGrafico(dados.paginasUltimos7Dias);
+      // Salva no cache local
+      DB.salvarDashboard(dados).catch(e => console.warn('Cache dashboard falhou:', e));
+    } else {
+      throw new Error(dados?.erro || 'Dados inválidos');
+    }
+  } catch (e) {
+    console.warn('Falha na API, tentando cache offline...');
+    const cached = await DB.obterDashboard();
+    if (cached) {
+      ocultarSkeletons();
+      preencherCards(cached);
+      if (cached.paginasUltimos7Dias) {
+        criarGrafico(cached.paginasUltimos7Dias);
+      }
+      Util.toast('Modo offline - dados do último acesso.', 'info');
+    } else {
+      ocultarSkeletons();
+      Util.toast('Sem conexão e nenhum dado em cache.', 'danger');
     }
   }
-
+}
   function mostrarSkeletons() {
     skeletonIds.forEach(id => {
       const el = document.getElementById(id);
