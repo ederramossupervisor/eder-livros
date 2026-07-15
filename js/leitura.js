@@ -313,48 +313,59 @@ const Leitura = (() => {
       }
 
             if (resposta && resposta.status === 'ok') {
-        // Pequena pausa para garantir que o DOM esteja estável
-        await new Promise(r => setTimeout(r, 150));
+  // Aguarda um ciclo de renderização
+  await new Promise(r => setTimeout(r, 200));
 
-        // Lê diretamente do DOM
-        const tipoObs = document.getElementById('tipo-obs-sessao')?.value || '';
-        const textoObs = document.getElementById('observacoes-sessao')?.value?.trim() || '';
+  // Lê diretamente do DOM e loga TUDO
+  const tipoObsEl = document.getElementById('tipo-obs-sessao');
+  const textoObsEl = document.getElementById('observacoes-sessao');
+  const paginaObsEl = document.getElementById('pagina-obs-sessao');
 
-        console.log('📝 Criando anotação automática:');
-        console.log('   Tipo:', tipoObs);
-        console.log('   Texto:', textoObs);
+  console.log('🔬 DIAGNÓSTICO DA ANOTAÇÃO AUTOMÁTICA:');
+  console.log('   tipoObsEl:', tipoObsEl);
+  console.log('   tipoObsEl.value:', tipoObsEl ? tipoObsEl.value : 'elemento não encontrado');
+  console.log('   textoObsEl:', textoObsEl);
+  console.log('   textoObsEl.value:', textoObsEl ? textoObsEl.value : 'elemento não encontrado');
+  console.log('   textoObsEl.value (trim):', textoObsEl ? textoObsEl.value.trim() : '');
 
-        if (tipoObs && textoObs) {
-          const paginaAnot = document.getElementById('pagina-obs-sessao')?.value || '';
-          try {
-            await API.enviar({
-              acao: 'addNote',
-              anotacao: {
-                livroID,
-                capitulo: '',
-                pagina: paginaAnot,
-                categoria: tipoObs,
-                resumo: '',
-                trecho: '',
-                comentario: textoObs,
-                imagem: ''
-              }
-            });
-            console.log('✅ Anotação criada!');
-          } catch (err) {
-            console.error('❌ Erro ao criar anotação:', err);
-          }
-        } else {
-          console.warn('⚠️ Anotação não criada: tipo ou texto vazio.');
+  const tipoObs = tipoObsEl?.value || '';
+  const textoObs = textoObsEl?.value?.trim() || '';
+  const paginaAnot = paginaObsEl?.value || '';
+
+  console.log('   ➡️ tipoObs final:', tipoObs);
+  console.log('   ➡️ textoObs final:', textoObs);
+
+  if (tipoObs && textoObs) {
+    console.log('   📤 Enviando anotação...');
+    try {
+      const respAnot = await API.enviar({
+        acao: 'addNote',
+        anotacao: {
+          livroID,
+          capitulo: '',
+          pagina: paginaAnot,
+          categoria: tipoObs,
+          resumo: '',
+          trecho: '',
+          comentario: textoObs,
+          imagem: ''
         }
+      });
+      console.log('   ✅ Resposta da API de anotação:', respAnot);
+    } catch (err) {
+      console.error('   ❌ Erro ao enviar anotação:', err);
+    }
+  } else {
+    console.warn('   ⚠️ Anotação não enviada: tipo ou texto vazio.');
+  }
 
-        Util.toast(editandoSessaoID ? 'Sessão atualizada!' : 'Sessão registrada!', 'success');
-        limparFormulario();
-        editandoSessaoID = null;
-        btnSubmit.innerHTML = '<i class="fas fa-save me-1"></i> Registrar Sessão';
-        carregarHistorico();
-        carregarLivros();
-      }
+  Util.toast(editandoSessaoID ? 'Sessão atualizada!' : 'Sessão registrada!', 'success');
+  limparFormulario();
+  editandoSessaoID = null;
+  btnSubmit.innerHTML = '<i class="fas fa-save me-1"></i> Registrar Sessão';
+  carregarHistorico();
+  carregarLivros();
+}
     } catch (erro) {
       Util.toast('Erro ao salvar: ' + erro.message, 'danger');
     }
