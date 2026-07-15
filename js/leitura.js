@@ -165,6 +165,17 @@ const Leitura = (() => {
     display.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   }
 
+function sanitizarHora(valor) {
+  if (!valor) return '';
+  // Se for uma data ISO completa, extrai apenas a hora e minutos
+  const match = valor.match(/(\d{2}):(\d{2})/);
+  if (match) {
+    return match[1] + ':' + match[2];
+  }
+  return ''; // se não conseguir extrair, retorna vazio (evita enviar lixo)
+}
+
+  
   function iniciarCronometro() {
     if (tempoAcumulado === 0) {
       horaInicio.value = new Date().toTimeString().slice(0, 5);
@@ -477,13 +488,4 @@ if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', Leitura.init);
 } else {
   Leitura.init();
-}
-function sanitizarHora(valor) {
-  if (!valor) return '';
-  // Se for uma data ISO completa, extrai apenas a hora e minutos
-  const match = valor.match(/(\d{2}):(\d{2})/);
-  if (match) {
-    return match[1] + ':' + match[2];
-  }
-  return ''; // se não conseguir extrair, retorna vazio (evita enviar lixo)
 }
