@@ -653,7 +653,7 @@
                 <label class="form-label fw-bold"><i class="fa-solid fa-pen-clip"></i> Anotação da sessão</label>
                 <small class="text-muted d-block mb-2">Será salva automaticamente como uma anotação vinculada ao livro.</small>
                 <div class="row g-2 mb-2">
-                  <div class="col-md-4">
+                  <div class="col-md-3">
                     <select id="tipo-obs-sessao" class="form-select">
                       <option value="">Tipo (opcional)</option>
                       <option value="Geral">Geral</option>
@@ -663,7 +663,10 @@
                       <option value="Citação">Citação</option>
                     </select>
                   </div>
-                  <div class="col-md-4">
+                  <div class="col-md-3">
+                    <input type="text" id="capitulo-obs-sessao" class="form-control" placeholder="Capítulo (opcional)">
+                  </div>
+                  <div class="col-md-3">
                     <input type="number" id="pagina-obs-sessao" class="form-control" placeholder="Página" min="1">
                   </div>
                 </div>
