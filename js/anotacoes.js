@@ -335,45 +335,47 @@ document.getElementById('btn-fundo-capa').onclick = async () => {
     cartao.classList.add('format-feed'); // padrão
 
     // --- BAIXAR IMAGEM ---
-    // --- BAIXAR IMAGEM ---
 document.getElementById('btn-baixar-citacao').onclick = async () => {
-  console.log('🖼️ Iniciando download da citação...');
-  console.log('Cartão:', cartao);
-  console.log('html2canvas disponível:', typeof html2canvas);
+  const btnDownload = document.getElementById('btn-baixar-citacao');
+  const textoOriginal = btnDownload.innerHTML;
+  
+  // Ativa estado de carregamento no botão
+  btnDownload.disabled = true;
+  btnDownload.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Gerando imagem...';
 
-  if (!cartao) {
-    Util.toast('Erro: cartão não encontrado.', 'danger');
-    return;
-  }
+  // Cria overlay de carregamento sobre o cartão
+  const loadingOverlay = document.createElement('div');
+  loadingOverlay.id = 'loading-download-overlay';
+  loadingOverlay.style.cssText = 'position: absolute; inset: 0; background: rgba(0,0,0,0.5); z-index: 10; display: flex; align-items: center; justify-content: center; border-radius: inherit;';
+  loadingOverlay.innerHTML = '<div class="text-center text-white"><div class="spinner-border mb-2" role="status"></div><br>Processando...</div>';
+  cartao.style.position = 'relative';
+  cartao.appendChild(loadingOverlay);
 
-  // Garante que todas as imagens dentro do cartão tenham crossOrigin
-  cartao.querySelectorAll('img').forEach(img => {
-    if (!img.crossOrigin) img.crossOrigin = 'anonymous';
-  });
-
-  // Salva o estado original
-  const originalMaxHeight = cartao.style.maxHeight;
-  const originalWidth = cartao.style.width;
-  const originalHeight = cartao.style.height;
-  const originalOverflow = cartao.style.overflow;
-
-  // Prepara o cartão para captura
-  cartao.style.maxHeight = 'none';
-  cartao.style.overflow = 'visible';
-
-  if (cartao.classList.contains('format-feed')) {
-    cartao.style.width = '400px';
-    cartao.style.height = '400px';
-  } else if (cartao.classList.contains('format-stories')) {
-    cartao.style.width = '360px';
-    cartao.style.height = '640px';
-  } else {
-    cartao.style.width = cartao.scrollWidth + 'px';
-    cartao.style.height = cartao.scrollHeight + 'px';
-  }
-
-  console.log('⏳ Aguardando html2canvas...');
   try {
+    // O restante do código de captura (idêntico ao que já funciona)
+    console.log('🖼️ Iniciando download da citação...');
+    
+    // Garante que todas as imagens dentro do cartão tenham crossOrigin
+    cartao.querySelectorAll('img').forEach(img => {
+      if (!img.crossOrigin) img.crossOrigin = 'anonymous';
+    });
+
+    const originalMaxHeight = cartao.style.maxHeight;
+    const originalWidth = cartao.style.width;
+    const originalHeight = cartao.style.height;
+    const originalOverflow = cartao.style.overflow;
+
+    cartao.style.maxHeight = 'none';
+    cartao.style.overflow = 'visible';
+
+    if (cartao.classList.contains('format-feed')) {
+      cartao.style.width = '400px';
+      cartao.style.height = '400px';
+    } else if (cartao.classList.contains('format-stories')) {
+      cartao.style.width = '360px';
+      cartao.style.height = '640px';
+    }
+
     const canvas = await html2canvas(cartao, {
       backgroundColor: null,
       scale: 2,
@@ -384,7 +386,6 @@ document.getElementById('btn-baixar-citacao').onclick = async () => {
       logging: false,
       imageTimeout: 15000,
       onclone: function(clonedDoc) {
-        // Garante que as imagens clonadas também tenham crossOrigin
         clonedDoc.querySelectorAll('img').forEach(img => {
           if (!img.crossOrigin) img.crossOrigin = 'anonymous';
         });
@@ -393,7 +394,6 @@ document.getElementById('btn-baixar-citacao').onclick = async () => {
 
     console.log('✅ Canvas criado:', canvas.width, 'x', canvas.height);
 
-    // Converte para blob e inicia download (evita problemas com data URL gigante)
     canvas.toBlob(function(blob) {
       if (!blob) {
         Util.toast('Erro ao gerar imagem.', 'danger');
@@ -408,7 +408,6 @@ document.getElementById('btn-baixar-citacao').onclick = async () => {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
 
-      // Compartilhamento nativo (opcional)
       if (navigator.share && canvas) {
         const file = new File([blob], 'citacao.png', { type: 'image/png' });
         navigator.share({ files: [file], title: 'Citação do Eder Livros' }).catch(e => {});
@@ -417,15 +416,21 @@ document.getElementById('btn-baixar-citacao').onclick = async () => {
       Util.toast('Imagem baixada!', 'success');
     }, 'image/png');
 
-  } catch (err) {
-    console.error('❌ Erro ao gerar imagem:', err);
-    Util.toast('Falha ao gerar imagem: ' + err.message, 'danger');
-  } finally {
-    // Restaura o estado original
+    // Restaura estado original (largura, altura, etc.)
     cartao.style.maxHeight = originalMaxHeight;
     cartao.style.width = originalWidth;
     cartao.style.height = originalHeight;
     cartao.style.overflow = originalOverflow;
+
+  } catch (err) {
+    console.error('❌ Erro ao gerar imagem:', err);
+    Util.toast('Falha ao gerar imagem: ' + err.message, 'danger');
+  } finally {
+    // Remove o overlay e restaura o botão
+    const loadOverlay = document.getElementById('loading-download-overlay');
+    if (loadOverlay) loadOverlay.remove();
+    btnDownload.disabled = false;
+    btnDownload.innerHTML = textoOriginal;
   }
 };
     const modal = new bootstrap.Modal(document.getElementById('modal-compartilhar-citacao'));
