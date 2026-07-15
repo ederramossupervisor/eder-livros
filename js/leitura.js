@@ -16,7 +16,9 @@ const Leitura = (() => {
   const pagLidasDiv = document.getElementById('paginas-calculadas');
   const pagLidasSpan = document.getElementById('paginas-lidas');
   const historicoContainer = document.getElementById('historico-sessoes');
-
+  const livroInput = document.getElementById('livro-select-input');
+  const livroDatalist = document.getElementById('livros-datalist');
+  
   // Elementos do cronômetro
   const display = document.getElementById('cronometro-display');
   const btnIniciar = document.getElementById('btn-iniciar');
@@ -26,7 +28,7 @@ const Leitura = (() => {
 
   let livrosCache = [];
   let editandoSessaoID = null;
-
+  let livroMap = {}; // mapa título -> ID
   // Variáveis do cronômetro
   let cronometroAtivo = false;
   let tempoAcumulado = 0;
@@ -103,6 +105,22 @@ const Leitura = (() => {
         if (horaFim.value.length > 5) horaFim.value = horaFim.value.slice(0, 5);
       }
       calcularTempo();
+    });
+
+    livroInput.addEventListener('change', () => {
+      const texto = livroInput.value.trim();
+      const id = livroMap[texto];
+      if (id) {
+        const livro = livrosCache.find(l => l.ID === id);
+        if (livro) {
+          livroInfo.innerHTML = `
+            <strong>${livro.Título}</strong> | ${livro.Autor}<br>
+            Páginas totais: ${livro.NúmeroPáginas || '?'} | Status: ${livro.Status} | Lidas: ${livro.PáginasLidasAcumuladas || 0}
+          `;
+        }
+      } else {
+        livroInfo.innerHTML = '';
+      }
     });
 
     [pagInicial, pagFinal].forEach(el => el.addEventListener('input', calcularPaginas));
@@ -225,18 +243,31 @@ const Leitura = (() => {
 
   // ========== LIVROS ==========
   async function carregarLivros() {
-    try {
-      livroSelect.innerHTML = '<option value="">Carregando...</option>';
-      const resp = await API.enviar({ acao: 'listBooks' });
-      if (resp && Array.isArray(resp)) {
-        livrosCache = resp;
-        renderizarListaLivros();
-      }
-    } catch (e) {
-      Util.toast('Erro ao carregar livros', 'danger');
+  try {
+    livroInput.value = '';
+    livroDatalist.innerHTML = '';
+    const resp = await API.enviar({ acao: 'listBooks' });
+    if (resp && Array.isArray(resp)) {
+      livrosCache = resp;
+      renderizarDatalist();
     }
+  } catch (e) {
+    Util.toast('Erro ao carregar livros', 'danger');
   }
+}
 
+function renderizarDatalist() {
+  livroDatalist.innerHTML = '';
+  livroMap = {};
+  livrosCache.forEach(livro => {
+    const option = document.createElement('option');
+    const texto = `${livro.Título} - ${livro.Autor} (${livro.Status})`;
+    option.value = texto;
+    livroMap[texto] = livro.ID;
+    livroDatalist.appendChild(option);
+  });
+}
+  
   function renderizarListaLivros() {
     livroSelect.innerHTML = '<option value="">Selecione um livro...</option>';
     livrosCache.forEach(livro => {
@@ -282,7 +313,8 @@ const Leitura = (() => {
     return;
   }
 
-  const livroID = livroSelect.value;
+  const textoSelecionado = livroInput.value.trim();
+  const livroID = livroMap[textoSelecionado] || '';
   if (!livroID) {
     Util.toast('Selecione um livro.', 'warning');
     return;
@@ -410,7 +442,10 @@ const Leitura = (() => {
     const sess = lista.find(s => s.ID === id);
     if (!sess) return;
     editandoSessaoID = id;
-    document.getElementById('livro-select').value = sess.LivroID;
+    const livroEdit = livrosCache.find(l => l.ID === sess.LivroID);
+    if (livroEdit) {
+      livroInput.value = `${livroEdit.Título} - ${livroEdit.Autor} (${livroEdit.Status})`;
+    }
     dataInput.value = sess.Data;
     horaInicio.value = sess.HoraInício || '';
     horaFim.value = sess.HoraFim || '';
