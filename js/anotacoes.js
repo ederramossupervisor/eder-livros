@@ -166,9 +166,9 @@ const Anotacoes = (() => {
             ${a.Trecho ? `<blockquote>${a.Trecho}</blockquote>` : ''}
             ${a['Comentário'] ? `<p><em>${a['Comentário']}</em></p>` : ''}
             <div class="text-end mt-2">
-              ${a.Trecho ? `
+              ${(a.Trecho || a['Comentário']) ? `
               <button class="btn btn-sm btn-outline-primary btn-compartilhar-anotacao"
-                      data-trecho="${a.Trecho.replace(/"/g, '&quot;')}"
+                      data-trecho="${(a.Trecho || a['Comentário']).replace(/"/g, '&quot;')}"
                       data-livro="${nomeLivro}"
                       data-autor="${nomeAutor}">
                 <i class="fas fa-camera"></i> Compartilhar
