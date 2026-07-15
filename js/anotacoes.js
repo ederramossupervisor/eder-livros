@@ -1,8 +1,12 @@
+/**
+ * Módulo de Anotações – unificado, com microfone e compartilhamento de citações
+ */
 const Anotacoes = (() => {
   let recognition = null;
   let targetInput = null;
+  let livrosCache = []; // Cache com todos os livros (ID, Título, Autor)
 
-  // Inicializa o reconhecimento de voz
+  /* ========== RECONHECIMENTO DE VOZ ========== */
   function initSpeech() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
@@ -68,6 +72,7 @@ const Anotacoes = (() => {
     }
   }
 
+  /* ========== INICIALIZAÇÃO ========== */
   async function init() {
     const page = document.getElementById('page-anotacoes');
     if (!page || !page.classList.contains('active')) return;
@@ -77,13 +82,15 @@ const Anotacoes = (() => {
     await carregarLivrosDropdown();
     configurarForms();
     await listarAnotacoes();
-    console.log('✅ Módulo Anotações pronto.');
+    console.log('✅ Módulo Anotações pronto (com compartilhamento).');
   }
 
+  /* ========== CARREGAR LIVROS (dropdown + cache) ========== */
   async function carregarLivrosDropdown() {
     try {
       const resp = await API.enviar({ acao: 'listBooks' });
       if (Array.isArray(resp)) {
+        livrosCache = resp; // guarda para uso posterior
         ['anot-livro', 'filtro-livro-anot'].forEach(id => {
           const select = document.getElementById(id);
           if (!select) return;
@@ -101,8 +108,8 @@ const Anotacoes = (() => {
     }
   }
 
+  /* ========== FORMULÁRIO DE ANOTAÇÃO + MICROFONES ========== */
   function configurarForms() {
-    // Formulário de anotação
     document.getElementById('form-anotacao').addEventListener('submit', async (e) => {
       e.preventDefault();
       const anotacao = {
@@ -127,22 +134,27 @@ const Anotacoes = (() => {
       }
     });
 
-    // Microfones
     setupVoiceButton('btn-voz-anot-trecho', 'anot-trecho');
     setupVoiceButton('btn-voz-anot-comentario', 'anot-comentario');
 
-    // Filtro de livro
     document.getElementById('filtro-livro-anot').addEventListener('change', listarAnotacoes);
   }
 
+  /* ========== LISTAR ANOTAÇÕES COM BOTÃO DE COMPARTILHAR ========== */
   async function listarAnotacoes() {
     const filtro = document.getElementById('filtro-livro-anot')?.value || '';
     try {
       const resp = await API.enviar({ acao: 'listNotes', livroID: filtro });
       const container = document.getElementById('lista-anotacoes');
       container.innerHTML = '';
+
       if (Array.isArray(resp) && resp.length > 0) {
         resp.forEach(a => {
+          // Busca informações do livro no cache
+          const livro = livrosCache.find(l => l.ID === a.LivroID);
+          const nomeLivro = livro ? livro.Título : 'Livro desconhecido';
+          const nomeAutor = livro ? livro.Autor : 'Autor desconhecido';
+
           const div = document.createElement('div');
           div.className = 'anotacao-card';
           div.innerHTML = `
@@ -153,8 +165,27 @@ const Anotacoes = (() => {
             ${a.Resumo ? `<p class="mt-2"><strong>Resumo:</strong> ${a.Resumo}</p>` : ''}
             ${a.Trecho ? `<blockquote>${a.Trecho}</blockquote>` : ''}
             ${a.Comentario ? `<p><em>${a.Comentario}</em></p>` : ''}
+            <div class="text-end mt-2">
+              ${a.Trecho ? `
+              <button class="btn btn-sm btn-outline-primary btn-compartilhar-anotacao"
+                      data-trecho="${a.Trecho.replace(/"/g, '&quot;')}"
+                      data-livro="${nomeLivro}"
+                      data-autor="${nomeAutor}">
+                <i class="fas fa-camera"></i> Compartilhar
+              </button>` : ''}
+            </div>
           `;
           container.appendChild(div);
+        });
+
+        // Adiciona eventos aos botões de compartilhar
+        document.querySelectorAll('.btn-compartilhar-anotacao').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const trecho = btn.dataset.trecho;
+            const livro = btn.dataset.livro;
+            const autor = btn.dataset.autor;
+            abrirModalCompartilhamento(trecho, livro, autor);
+          });
         });
       } else {
         container.innerHTML = `
@@ -168,9 +199,60 @@ const Anotacoes = (() => {
     }
   }
 
+  /* ========== MODAL DE COMPARTILHAMENTO ========== */
+  function abrirModalCompartilhamento(trecho, livro, autor) {
+    document.getElementById('citacao-texto').textContent = `"${trecho}"`;
+    document.getElementById('citacao-livro').textContent = livro;
+    document.getElementById('citacao-autor').textContent = autor;
+
+    const modal = new bootstrap.Modal(document.getElementById('modal-compartilhar-citacao'));
+    modal.show();
+
+    // Configura o botão de download
+    document.getElementById('btn-baixar-citacao').onclick = async () => {
+      const cartao = document.getElementById('cartao-citacao');
+      try {
+        const canvas = await html2canvas(cartao, {
+          backgroundColor: null,
+          scale: 2 // maior qualidade
+        });
+
+        // Download direto
+        const link = document.createElement('a');
+        link.download = `citacao-${livro.replace(/\s+/g, '-').toLowerCase()}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+
+        // Compartilhamento nativo (se disponível)
+        if (navigator.share) {
+          canvas.toBlob(async (blob) => {
+            if (blob) {
+              const file = new File([blob], 'citacao.png', { type: 'image/png' });
+              try {
+                await navigator.share({
+                  files: [file],
+                  title: 'Citação do Eder Livros',
+                  text: `"${trecho}" - ${livro}`
+                });
+              } catch (shareError) {
+                // usuário cancelou ou não suportado – download já foi feito
+              }
+            }
+          });
+        }
+
+        Util.toast('Imagem baixada!', 'success');
+      } catch (err) {
+        console.error('Erro ao gerar imagem:', err);
+        Util.toast('Falha ao gerar imagem.', 'danger');
+      }
+    };
+  }
+
   return { init };
 })();
 
+// Inicialização segura
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => Anotacoes.init());
 } else {
