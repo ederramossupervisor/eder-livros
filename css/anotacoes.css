@@ -23,3 +23,22 @@
   aspect-ratio: 9 / 16;
   width: 320px;          /* um pouco mais estreito para caber melhor em telas */
 }
+/* Limita a altura do cartão para não empurrar os controles no mobile */
+#cartao-citacao {
+  max-height: 70vh;          /* altura máxima relativa à tela */
+  min-height: 250px;         /* altura mínima para o texto */
+  overflow-y: auto;          /* rolagem caso o texto ultrapasse */
+  position: relative;
+}
+
+/* A imagem de fundo se ajusta ao cartão sem extrapolar */
+#img-fundo-capa {
+  object-fit: cover;
+}
+
+/* Em telas pequenas, reduz um pouco a altura máxima */
+@media (max-width: 575px) {
+  #cartao-citacao {
+    max-height: 50vh;
+  }
+}
