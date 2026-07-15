@@ -1235,6 +1235,38 @@
         </div>
       </div>
     </div>
+    <!-- Modal de Compartilhamento de Citação -->
+    <div class="modal fade" id="modal-compartilhar-citacao" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Compartilhar Citação</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+          </div>
+          <div class="modal-body p-0">
+            <!-- Cartão que será convertido em imagem -->
+            <div id="cartao-citacao" style="padding: 2rem; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: #fff; min-height: 400px; display: flex; flex-direction: column; justify-content: center; text-align: center; font-family: 'Georgia', serif;">
+              <div style="font-size: 1.3rem; font-style: italic; margin-bottom: 1.5rem; line-height: 1.6;">
+                <span id="citacao-texto"></span>
+              </div>
+              <div style="margin-top: auto;">
+                <p style="font-weight: bold; margin-bottom: 0.25rem;" id="citacao-livro"></p>
+                <p style="opacity: 0.7; font-size: 0.9rem;" id="citacao-autor"></p>
+              </div>
+              <div style="margin-top: 2rem; font-size: 0.8rem; opacity: 0.6;">
+                📚 Eder Livros
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+            <button type="button" class="btn btn-primary" id="btn-baixar-citacao">
+              <i class="fas fa-download"></i> Baixar Imagem
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </main>
   
   <!-- Dependências -->
