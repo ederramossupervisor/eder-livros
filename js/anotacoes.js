@@ -281,6 +281,23 @@ const Anotacoes = (() => {
       cartao.style.textAlign = btn.dataset.align;
     });
   });
+    // --- CONTROLE DE FORMATO ---
+  const btnFeed = document.querySelector('[data-format="feed"]');
+  const btnStories = document.querySelector('[data-format="stories"]');
+  btnFeed.addEventListener('click', () => {
+    btnFeed.classList.add('active');
+    btnStories.classList.remove('active');
+    cartao.classList.add('format-feed');
+    cartao.classList.remove('format-stories');
+  });
+  btnStories.addEventListener('click', () => {
+    btnStories.classList.add('active');
+    btnFeed.classList.remove('active');
+    cartao.classList.add('format-stories');
+    cartao.classList.remove('format-feed');
+  });
+  // Inicia com formato feed (padrão)
+  cartao.classList.add('format-feed');
 
   // --- BOTÃO BAIXAR ---
   document.getElementById('btn-baixar-citacao').onclick = async () => {
