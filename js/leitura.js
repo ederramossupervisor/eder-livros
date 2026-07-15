@@ -375,6 +375,7 @@ const Leitura = (() => {
     editandoSessaoID = null;
     document.getElementById('tipo-obs-sessao').value = '';
     document.getElementById('pagina-obs-sessao').value = '';
+    document.getElementById('capitulo-obs-sessao').value = '';
     resetarCronometro();
   }
 
