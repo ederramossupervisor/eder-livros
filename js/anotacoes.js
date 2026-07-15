@@ -166,7 +166,7 @@ const Anotacoes = (() => {
         div.innerHTML = `
           <div class="d-flex justify-content-between">
             <span class="badge bg-secondary">${a.Categoria || 'Geral'}</span>
-            <small class="text-muted">${a.Capítulo ? 'Cap. ' + a.Capítulo : ''} ${a.Página ? 'Pág. ' + a.Página : ''}</small>
+            <small class="text-muted">${nomeLivro}${a.Capítulo ? ', Cap. ' + a.Capítulo : ''}${a.Página ? ', Pág. ' + a.Página : ''}</small>
           </div>
           ${a.Resumo ? `<p class="mt-2"><strong>Resumo:</strong> ${a.Resumo}</p>` : ''}
           ${a.Trecho ? `<blockquote>${a.Trecho}</blockquote>` : ''}
