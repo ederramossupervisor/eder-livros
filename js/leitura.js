@@ -289,8 +289,8 @@ const Leitura = (() => {
     const sessao = {
       livroID,
       data: dataInput.value,
-      horaInicio: horaInicio.value,
-      horaFim: horaFim.value,
+      horaInicio: sanitizarHora(horaInicio.value),
+      horaFim: sanitizarHora(horaFim.value),
       paginaInicial: pagInicial.value,
       paginaFinal: pagFinal.value,
       local: document.getElementById('local-sessao').value,
