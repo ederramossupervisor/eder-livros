@@ -1,3 +1,5 @@
+/* ========== ANOTAÇÕES ========== */
+
 .anotacao-card, .citacao-card {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
@@ -5,30 +7,38 @@
   padding: 1rem;
   margin-bottom: 1rem;
 }
+
 .citacao-card blockquote {
   font-style: italic;
   border-left: 4px solid var(--primary);
   padding-left: 1rem;
   margin: 0.5rem 0;
 }
+
+/* Cartão de citação no modal de compartilhamento */
 #cartao-citacao {
-  width: 400px;          /* largura base */
+  width: 400px;              /* largura base */
   max-width: 100%;
-  transition: aspect-ratio 0.3s, width 0.3s;
-}
-.format-feed {
-  aspect-ratio: 1 / 1;
-}
-.format-stories {
-  aspect-ratio: 9 / 16;
-  width: 320px;          /* um pouco mais estreito para caber melhor em telas */
-}
-/* Limita a altura do cartão para não empurrar os controles no mobile */
-#cartao-citacao {
   max-height: 70vh;          /* altura máxima relativa à tela */
   min-height: 250px;         /* altura mínima para o texto */
   overflow-y: auto;          /* rolagem caso o texto ultrapasse */
   position: relative;
+  transition: aspect-ratio 0.3s, width 0.3s;
+}
+
+/* Formatos de imagem */
+.format-feed {
+  width: 400px;
+  height: 400px;
+  aspect-ratio: 1 / 1;
+  max-height: none;          /* remove limite de altura para captura */
+}
+
+.format-stories {
+  width: 360px;
+  height: 640px;
+  aspect-ratio: 9 / 16;
+  max-height: none;
 }
 
 /* A imagem de fundo se ajusta ao cartão sem extrapolar */
