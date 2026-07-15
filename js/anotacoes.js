@@ -180,6 +180,7 @@ const Anotacoes = (() => {
                     data-capa="${livro?.URLCapa || livro?.ImagemCapa || ''}">
               <i class="fas fa-camera"></i> Compartilhar
             </button>
+            ` : ''}
           </div>
         `;
         container.appendChild(div);
