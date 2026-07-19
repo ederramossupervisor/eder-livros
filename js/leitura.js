@@ -78,7 +78,11 @@ const Leitura = (() => {
     if (!form) return;
 
     initSpeech();
-    dataInput.valueAsDate = new Date();
+    const hoje = new Date();
+    const dia = String(hoje.getDate()).padStart(2, '0');
+    const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+    const ano = hoje.getFullYear();
+    dataInput.value = `${ano}-${mes}-${dia}`;
 
     horaInicio.addEventListener('input', () => formatarHora(horaInicio));
     horaFim.addEventListener('input', () => formatarHora(horaFim));
@@ -368,7 +372,11 @@ const Leitura = (() => {
   function limparFormulario() {
     form.reset();
     form.classList.remove('was-validated');
-    dataInput.valueAsDate = new Date();
+    const hojeLimpa = new Date();
+    const diaLimpa = String(hojeLimpa.getDate()).padStart(2, '0');
+    const mesLimpa = String(hojeLimpa.getMonth() + 1).padStart(2, '0');
+    const anoLimpa = hojeLimpa.getFullYear();
+    dataInput.value = `${anoLimpa}-${mesLimpa}-${diaLimpa}`;
     tempoCalculadoDiv.classList.add('d-none');
     pagLidasDiv.classList.add('d-none');
     livroInfo.innerHTML = '';
