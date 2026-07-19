@@ -1,4 +1,7 @@
 const DesejosEmprestimos = (() => {
+  let livrosCache = [];
+
+  /* ========== INICIALIZAÇÃO ========== */
   async function init() {
     const page = document.getElementById('page-desejos');
     if (!page || !page.classList.contains('active')) return;
@@ -11,6 +14,7 @@ const DesejosEmprestimos = (() => {
     console.log('✅ Módulo Desejos/Empréstimos pronto.');
   }
 
+  /* ========== CARREGAR LIVROS PARA EMPRÉSTIMO ========== */
   async function carregarDropdownLivrosEmprestimo() {
     try {
       const resp = await API.enviar({ acao: 'listBooks' });
@@ -23,15 +27,38 @@ const DesejosEmprestimos = (() => {
           opt.textContent = livro.Título + ' - ' + livro.Autor;
           select.appendChild(opt);
         });
+        livrosCache = resp;
       }
     } catch (e) {
       console.error(e);
     }
   }
 
+  /* ========== MÁSCARA DE MOEDA ========== */
+  function formatarMoeda(input) {
+    let valor = input.value.replace(/\D/g, ''); // remove tudo que não for dígito
+    if (valor === '') {
+      input.value = '';
+      return;
+    }
+    const numero = parseInt(valor, 10) / 100;
+    const formatado = numero.toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    });
+    input.value = formatado;
+  }
+
+  /* ========== CONFIGURAR FORMULÁRIOS ========== */
   function configurarForms() {
-    // Desejo
-    document.getElementById('form-desejo').addEventListener('submit', async (e) => {
+    // Máscara de preço no campo de desejo
+    const precoInput = document.getElementById('desejo-preco');
+    if (precoInput) {
+      precoInput.addEventListener('input', () => formatarMoeda(precoInput));
+    }
+
+    // Formulário de Desejo
+    document.getElementById('form-desejo')?.addEventListener('submit', async (e) => {
       e.preventDefault();
       const desejo = {
         titulo: document.getElementById('desejo-titulo').value,
@@ -55,8 +82,8 @@ const DesejosEmprestimos = (() => {
       }
     });
 
-    // Empréstimo
-    document.getElementById('form-emprestimo').addEventListener('submit', async (e) => {
+    // Formulário de Empréstimo
+    document.getElementById('form-emprestimo')?.addEventListener('submit', async (e) => {
       e.preventDefault();
       const emprestimo = {
         livroID: document.getElementById('emprestimo-livro').value,
@@ -78,15 +105,18 @@ const DesejosEmprestimos = (() => {
     });
   }
 
+  /* ========== LISTAR DESEJOS ========== */
   async function listarDesejos() {
     try {
       const resp = await API.enviar({ acao: 'listWishes' });
       const container = document.getElementById('lista-desejos');
+      if (!container) return;
       container.innerHTML = '';
+
       if (Array.isArray(resp) && resp.length > 0) {
         resp.forEach(d => {
           const div = document.createElement('div');
-          div.className = `desejo-card prioridade-${d.Prioridade.toLowerCase()}`;
+          div.className = `desejo-card prioridade-${(d.Prioridade || '').toLowerCase()}`;
           div.innerHTML = `
             <div class="d-flex justify-content-between align-items-start">
               <div>
@@ -104,7 +134,6 @@ const DesejosEmprestimos = (() => {
           container.appendChild(div);
         });
 
-        // Eventos nos botões
         container.querySelectorAll('.btn-remover-desejo').forEach(btn => {
           btn.addEventListener('click', async () => {
             if (confirm('Remover este desejo?')) {
@@ -131,22 +160,21 @@ const DesejosEmprestimos = (() => {
           });
         });
       } else {
-        container.innerHTML = `
-        <div class="empty-state">
-          <i class="fas fa-heart fa-3x text-muted mb-3"></i>
-          <p class="text-muted">Nenhum desejo ainda.</p>
-        </div>`;
+        container.innerHTML = '<div class="empty-state"><i class="fas fa-heart fa-3x text-muted mb-3"></i><p class="text-muted">Nenhum desejo ainda.</p></div>';
       }
     } catch (e) {
       console.error(e);
     }
   }
 
+  /* ========== LISTAR EMPRÉSTIMOS ========== */
   async function listarEmprestimos() {
     try {
       const resp = await API.enviar({ acao: 'listLoans' });
       const container = document.getElementById('lista-emprestimos');
+      if (!container) return;
       container.innerHTML = '';
+
       if (Array.isArray(resp) && resp.length > 0) {
         resp.forEach(emp => {
           const statusClass = emp.Status === 'Atrasado' ? 'emprestimo-atrasado' : (emp.Status === 'Emprestado' ? 'emprestimo-ativo' : 'emprestimo-devolvido');
@@ -173,11 +201,7 @@ const DesejosEmprestimos = (() => {
           });
         });
       } else {
-        container.innerHTML = `
-        <div class="empty-state">
-          <i class="fas fa-hand-holding-heart fa-3x text-muted mb-3"></i>
-          <p class="text-muted">Nenhum empréstimo registrado.</p>
-        </div>`;
+        container.innerHTML = '<div class="empty-state"><i class="fas fa-hand-holding-heart fa-3x text-muted mb-3"></i><p class="text-muted">Nenhum empréstimo registrado.</p></div>';
       }
     } catch (e) {
       console.error(e);
@@ -187,7 +211,6 @@ const DesejosEmprestimos = (() => {
   return { init };
 })();
 
-// Inicialização segura
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => DesejosEmprestimos.init());
 } else {
