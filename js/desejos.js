@@ -122,7 +122,7 @@ const DesejosEmprestimos = (() => {
               <div>
                 <strong>${d.Título}</strong> ${d.Autor ? '- ' + d.Autor : ''}
                 <span class="badge bg-secondary ms-2">${d.Prioridade}</span>
-                ${d.Preço ? `<br><small>Preço: R$ ${d.Preço.replace(/^R\$\s?/, '')}</small>` : ''}
+                ${d.Preço ? `<br><small>Preço: R$ ${String(d.Preço).replace(/^R\$\s?/, '')}</small>` : ''}
                 ${d.Link ? `<br><a href="${d.Link}" target="_blank" class="small">🔗 Ver</a>` : ''}
                 ${d.Observacoes ? `<br><small class="text-muted">${d.Observacoes}</small>` : ''}
               </div>
