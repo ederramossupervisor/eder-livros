@@ -212,6 +212,7 @@ const Leitura = (() => {
       tempoAcumulado += Math.floor((Date.now() - inicioCronometro) / 1000);
       cronometroAtivo = false;
     }
+    display.classList.remove('pulsando');
     horaFim.value = new Date().toTimeString().slice(0, 5);
     atualizarDisplay(tempoAcumulado);
     calcularTempo();
