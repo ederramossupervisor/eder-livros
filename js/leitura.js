@@ -165,6 +165,9 @@ const Leitura = (() => {
     }
     inicioCronometro = Date.now();
     cronometroAtivo = true;
+
+    display.classList.add('pulsando');
+
     btnIniciar.classList.add('d-none');
     btnPausar.classList.remove('d-none');
     btnRetomar.classList.add('d-none');
@@ -192,6 +195,7 @@ const Leitura = (() => {
   function retomarCronometro() {
     inicioCronometro = Date.now();
     cronometroAtivo = true;
+    display.classList.remove('pulsando');
     btnRetomar.classList.add('d-none');
     btnPausar.classList.remove('d-none');
     timerInterval = setInterval(() => {
