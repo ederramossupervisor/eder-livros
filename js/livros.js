@@ -329,6 +329,7 @@ function preencherFormularioCompleto(livro) {
   document.getElementById('tags').value = livro.Tags || '';
   document.getElementById('observacoes').value = livro.Observações || '';
   document.getElementById('urlCapa').value = livro.URLCapa || livro.ImagemCapa || '';
+  document.getElementById('paginasLidas').value = livro.PáginasLidas || 0;
   document.getElementById('favorito').checked = livro.Favorito === 'true' || livro.Favorito === true;
   if (livro.URLCapa || livro.ImagemCapa) {
     mostrarCapa(livro.URLCapa || livro.ImagemCapa);
@@ -373,6 +374,7 @@ function preencherFormularioCompleto(livro) {
     tags: document.getElementById('tags').value,
     observacoes: document.getElementById('observacoes').value,
     urlCapa: Util.converterLinkDrive(urlCapa.value),
+    paginasLidas: Number(document.getElementById('paginasLidas').value) || 0,
     dataInicio: document.getElementById('data-inicio').value,
     dataTermino: document.getElementById('data-termino').value
   };
