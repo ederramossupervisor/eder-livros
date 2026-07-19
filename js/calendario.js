@@ -67,17 +67,37 @@ const CalendarioLeitura = (() => {
       div.style.position = 'relative';
 
       if (livros.length > 0) {
-        div.classList.add('com-leitura');
-        const livro = livros[0];
-        div.innerHTML = `
-          <small class="d-block">${dia}</small>
-          ${livro.urlCapa
-            ? `<img src="${livro.urlCapa}" alt="${livro.titulo}" title="${livro.titulo}" style="width:100%; max-height:45px; object-fit:contain; border-radius:4px;">`
-            : `<i class="fas fa-book text-primary" title="${livro.titulo}"></i>`}
-        `;
-      } else {
-        div.innerHTML = `<small>${dia}</small>`;
+      div.classList.add('com-leitura');
+      
+      // ÚLTIMO livro do array (mais recente no dia)
+      const ultimoLivro = livros[livros.length - 1];
+      const totalLivros = livros.length;
+    
+      // Capa do último livro
+      const imgHtml = ultimoLivro.urlCapa
+        ? `<img src="${ultimoLivro.urlCapa}" alt="${ultimoLivro.titulo}" title="${ultimoLivro.titulo}" style="width:100%; max-height:45px; object-fit:contain; border-radius:4px;">`
+        : `<i class="fas fa-book text-primary" title="${ultimoLivro.titulo}"></i>`;
+    
+      // Badge +N se houver mais de um livro
+      let badgeHtml = '';
+      if (totalLivros > 1) {
+        const outrosLivros = livros.slice(0, -1); // todos exceto o último
+        const outrosTitulos = outrosLivros.map(l => l.titulo).join(', ');
+        badgeHtml = `<span class="position-absolute top-0 end-0 badge rounded-pill bg-primary" 
+                          style="font-size:0.6rem; transform: translate(25%, -25%);" 
+                          title="Também leu: ${outrosTitulos}">+${totalLivros - 1}</span>`;
       }
+    
+      div.innerHTML = `
+        <small class="d-block">${dia}</small>
+        <div style="position: relative; width: 100%;">
+          ${imgHtml}
+          ${badgeHtml}
+        </div>
+      `;
+    } else {
+      div.innerHTML = `<small>${dia}</small>`;
+    }
 
       // Ícone de citação sobreposto
       if (temCitacao) {
