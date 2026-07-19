@@ -230,6 +230,7 @@ const Leitura = (() => {
     tempoAcumulado = 0;
     inicioCronometro = null;
     atualizarDisplay(0);
+    display.classList.remove('pulsando');
     btnIniciar.classList.remove('d-none');
     btnPausar.classList.add('d-none');
     btnRetomar.classList.add('d-none');
