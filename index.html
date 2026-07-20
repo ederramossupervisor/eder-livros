@@ -1253,88 +1253,89 @@
         </div>
       </div>
     </div>
-    <!-- Modal de Compartilhamento de Citação (versão completa) -->
-    <div class="modal fade" id="modal-compartilhar-citacao" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Personalizar Citação</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-          </div>
-          <div class="modal-body">
-            <div class="row g-3">
-              <!-- Coluna de controles -->
-              <div class="col-md-4">
-                <h6>🎨 Fundo</h6>
-                <div class="d-flex flex-wrap gap-2 mb-3" id="cores-predefinidas"></div>
-                <button class="btn btn-sm btn-outline-secondary w-100 mb-2" id="btn-fundo-capa">
-                  <i class="fas fa-image"></i> Usar capa do livro
-                </button>
-                <button class="btn btn-sm btn-outline-secondary w-100 mb-3" id="btn-fundo-gradiente">
-                  <i class="fas fa-fill-drip"></i> Gradiente aleatório
-                </button>
-    
-                <h6>🔤 Texto</h6>
-                <div class="mb-2">
-                  <label class="form-label small">Tamanho da fonte</label>
-                  <input type="range" class="form-range" id="range-tamanho-fonte" min="12" max="28" value="18">
-                </div>
-                <div class="mb-2">
-                  <label class="form-label small">Alinhamento</label>
-                  <div class="btn-group w-100">
-                    <button class="btn btn-sm btn-outline-secondary active" data-align="center">Centro</button>
-                    <button class="btn btn-sm btn-outline-secondary" data-align="left">Esquerda</button>
-                    <button class="btn btn-sm btn-outline-secondary" data-align="right">Direita</button>
-                  </div>
-                </div>
-    
-                <h6 class="mt-3">📐 Formato</h6>
-                <div class="btn-group w-100" id="btn-group-formato">
-                  <button class="btn btn-sm btn-outline-secondary active" data-format="feed">Feed (1:1)</button>
-                  <button class="btn btn-sm btn-outline-secondary" data-format="stories">Stories (9:16)</button>
-                </div>
-              </div>
-    
-              <!-- Pré-visualização do cartão -->
-              <div class="col-md-8">
-                <div id="cartao-citacao" style="padding: 2rem; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: #fff; min-height: 350px; display: flex; flex-direction: column; justify-content: center; text-align: center; font-family: 'Georgia', serif; transition: background 0.3s, color 0.3s; position: relative; overflow: hidden;">
-                  <div id="citacao-texto" contenteditable="true" style="font-size: 1.3rem; font-style: italic; margin-bottom: 1.5rem; line-height: 1.6; outline: none; z-index: 2; position: relative;"></div>
-                  <div style="margin-top: auto; z-index: 2; position: relative;">
-                    <p id="citacao-livro" contenteditable="true" style="font-weight: bold; margin-bottom: 0.25rem; outline: none;"></p>
-                    <p id="citacao-autor" contenteditable="true" style="opacity: 0.7; font-size: 0.9rem; outline: none;"></p>
-                  </div>
-                  <div id="citacao-logo" style="margin-top: 2rem; text-align: center; z-index: 2; position: relative;">
-                    <img src="img/icons/logo.png" alt="Eder Livros" style="width: 40px; height: auto; opacity: 0.9;">
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-            <button type="button" class="btn btn-primary" id="btn-baixar-citacao">
-              <i class="fas fa-download"></i> Baixar Imagem
-            </button>
-          </div>
+  </main>
+
+  <!-- Modal de detalhes do livro (FORA do main) -->
+  <div class="modal fade" id="livro-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modal-titulo">Detalhes do Livro</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body" id="modal-conteudo">
+          <!-- Preenchido dinamicamente -->
         </div>
       </div>
     </div>
-  </main>
+  </div>
+
+  <!-- Modal de Compartilhamento de Citação (FORA do main) -->
+  <div class="modal fade" id="modal-compartilhar-citacao" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Personalizar Citação</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row g-3">
+            <!-- Coluna de controles -->
+            <div class="col-md-4">
+              <h6>🎨 Fundo</h6>
+              <div class="d-flex flex-wrap gap-2 mb-3" id="cores-predefinidas"></div>
+              <button class="btn btn-sm btn-outline-secondary w-100 mb-2" id="btn-fundo-capa">
+                <i class="fas fa-image"></i> Usar capa do livro
+              </button>
+              <button class="btn btn-sm btn-outline-secondary w-100 mb-3" id="btn-fundo-gradiente">
+                <i class="fas fa-fill-drip"></i> Gradiente aleatório
+              </button>
   
-        <!-- Modal de detalhes -->
-        <div class="modal fade" id="livro-modal" tabindex="-1" aria-hidden="true">
-          <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title" id="modal-titulo">Detalhes do Livro</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+              <h6>🔤 Texto</h6>
+              <div class="mb-2">
+                <label class="form-label small">Tamanho da fonte</label>
+                <input type="range" class="form-range" id="range-tamanho-fonte" min="12" max="28" value="18">
               </div>
-              <div class="modal-body" id="modal-conteudo">
-                <!-- Preenchido dinamicamente -->
+              <div class="mb-2">
+                <label class="form-label small">Alinhamento</label>
+                <div class="btn-group w-100">
+                  <button class="btn btn-sm btn-outline-secondary active" data-align="center">Centro</button>
+                  <button class="btn btn-sm btn-outline-secondary" data-align="left">Esquerda</button>
+                  <button class="btn btn-sm btn-outline-secondary" data-align="right">Direita</button>
+                </div>
+              </div>
+  
+              <h6 class="mt-3">📐 Formato</h6>
+              <div class="btn-group w-100" id="btn-group-formato">
+                <button class="btn btn-sm btn-outline-secondary active" data-format="feed">Feed (1:1)</button>
+                <button class="btn btn-sm btn-outline-secondary" data-format="stories">Stories (9:16)</button>
+              </div>
+            </div>
+  
+            <!-- Pré-visualização do cartão -->
+            <div class="col-md-8">
+              <div id="cartao-citacao" style="padding: 2rem; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: #fff; min-height: 350px; display: flex; flex-direction: column; justify-content: center; text-align: center; font-family: 'Georgia', serif; transition: background 0.3s, color 0.3s; position: relative; overflow: hidden;">
+                <div id="citacao-texto" contenteditable="true" style="font-size: 1.3rem; font-style: italic; margin-bottom: 1.5rem; line-height: 1.6; outline: none; z-index: 2; position: relative;"></div>
+                <div style="margin-top: auto; z-index: 2; position: relative;">
+                  <p id="citacao-livro" contenteditable="true" style="font-weight: bold; margin-bottom: 0.25rem; outline: none;"></p>
+                  <p id="citacao-autor" contenteditable="true" style="opacity: 0.7; font-size: 0.9rem; outline: none;"></p>
+                </div>
+                <div id="citacao-logo" style="margin-top: 2rem; text-align: center; z-index: 2; position: relative;">
+                  <img src="img/icons/logo.png" alt="Eder Livros" style="width: 40px; height: auto; opacity: 0.9;">
+                </div>
               </div>
             </div>
           </div>
         </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+          <button type="button" class="btn btn-primary" id="btn-baixar-citacao">
+            <i class="fas fa-download"></i> Baixar Imagem
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
   
   <!-- Dependências -->
   <script src="https://unpkg.com/dexie@3.2.4/dist/dexie.js"></script>
