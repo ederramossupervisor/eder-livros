@@ -83,9 +83,9 @@ const CalendarioLeitura = (() => {
       if (totalLivros > 1) {
         const outrosLivros = livros.slice(0, -1); // todos exceto o último
         const outrosTitulos = outrosLivros.map(l => l.titulo).join(', ');
-        badgeHtml = `<span class="position-absolute top-0 end-0 badge rounded-pill bg-primary" 
-                          style="font-size:0.6rem; transform: translate(25%, -25%);" 
-                          title="Também leu: ${outrosTitulos}">+${totalLivros - 1}</span>`;
+        badgeHtml = `<span class="position-absolute bottom-0 end-0 badge rounded-pill bg-primary" 
+                  style="font-size:0.6rem; transform: translate(25%, 25%);" 
+                  title="Também leu: ${outrosTitulos}">+${totalLivros - 1}</span>`;
       }
     
       div.innerHTML = `
