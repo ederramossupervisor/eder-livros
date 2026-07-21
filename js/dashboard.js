@@ -240,27 +240,23 @@ const Dashboard = (() => {
   const ctx = document.getElementById('grafico-semanal')?.getContext('2d');
   if (!ctx) return;
 
-  const gradient = ctx.createLinearGradient(0, 0, 0, ctx.canvas.height);
-  gradient.addColorStop(0, 'rgba(99, 102, 241, 0.35)');
-  gradient.addColorStop(1, 'rgba(99, 102, 241, 0.02)');
+  // Gradiente vertical para as barras
+  const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+  gradient.addColorStop(0, '#8b5cf6');   // roxo mais claro no topo
+  gradient.addColorStop(1, '#6366f1');   // indigo na base
 
   chartInstance = new Chart(ctx, {
-    type: 'line',
+    type: 'bar',
     data: {
       labels: dados.map(item => item.dia),
       datasets: [{
         label: 'Páginas lidas',
         data: dados.map(item => item.paginas),
-        borderColor: '#6366f1',
         backgroundColor: gradient,
-        borderWidth: 2,
-        pointBackgroundColor: '#6366f1',
-        pointBorderColor: '#fff',
-        pointBorderWidth: 1.5,
-        pointRadius: 2.5,
-        pointHoverRadius: 5,
-        tension: 0.2,
-        fill: true
+        borderRadius: 6,
+        borderSkipped: false,
+        barPercentage: 0.7,
+        categoryPercentage: 0.8
       }]
     },
     options: {
@@ -285,15 +281,11 @@ const Dashboard = (() => {
         x: {
           grid: { display: false },
           ticks: {
-            maxTicksLimit: 10,        // mostra no máximo 10 labels no eixo X
+            maxTicksLimit: 12,
             autoSkip: true,
             font: { size: 9 }
           }
         }
-      },
-      interaction: {
-        intersect: false,
-        mode: 'index'
       }
     }
   });
