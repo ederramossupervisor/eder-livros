@@ -164,7 +164,7 @@ const Biblioteca = (() => {
           <p class="text-muted">${livro.Autor || 'Autor desconhecido'}</p>
           <div class="mb-2">${renderizarEstrelas(livro.Nota, livro.ID, true)}</div>
           <table class="table table-sm">
-            <tr><td><strong>Status</strong></td><td><span class="badge bg-primary">${livro.Status}</span></td></tr>
+            <tr><td><strong>Status</strong></td><td><span class="badge ${getStatusBadgeClass(livro.Status)}">${livro.Status}</span></td></tr>
             <tr><td><strong>Editora</strong></td><td>${livro.Editora || '-'}</td></tr>
             <tr><td><strong>Ano</strong></td><td>${livro.Ano || '-'}</td></tr>
             <tr><td><strong>Páginas</strong></td><td>${livro.NúmeroPáginas || '-'}</td></tr>
