@@ -149,3 +149,9 @@
 #anotacoes-search {
   border-radius: 0.5rem;
 }
+
+@media (max-width: 500px) {
+  .anotacao-card {
+    width: 100%;
+  }
+}
