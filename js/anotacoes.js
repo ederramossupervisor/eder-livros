@@ -63,7 +63,7 @@ const Anotacoes = (() => {
             anot.Resumo || '',
             anot.Categoria || ''
           ];
-          return campos.some(campo => campo.toLowerCase().includes(termo));
+          return campos.some(campo => String(campo || '').toLowerCase().includes(termo));
         });
         renderizarAnotacoes(filtradas);
       });
