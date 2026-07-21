@@ -241,21 +241,20 @@ const Dashboard = (() => {
   if (!ctx) return;
 
   const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-  gradient.addColorStop(0, 'rgba(139, 92, 246, 0.4)');
-  gradient.addColorStop(1, 'rgba(99, 102, 241, 0.01)');
+  gradient.addColorStop(0, '#8b5cf6');
+  gradient.addColorStop(1, '#6366f1');
 
   chartInstance = new Chart(ctx, {
-    type: 'line',
+    type: 'bar',
     data: {
       labels: dados.map(item => item.dia),
       datasets: [{
+        label: 'Páginas lidas',
         data: dados.map(item => item.paginas),
-        borderColor: '#8b5cf6',
-        borderWidth: 3,
         backgroundColor: gradient,
-        fill: true,
-        pointRadius: 0,
-        tension: 0.4
+        borderRadius: 8,
+        borderSkipped: false,
+        barPercentage: 0.6
       }]
     },
     options: {
