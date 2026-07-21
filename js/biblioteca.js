@@ -86,55 +86,67 @@ const Biblioteca = (() => {
   }
 
   function renderizarGrade(livrosFiltrados) {
-    grid.innerHTML = '';
-    if (livrosFiltrados.length === 0) {
-      grid.innerHTML = '<div class="col-12 text-center text-muted py-5">Nenhum livro encontrado</div>';
-      return;
-    }
-
-    livrosFiltrados.forEach(livro => {
-      const col = document.createElement('div');
-      col.className = 'col-6 col-md-4 col-lg-3 col-xl-2';
-
-      col.innerHTML = `
-        <div class="livro-card h-100" data-id="${livro.ID}">
-          <div class="capa-wrapper">
-            ${livro.URLCapa ? `<img src="${livro.URLCapa}" alt="Capa" loading="lazy">` : '<i class="fas fa-book fa-3x position-absolute top-50 start-50 translate-middle text-muted"></i>'}
-            <span class="badge badge-status bg-primary">${livro.Status}</span>
-          </div>
-          <div class="card-body">
-            <div class="titulo" title="${livro.Título}">${livro.Título || 'Sem título'}</div>
-            <div class="autor">${livro.Autor || 'Desconhecido'}</div>
-            <div class="mt-1">${renderizarEstrelas(livro.Nota, livro.ID, true)}</div>
-          </div>
-        </div>`;
-      grid.appendChild(col);
-    });
-
-    // Evento de clique nas estrelas dos cards
-    grid.querySelectorAll('.estrela-editavel').forEach(estrela => {
-      estrela.addEventListener('click', async (e) => {
-        e.stopPropagation();
-        const livroID = estrela.dataset.livro;
-        const estrelaClicada = parseInt(estrela.dataset.estrela);
-        // Se clicar na mesma estrela que já está ativa, remove a nota
-        const livro = livros.find(l => l.ID === livroID);
-        const notaAtual = Math.round(Number(livro?.Nota)) || 0;
-        const novaNota = (estrelaClicada === notaAtual) ? 0 : estrelaClicada;
-        await atualizarNota(livroID, novaNota);
-        aplicarFiltros(); // re-renderiza a grade
-      });
-    });
-
-    // Clique no card abre o modal (exceto nas estrelas)
-    grid.querySelectorAll('.livro-card').forEach(card => {
-      card.addEventListener('click', (e) => {
-        // Se o clique foi em uma estrela, não abrir modal
-        if (e.target.classList.contains('estrela-editavel')) return;
-        abrirModal(card.dataset.id);
-      });
-    });
+  grid.innerHTML = '';
+  if (livrosFiltrados.length === 0) {
+    grid.innerHTML = '<div class="col-12 text-center text-muted py-5">Nenhum livro encontrado</div>';
+    return;
   }
+
+  livrosFiltrados.forEach(livro => {
+    const col = document.createElement('div');
+    col.className = 'col-12'; // um por linha em todos os tamanhos (mobile-first)
+
+    const progresso = livro.NúmeroPáginas > 0 ? Math.round(((livro.PáginasLidas || 0) / livro.NúmeroPáginas) * 100) : 0;
+    const statusClass = livro.Status === 'Finalizado' ? 'bg-success' : '';
+
+    col.innerHTML = `
+      <div class="livro-card livro-card-horizontal" data-id="${livro.ID}">
+        <div class="d-flex align-items-start p-3">
+          <!-- Lado esquerdo: informações -->
+          <div class="flex-grow-1 me-3">
+            <div class="titulo fw-bold mb-1">${livro.Título || 'Sem título'}</div>
+            <div class="autor text-muted small mb-1">${livro.Autor || 'Desconhecido'}</div>
+            <span class="badge bg-primary badge-status">${livro.Status}</span>
+            <div class="mt-2">${renderizarEstrelas(livro.Nota, livro.ID, true)}</div>
+          </div>
+          <!-- Lado direito: capa -->
+          <div class="capa-wrapper flex-shrink-0" style="width:70px; height:100px; background:var(--bg-secondary); border-radius:4px; overflow:hidden;">
+            ${livro.URLCapa ? `<img src="${livro.URLCapa}" alt="Capa" style="width:100%; height:100%; object-fit:cover;">` : '<i class="fas fa-book fa-2x text-muted d-flex align-items-center justify-content-center h-100"></i>'}
+          </div>
+        </div>
+        <!-- Barra de progresso -->
+        <div class="px-3 pb-2">
+          <div class="progress" style="height:6px;" title="${progresso}% concluído">
+            <div class="progress-bar ${statusClass}" role="progressbar" style="width:${progresso}%" aria-valuenow="${progresso}" aria-valuemin="0" aria-valuemax="100"></div>
+          </div>
+          <small class="text-muted">${progresso}% concluído</small>
+        </div>
+      </div>`;
+    grid.appendChild(col);
+  });
+
+  // Eventos das estrelas
+  grid.querySelectorAll('.estrela-editavel').forEach(estrela => {
+    estrela.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const livroID = estrela.dataset.livro;
+      const estrelaClicada = parseInt(estrela.dataset.estrela);
+      const livro = livros.find(l => l.ID === livroID);
+      const notaAtual = Math.round(Number(livro?.Nota)) || 0;
+      const novaNota = (estrelaClicada === notaAtual) ? 0 : estrelaClicada;
+      await atualizarNota(livroID, novaNota);
+      aplicarFiltros(); // re-renderiza
+    });
+  });
+
+  // Clique no card (exceto nas estrelas) abre o modal
+  grid.querySelectorAll('.livro-card').forEach(card => {
+    card.addEventListener('click', (e) => {
+      if (e.target.classList.contains('estrela-editavel')) return;
+      abrirModal(card.dataset.id);
+    });
+  });
+}
 
   function abrirModal(id) {
     const livro = livros.find(l => l.ID === id);
