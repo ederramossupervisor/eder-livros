@@ -93,27 +93,26 @@ const Anotacoes = (() => {
     div.className = 'anotacao-card d-flex flex-column';
 
     div.innerHTML = `
-      <!-- Cabeçalho: badge + livro na esquerda, data na direita -->
-      <div class="cabecalho d-flex justify-content-between align-items-start mb-2">
-        <div class="info d-flex align-items-center flex-wrap me-2" style="min-width:0;">
-          <span class="badge bg-secondary me-2">${a.Categoria || 'Geral'}</span>
-          <span class="titulo-livro text-truncate" style="max-width: 150px;" title="${nomeLivro} – ${nomeAutor}">
-            ${nomeLivro} – ${nomeAutor}
-          </span>
-        </div>
-        <span class="data text-muted flex-shrink-0" style="font-size:0.7rem;">
-          ${a.Data ? new Date(a.Data).toLocaleDateString('pt-BR') : ''}
-        </span>
-      </div>
-
-      <!-- Conteúdo da anotação -->
-      ${a.Capítulo ? `<p class="mb-1"><strong>Capítulo:</strong> ${a.Capítulo}</p>` : ''}
-      ${a.Página ? `<p class="mb-1"><strong>Página:</strong> ${a.Página}</p>` : ''}
-      ${a.Resumo ? `<p class="mb-1"><strong>Resumo:</strong> ${a.Resumo}</p>` : ''}
-      ${a.Trecho ? `<blockquote class="blockquote mb-1">${a.Trecho}</blockquote>` : ''}
-      ${a['Comentário'] ? `<p class="mb-0 fst-italic text-secondary">${a['Comentário']}</p>` : ''}
-    `;
-
+    <!-- Cabeçalho: badge + data -->
+    <div class="cabecalho d-flex justify-content-between align-items-center mb-2">
+      <span class="badge bg-secondary">${a.Categoria || 'Geral'}</span>
+      <span class="data text-muted" style="font-size:0.7rem; white-space:nowrap;">
+        ${a.Data ? new Date(a.Data).toLocaleDateString('pt-BR') : ''}
+      </span>
+    </div>
+  
+    <!-- Título e autor (linha própria, sem truncamento) -->
+    <div class="titulo-livro mb-2" style="font-size:0.85rem; font-weight:500; color:#333;">
+      ${nomeLivro} – ${nomeAutor}
+    </div>
+  
+    <!-- Conteúdo da anotação -->
+    ${a.Capítulo ? `<p class="mb-1"><strong>Capítulo:</strong> ${a.Capítulo}</p>` : ''}
+    ${a.Página ? `<p class="mb-1"><strong>Página:</strong> ${a.Página}</p>` : ''}
+    ${a.Resumo ? `<p class="mb-1"><strong>Resumo:</strong> ${a.Resumo}</p>` : ''}
+    ${a.Trecho ? `<blockquote class="blockquote mb-1">${a.Trecho}</blockquote>` : ''}
+    ${a['Comentário'] ? `<p class="mb-0 fst-italic text-secondary">${a['Comentário']}</p>` : ''}
+  `;
     container.appendChild(div);
   });
 }
