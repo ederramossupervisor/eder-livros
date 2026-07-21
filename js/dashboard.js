@@ -240,29 +240,60 @@ const Dashboard = (() => {
   const ctx = document.getElementById('grafico-semanal')?.getContext('2d');
   if (!ctx) return;
 
-  const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-  gradient.addColorStop(0, '#8b5cf6');
-  gradient.addColorStop(1, '#6366f1');
+  const gradient = ctx.createLinearGradient(0, 0, 0, ctx.canvas.height);
+  gradient.addColorStop(0, 'rgba(99, 102, 241, 0.35)');
+  gradient.addColorStop(1, 'rgba(99, 102, 241, 0.02)');
 
   chartInstance = new Chart(ctx, {
-    type: 'bar',
+    type: 'line',
     data: {
       labels: dados.map(item => item.dia),
       datasets: [{
         label: 'Páginas lidas',
         data: dados.map(item => item.paginas),
+        borderColor: '#6366f1',
         backgroundColor: gradient,
-        borderRadius: 8,
-        borderSkipped: false,
-        barPercentage: 0.6
+        borderWidth: 2,
+        pointBackgroundColor: '#6366f1',
+        pointBorderColor: '#fff',
+        pointBorderWidth: 1.5,
+        pointRadius: 2.5,
+        pointHoverRadius: 5,
+        tension: 0.2,
+        fill: true
       }]
     },
     options: {
       responsive: true,
-      plugins: { legend: { display: false } },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            title: function(items) {
+              const idx = items[0].dataIndex;
+              return `Dia ${dados[idx].dia}`;
+            }
+          }
+        }
+      },
       scales: {
-        y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } },
-        x: { grid: { display: false } }
+        y: {
+          beginAtZero: true,
+          grid: { color: 'rgba(0,0,0,0.05)' },
+          ticks: { stepSize: 10, font: { size: 10 } }
+        },
+        x: {
+          grid: { display: false },
+          ticks: {
+            maxTicksLimit: 10,        // mostra no máximo 10 labels no eixo X
+            autoSkip: true,
+            font: { size: 9 }
+          }
+        }
+      },
+      interaction: {
+        intersect: false,
+        mode: 'index'
       }
     }
   });
