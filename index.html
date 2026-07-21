@@ -918,84 +918,23 @@
     </div>
 
     <div id="page-anotacoes" class="page">
-      <div class="container py-4">
+      <div class="container py-4 d-flex flex-column" style="height: 100%;">
         <h1 class="mb-4">Anotações</h1>
     
-        <div class="row g-3">
-          <!-- Formulário de nova anotação -->
-          <div class="col-md-5">
-            <div class="card shadow-sm">
-              <div class="card-header fw-bold">Nova anotação</div>
-              <div class="card-body">
-                <form id="form-anotacao">
-                  <div class="mb-3">
-                    <label for="anot-livro" class="form-label">Livro</label>
-                    <select id="anot-livro" class="form-select" required></select>
-                  </div>
-                  <div class="row g-2">
-                    <div class="col-6">
-                      <label for="anot-capitulo" class="form-label">Capítulo</label>
-                      <input type="text" id="anot-capitulo" class="form-control">
-                    </div>
-                    <div class="col-6">
-                      <label for="anot-pagina" class="form-label">Página</label>
-                      <input type="number" id="anot-pagina" class="form-control">
-                    </div>
-                  </div>
-                  <div class="mb-3 mt-2">
-                    <label for="anot-categoria" class="form-label">Categoria</label>
-                    <select id="anot-categoria" class="form-select">
-                      <option value="Geral">Geral</option>
-                      <option value="Reflexão">Reflexão</option>
-                      <option value="Personagem">Personagem</option>
-                      <option value="Enredo">Enredo</option>
-                      <option value="Citação">Citação</option>
-                    </select>
-                  </div>
-                  <div class="mb-3">
-                    <label for="anot-resumo" class="form-label">Resumo</label>
-                    <textarea id="anot-resumo" class="form-control" rows="2"></textarea>
-                  </div>
-                  <div class="mb-3">
-                    <label for="anot-trecho" class="form-label">Trecho</label>
-                    <div class="input-group">
-                      <textarea id="anot-trecho" class="form-control" rows="2"></textarea>
-                      <button class="btn btn-outline-secondary" type="button" id="btn-voz-anot-trecho" title="Ditar trecho">
-                        <i class="fas fa-microphone"></i>
-                      </button>
-                    </div>
-                  </div>
-                  <div class="mb-3">
-                    <label for="anot-comentario" class="form-label">Comentário</label>
-                    <div class="input-group">
-                      <textarea id="anot-comentario" class="form-control" rows="2"></textarea>
-                      <button class="btn btn-outline-secondary" type="button" id="btn-voz-anot-comentario" title="Ditar comentário">
-                        <i class="fas fa-microphone"></i>
-                      </button>
-                    </div>
-                  </div>
-                  <button type="submit" class="btn btn-primary">Salvar</button>
-                </form>
-              </div>
-            </div>
+        <!-- Área de pesquisa (desktop: topo; mobile: fixo no rodapé) -->
+        <div class="search-wrapper mb-3">
+          <div class="input-group">
+            <span class="input-group-text"><i class="fas fa-search"></i></span>
+            <input type="text" id="anotacoes-search" class="form-control" placeholder="Pesquisar por palavra-chave...">
           </div>
+        </div>
     
-          <!-- Lista de anotações -->
-          <div class="col-md-7">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <h5>Minhas anotações</h5>
-              <select id="filtro-livro-anot" class="form-select w-auto">
-                <option value="">Todos os livros</option>
-              </select>
-            </div>
-            <div id="lista-anotacoes">
-              <!-- Preenchido dinamicamente -->
-            </div>
-          </div>
+        <!-- Lista de anotações -->
+        <div id="lista-anotacoes" class="flex-grow-1 overflow-auto">
+          <!-- Preenchido dinamicamente -->
         </div>
       </div>
     </div>
-
 
     <div id="page-desejos" class="page">
       <div class="container py-4">
