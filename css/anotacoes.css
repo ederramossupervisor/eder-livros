@@ -9,7 +9,6 @@
   padding-bottom: 2rem;
 }
 
-
 /* Cada anotação como um post-it */
 .anotacao-card {
   width: 220px;
@@ -29,7 +28,7 @@
   flex-direction: column;
 }
 
-/* Puxadinho (fita adesiva) no topo – mantido */
+/* Puxadinho (fita adesiva) no topo */
 .anotacao-card::before {
   content: '';
   position: absolute;
@@ -44,24 +43,16 @@
   z-index: 1;
 }
 
-/* Data agora empurrada para o fundo */
-.anotacao-card .text-muted {
-  font-size: 0.7rem;
-  margin-top: auto;
-  text-align: right;
-  padding-top: 0.5rem;
-}
-/* Cores alternadas automaticamente */
-.anotacao-card:nth-child(4n+1) { background: #fef9c3; }   /* amarelo */
-.anotacao-card:nth-child(4n+2) { background: #fcd5ce; }   /* rosa claro */
-.anotacao-card:nth-child(4n+3) { background: #ccdbfd; }   /* azul claro */
-.anotacao-card:nth-child(4n+4) { background: #d8f3dc; }   /* verde claro */
+/* Cores alternadas */
+.anotacao-card:nth-child(4n+1) { background: #fef9c3; }
+.anotacao-card:nth-child(4n+2) { background: #fcd5ce; }
+.anotacao-card:nth-child(4n+3) { background: #ccdbfd; }
+.anotacao-card:nth-child(4n+4) { background: #d8f3dc; }
 
-/* Rotações alternadas para dar um ar “solto” */
+/* Rotações alternadas */
 .anotacao-card:nth-child(odd)  { transform: rotate(-1.5deg); }
 .anotacao-card:nth-child(even) { transform: rotate(1.5deg); }
 
-/* Ajuste de hover para manter a rotação suave */
 .anotacao-card:nth-child(odd):hover  { transform: rotate(-1deg) scale(1.02); }
 .anotacao-card:nth-child(even):hover { transform: rotate(1deg) scale(1.02); }
 
@@ -73,7 +64,8 @@
 }
 
 /* Texto menor dentro do post-it */
-.anotacao-card p, .anotacao-card blockquote {
+.anotacao-card p,
+.anotacao-card blockquote {
   margin-bottom: 0.4rem;
   font-size: 0.85rem;
 }
@@ -84,113 +76,7 @@
   font-style: italic;
 }
 
-/* Data no canto inferior direito */
-.anotacao-card .text-muted {
-  font-size: 0.7rem;
-  position: absolute;
-  bottom: 8px;
-  right: 12px;
-}
-
-/* ========== CITAÇÕES E MODAL (mantido) ========== */
-.citacao-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius);
-  padding: 1rem;
-  margin-bottom: 1rem;
-}
-
-.citacao-card blockquote {
-  font-style: italic;
-  border-left: 4px solid var(--primary);
-  padding-left: 1rem;
-  margin: 0.5rem 0;
-}
-
-/* Cartão de citação no modal de compartilhamento */
-#cartao-citacao {
-  width: 100%;
-  max-width: 400px;
-  margin: 0 auto;
-  min-height: 250px;
-  position: relative;
-  transition: width 0.3s, height 0.3s;
-}
-
-#img-fundo-capa {
-  object-fit: cover;
-}
-
-.format-feed {
-  width: 100%;
-  max-width: 400px;
-}
-
-.format-stories {
-  width: 100%;
-  max-width: 360px;
-}
-
-@media (max-width: 575px) {
-  #cartao-citacao {
-    width: 100%;
-    max-width: 100%;
-  }
-}
-
-@media (min-width: 576px) and (max-width: 991px) {
-  #cartao-citacao {
-    max-height: 55vh;
-  }
-}
-
-/* ========== BARRA DE PESQUISA ========== */
-#page-anotacoes .search-wrapper {
-  margin-bottom: 1.5rem;
-}
-
-#anotacoes-search {
-  border-radius: 0.5rem;
-}
-
-@media (max-width: 500px) {
-  .anotacao-card {
-    width: 100%;
-  }
-}
-
-/* Cabeçalho do post-it */
-.anotacao-card .cabecalho {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  width: 100%;
-}
-
-/* Informações à esquerda (badge + título) */
-.anotacao-card .info {
-  flex: 1 1 auto;
-  min-width: 0;
-}
-
-/* Nome do livro truncado */
-.anotacao-card .titulo-livro {
-  font-size: 0.8rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: inline-block;
-  vertical-align: middle;
-}
-
-/* Data fixa à direita */
-.anotacao-card .data {
-  font-size: 0.7rem;
-  white-space: nowrap;
-  margin-left: 0.5rem;
-}
-/* Cabeçalho do post-it (badge + data) */
+/* Cabeçalho (badge + data) */
 .anotacao-card .cabecalho {
   display: flex;
   justify-content: space-between;
@@ -211,4 +97,59 @@
   color: #333;
   line-height: 1.3;
   word-break: break-word;
+}
+
+/* ========== CITAÇÕES E MODAL (mantido) ========== */
+.citacao-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.citacao-card blockquote {
+  font-style: italic;
+  border-left: 4px solid var(--primary);
+  padding-left: 1rem;
+  margin: 0.5rem 0;
+}
+
+#cartao-citacao {
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  min-height: 250px;
+  position: relative;
+  transition: width 0.3s, height 0.3s;
+}
+
+#img-fundo-capa {
+  object-fit: cover;
+}
+
+.format-feed { width: 100%; max-width: 400px; }
+.format-stories { width: 100%; max-width: 360px; }
+
+@media (max-width: 575px) {
+  #cartao-citacao { width: 100%; max-width: 100%; }
+}
+
+@media (min-width: 576px) and (max-width: 991px) {
+  #cartao-citacao { max-height: 55vh; }
+}
+
+/* ========== BARRA DE PESQUISA ========== */
+#page-anotacoes .search-wrapper {
+  margin-bottom: 1.5rem;
+}
+
+#anotacoes-search {
+  border-radius: 0.5rem;
+}
+
+@media (max-width: 500px) {
+  .anotacao-card {
+    width: 100%;
+  }
 }
