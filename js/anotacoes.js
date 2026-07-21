@@ -85,100 +85,166 @@ const Anotacoes = (() => {
   }
 
   function configurarEAbrirModal(trecho, livro, autor, urlCapa) {
-    const modalElement = document.getElementById('modal-compartilhar-citacao'); // <-- corrigido
+  const modalElement = document.getElementById('modal-compartilhar-citacao');
 
-    // Preenche os campos de texto
-    document.getElementById('citacao-texto').textContent = `"${trecho}"`;
-    document.getElementById('citacao-livro').textContent = livro;
-    document.getElementById('citacao-autor').textContent = autor;
+  // Preenche os campos de texto
+  document.getElementById('citacao-texto').textContent = `"${trecho}"`;
+  document.getElementById('citacao-livro').textContent = livro;
+  document.getElementById('citacao-autor').textContent = autor;
 
-    const cartao = document.getElementById('cartao-citacao');
+  const cartao = document.getElementById('cartao-citacao');
 
-    // --- CORES DE FUNDO ---
-    const containerCores = document.getElementById('cores-predefinidas');
-    if (containerCores) {
-      const coresPredefinidas = [
-        { nome: 'Escuro padrão', valor: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', corTexto: '#fff' },
-        { nome: 'Roxo elegante', valor: 'linear-gradient(135deg, #4c1d95 0%, #1e1b4b 100%)', corTexto: '#fff' },
-        { nome: 'Azul sereno', valor: 'linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%)', corTexto: '#fff' },
-        { nome: 'Verde natureza', valor: 'linear-gradient(135deg, #064e3b 0%, #022c22 100%)', corTexto: '#fff' },
-        { nome: 'Vinho', valor: 'linear-gradient(135deg, #4c0519 0%, #1f0808 100%)', corTexto: '#fff' },
-        { nome: 'Claro limpo', valor: '#f8f9fa', corTexto: '#1e293b' },
-        { nome: 'Sépia', valor: '#f5e6d3', corTexto: '#3e2723' },
-        { nome: 'Preto', valor: '#000000', corTexto: '#ffffff' }
-      ];
-      containerCores.innerHTML = '';
-      coresPredefinidas.forEach(tema => {
-        const btn = document.createElement('button');
-        btn.className = 'btn btn-sm btn-outline-secondary';
-        btn.style.background = tema.valor;
-        btn.style.color = tema.corTexto;
-        btn.style.border = '1px solid var(--border-color)';
-        btn.textContent = tema.nome;
-        btn.addEventListener('click', () => {
-          cartao.style.background = tema.valor;
-          cartao.style.color = tema.corTexto;
-        });
-        containerCores.appendChild(btn);
+  // --- CORES DE FUNDO ---
+  const containerCores = document.getElementById('cores-predefinidas');
+  if (containerCores) {
+    const coresPredefinidas = [
+      { nome: 'Escuro padrão', valor: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', corTexto: '#fff' },
+      { nome: 'Roxo elegante', valor: 'linear-gradient(135deg, #4c1d95 0%, #1e1b4b 100%)', corTexto: '#fff' },
+      { nome: 'Azul sereno', valor: 'linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%)', corTexto: '#fff' },
+      { nome: 'Verde natureza', valor: 'linear-gradient(135deg, #064e3b 0%, #022c22 100%)', corTexto: '#fff' },
+      { nome: 'Vinho', valor: 'linear-gradient(135deg, #4c0519 0%, #1f0808 100%)', corTexto: '#fff' },
+      { nome: 'Claro limpo', valor: '#f8f9fa', corTexto: '#1e293b' },
+      { nome: 'Sépia', valor: '#f5e6d3', corTexto: '#3e2723' },
+      { nome: 'Preto', valor: '#000000', corTexto: '#ffffff' }
+    ];
+    containerCores.innerHTML = '';
+    coresPredefinidas.forEach(tema => {
+      const btn = document.createElement('button');
+      btn.className = 'btn btn-sm btn-outline-secondary';
+      btn.style.background = tema.valor;
+      btn.style.color = tema.corTexto;
+      btn.style.border = '1px solid var(--border-color)';
+      btn.textContent = tema.nome;
+      btn.addEventListener('click', () => {
+        cartao.style.background = tema.valor;
+        cartao.style.color = tema.corTexto;
       });
-    }
-
-    // --- CAPA DO LIVRO ---
-    const btnCapa = document.getElementById('btn-fundo-capa');
-    if (btnCapa) {
-      btnCapa.onclick = async () => {
-        if (!urlCapa) {
-          Util.toast('Este livro não possui capa cadastrada.', 'warning');
-          return;
-        }
-        try {
-          const resp = await API.enviar({ acao: 'proxyImage', url: urlCapa });
-          if (resp && resp.dataUrl) {
-            cartao.style.background = `url(${resp.dataUrl}) center/cover no-repeat`;
-            cartao.style.color = '#fff';
-          }
-        } catch (e) {
-          Util.toast('Falha ao carregar capa.', 'danger');
-        }
-      };
-    }
-
-    // --- GRADIENTE ALEATÓRIO ---
-    const btnGradiente = document.getElementById('btn-fundo-gradiente');
-    if (btnGradiente) {
-      btnGradiente.onclick = () => {
-        const cores = ['#1e293b', '#0f172a', '#4c1d95', '#1e3a5f', '#064e3b', '#4c0519', '#1e1b4b'];
-        const c1 = cores[Math.floor(Math.random() * cores.length)];
-        const c2 = cores[Math.floor(Math.random() * cores.length)];
-        cartao.style.background = `linear-gradient(135deg, ${c1} 0%, ${c2} 100%)`;
-        cartao.style.color = '#ffffff';
-      };
-    }
-
-    // --- TAMANHO DA FONTE ---
-    const rangeFonte = document.getElementById('range-tamanho-fonte');
-    if (rangeFonte) {
-      rangeFonte.oninput = (e) => {
-        document.getElementById('citacao-texto').style.fontSize = (e.target.value / 16) + 'rem';
-      };
-    }
-
-    // --- ALINHAMENTO ---
-    const botoesAlign = document.querySelectorAll('#modal-compartilhar-citacao [data-align]');
-    botoesAlign.forEach(btn => {
-      btn.addEventListener('click', function() {
-        botoesAlign.forEach(b => b.classList.remove('active'));
-        this.classList.add('active');
-        cartao.style.textAlign = this.dataset.align;
-      });
+      containerCores.appendChild(btn);
     });
-    // Ativar centralizado por padrão
-    const btnCentro = document.querySelector('#modal-compartilhar-citacao [data-align="center"]');
-    if (btnCentro) {
-      btnCentro.classList.add('active');
-      cartao.style.textAlign = 'center';
-    }
+  }
 
+  // --- CAPA DO LIVRO (proxy) ---
+  const btnCapa = document.getElementById('btn-fundo-capa');
+  if (btnCapa) {
+    btnCapa.onclick = async () => {
+      if (!urlCapa) {
+        Util.toast('Este livro não possui capa cadastrada.', 'warning');
+        return;
+      }
+      try {
+        const resp = await API.enviar({ acao: 'proxyImage', url: urlCapa });
+        if (resp && resp.dataUrl) {
+          cartao.style.background = `url(${resp.dataUrl}) center/cover no-repeat`;
+          cartao.style.color = '#fff';
+        }
+      } catch (e) {
+        Util.toast('Falha ao carregar capa.', 'danger');
+      }
+    };
+  }
+
+  // --- GRADIENTE ALEATÓRIO ---
+  const btnGradiente = document.getElementById('btn-fundo-gradiente');
+  if (btnGradiente) {
+    btnGradiente.onclick = () => {
+      const cores = ['#1e293b', '#0f172a', '#4c1d95', '#1e3a5f', '#064e3b', '#4c0519', '#1e1b4b'];
+      const c1 = cores[Math.floor(Math.random() * cores.length)];
+      const c2 = cores[Math.floor(Math.random() * cores.length)];
+      cartao.style.background = `linear-gradient(135deg, ${c1} 0%, ${c2} 100%)`;
+      cartao.style.color = '#ffffff';
+    };
+  }
+
+  // --- TAMANHO DA FONTE ---
+  const rangeFonte = document.getElementById('range-tamanho-fonte');
+  if (rangeFonte) {
+    rangeFonte.oninput = (e) => {
+      document.getElementById('citacao-texto').style.fontSize = (e.target.value / 16) + 'rem';
+    };
+  }
+
+  // --- ALINHAMENTO ---
+  const botoesAlign = document.querySelectorAll('#modal-compartilhar-citacao [data-align]');
+  botoesAlign.forEach(btn => {
+    btn.addEventListener('click', function() {
+      botoesAlign.forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      cartao.style.textAlign = this.dataset.align;
+    });
+  });
+  const btnCentro = document.querySelector('#modal-compartilhar-citacao [data-align="center"]');
+  if (btnCentro) {
+    btnCentro.classList.add('active');
+    cartao.style.textAlign = 'center';
+  }
+
+  // --- FORMATO (FEED / STORIES) ---
+  function definirFormato(formato) {
+    const btnFeed = document.querySelector('#modal-compartilhar-citacao [data-format="feed"]');
+    const btnStories = document.querySelector('#modal-compartilhar-citacao [data-format="stories"]');
+    cartao.classList.remove('format-feed', 'format-stories');
+    if (formato === 'stories') {
+      cartao.classList.add('format-stories');
+      btnStories.classList.add('active');
+      btnFeed.classList.remove('active');
+    } else {
+      cartao.classList.add('format-feed');
+      btnFeed.classList.add('active');
+      btnStories.classList.remove('active');
+    }
+  }
+
+  const btnFeed = document.querySelector('#modal-compartilhar-citacao [data-format="feed"]');
+  const btnStories = document.querySelector('#modal-compartilhar-citacao [data-format="stories"]');
+  if (btnFeed) btnFeed.onclick = () => definirFormato('feed');
+  if (btnStories) btnStories.onclick = () => definirFormato('stories');
+  definirFormato('feed');
+
+  // --- BOTÃO DE DOWNLOAD COM FEEDBACK ---
+  const btnDownload = document.getElementById('btn-baixar-citacao');
+  if (btnDownload) {
+    btnDownload.onclick = async () => {
+      // Feedback visual imediato
+      const textoOriginal = btnDownload.innerHTML;
+      btnDownload.disabled = true;
+      btnDownload.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Gerando...';
+
+      try {
+        // Usa html2canvas (já disponível globalmente)
+        const canvas = await html2canvas(cartao, {
+          backgroundColor: null,
+          scale: 2,
+          useCORS: true,
+          allowTaint: true
+        });
+        canvas.toBlob(blob => {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `citacao-${livro.replace(/\s+/g, '-').toLowerCase()}.png`;
+          a.click();
+          URL.revokeObjectURL(url);
+          Util.toast('Imagem baixada!', 'success');
+        }, 'image/png');
+      } catch (erro) {
+        console.error(erro);
+        Util.toast('Erro ao gerar imagem.', 'danger');
+      } finally {
+        btnDownload.disabled = false;
+        btnDownload.innerHTML = textoOriginal;
+      }
+    };
+  }
+
+  // --- ABRIR O MODAL ---
+  const modal = new bootstrap.Modal(modalElement);
+  modal.show();
+
+  // Corrige foco para evitar warning de aria-hidden (remove foco do btn-close)
+  modalElement.addEventListener('shown.bs.modal', () => {
+    document.getElementById('btn-baixar-citacao')?.focus();
+  }, { once: true });
+}
     // --- FORMATO (FEED / STORIES) ---
     function definirFormato(formato) {
       const btnFeed = document.querySelector('#modal-compartilhar-citacao [data-format="feed"]');
