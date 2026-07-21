@@ -70,3 +70,10 @@
 .modal-header {
   border-bottom: 1px solid var(--border-color);
 }
+
+/* Badges de status coloridos */
+.badge-status-lendo { background-color: #3b82f6; }      /* azul */
+.badge-status-quero-ler { background-color: #8b5cf6; }  /* roxo */
+.badge-status-finalizado { background-color: #10b981; } /* verde */
+.badge-status-abandonado { background-color: #ef4444; } /* vermelho */
+.badge-status-relendo { background-color: #f59e0b; }    /* laranja */
