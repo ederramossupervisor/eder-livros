@@ -2,9 +2,6 @@ const Biblioteca = (() => {
   let livros = [];
   const grid = document.getElementById('biblioteca-grid');
   const searchInput = document.getElementById('biblioteca-search');
-  const filtroStatus = document.getElementById('filtro-status');
-  const filtroGenero = document.getElementById('filtro-genero');
-  const ordenacao = document.getElementById('ordenacao');
   const contador = document.getElementById('biblioteca-contador');
 
   async function init() {
@@ -20,7 +17,6 @@ const Biblioteca = (() => {
       if (Array.isArray(resp)) {
         livros = resp;
         DB.salvarLivros(resp).catch(e => console.warn('Cache livros falhou:', e));
-        preencherFiltroGeneros();
         aplicarFiltros();
       } else if (resp && resp.erro) {
         throw new Error(resp.erro);
@@ -30,7 +26,6 @@ const Biblioteca = (() => {
       const cached = await DB.obterLivros();
       if (cached && cached.length > 0) {
         livros = cached;
-        preencherFiltroGeneros();
         aplicarFiltros();
         Util.toast('Modo offline - dados do último acesso.', 'info');
       } else {
@@ -39,22 +34,8 @@ const Biblioteca = (() => {
     }
   }
 
-  function preencherFiltroGeneros() {
-    const generos = [...new Set(livros.map(l => l.Gênero).filter(Boolean))].sort();
-    filtroGenero.innerHTML = '<option value="">Todos os gêneros</option>';
-    generos.forEach(g => {
-      const opt = document.createElement('option');
-      opt.value = g;
-      opt.textContent = g;
-      filtroGenero.appendChild(opt);
-    });
-  }
-
   function configurarEventos() {
     searchInput.addEventListener('input', aplicarFiltros);
-    filtroStatus.addEventListener('change', aplicarFiltros);
-    filtroGenero.addEventListener('change', aplicarFiltros);
-    ordenacao.addEventListener('change', aplicarFiltros);
   }
 
   function aplicarFiltros() {
@@ -69,59 +50,43 @@ const Biblioteca = (() => {
       );
     }
 
-    if (filtroStatus.value) {
-      filtrados = filtrados.filter(l => l.Status === filtroStatus.value);
-    }
-
-    if (filtroGenero.value) {
-      filtrados = filtrados.filter(l => l.Gênero === filtroGenero.value);
-    }
-
-    const ordem = ordenacao.value;
-    filtrados.sort((a, b) => {
-      switch (ordem) {
-        case 'titulo': return (a.Título || '').localeCompare(b.Título || '');
-        case 'autor': return (a.Autor || '').localeCompare(b.Autor || '');
-        case 'data': return new Date(b.DataCadastro) - new Date(a.DataCadastro);
-        case 'paginas': return (Number(b.NúmeroPáginas) || 0) - (Number(a.NúmeroPáginas) || 0);
-        default: return 0;
-      }
-    });
+    // Ordenação padrão: por título
+    filtrados.sort((a, b) => (a.Título || '').localeCompare(b.Título || ''));
 
     contador.textContent = `${filtrados.length} livro(s) encontrado(s)`;
     renderizarGrade(filtrados);
   }
 
   function renderizarGrade(livrosFiltrados) {
-  grid.innerHTML = '';
-  if (livrosFiltrados.length === 0) {
-    grid.innerHTML = '<div class="col-12 text-center text-muted py-5">Nenhum livro encontrado</div>';
-    return;
+    grid.innerHTML = '';
+    if (livrosFiltrados.length === 0) {
+      grid.innerHTML = '<div class="col-12 text-center text-muted py-5">Nenhum livro encontrado</div>';
+      return;
+    }
+
+    livrosFiltrados.forEach(livro => {
+      const col = document.createElement('div');
+      col.className = 'col-6 col-md-4 col-lg-3 col-xl-2';
+
+      col.innerHTML = `
+        <div class="livro-card h-100" data-id="${livro.ID}">
+          <div class="capa-wrapper">
+            ${livro.URLCapa ? `<img src="${livro.URLCapa}" alt="Capa" loading="lazy">` : '<i class="fas fa-book fa-3x position-absolute top-50 start-50 translate-middle text-muted"></i>'}
+            <span class="badge badge-status bg-primary">${livro.Status}</span>
+          </div>
+          <div class="card-body">
+            <div class="titulo" title="${livro.Título}">${livro.Título || 'Sem título'}</div>
+            <div class="autor">${livro.Autor || 'Desconhecido'}</div>
+          </div>
+        </div>`;
+      grid.appendChild(col);
+    });
+
+    grid.querySelectorAll('.livro-card').forEach(card => {
+      card.addEventListener('click', () => abrirModal(card.dataset.id));
+    });
   }
 
-  livrosFiltrados.forEach(livro => {
-    const col = document.createElement('div');
-    col.className = 'col-6 col-md-4 col-lg-3 col-xl-2';
-
-    col.innerHTML = `
-      <div class="livro-card h-100" data-id="${livro.ID}">
-        <div class="capa-wrapper">
-          ${livro.URLCapa ? `<img src="${livro.URLCapa}" alt="Capa" loading="lazy">` : '<i class="fas fa-book fa-3x position-absolute top-50 start-50 translate-middle text-muted"></i>'}
-          <span class="badge badge-status bg-primary">${livro.Status}</span>
-        </div>
-        <div class="card-body">
-          <div class="titulo" title="${livro.Título}">${livro.Título || 'Sem título'}</div>
-          <div class="autor">${livro.Autor || 'Desconhecido'}</div>
-          <!-- A barra de progresso foi removida -->
-        </div>
-      </div>`;
-    grid.appendChild(col);
-  });
-
-  grid.querySelectorAll('.livro-card').forEach(card => {
-    card.addEventListener('click', () => abrirModal(card.dataset.id));
-  });
-}
   function abrirModal(id) {
     const livro = livros.find(l => l.ID === id);
     if (!livro) return;
