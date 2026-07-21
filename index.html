@@ -228,12 +228,17 @@
         <div class="card mt-3 shadow-sm">
           <div class="card-body">
             <h5>Últimos 30 dias</h5>
-            <canvas id="grafico-semanal" height="100"></canvas>
+            <div style="position: relative;">
+              <canvas id="grafico-semanal" height="100"></canvas>
+              <span id="badge-total-30dias" class="badge bg-primary" 
+                    style="position: absolute; top: -10px; right: 10px; font-size: 0.75rem; 
+                           padding: 4px 8px; border-radius: 10px; 
+                           box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                0 pág.
+              </span>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
-
     <!-- ==================== PÁGINA: Biblioteca ==================== -->
     <div id="page-biblioteca" class="page">
       <div class="container py-4">
