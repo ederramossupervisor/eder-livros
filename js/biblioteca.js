@@ -50,7 +50,14 @@ const Biblioteca = (() => {
       );
     }
 
-    filtrados.sort((a, b) => (a.Título || '').localeCompare(b.Título || ''));
+    filtrados.sort((a, b) => {
+    // Prioridade: Lendo = 0, outros = 1
+    const statusA = (a.Status === 'Lendo') ? 0 : 1;
+    const statusB = (b.Status === 'Lendo') ? 0 : 1;
+    if (statusA !== statusB) return statusA - statusB;
+    // Empate: ordena por título
+    return (a.Título || '').localeCompare(b.Título || '');
+  });
 
     contador.textContent = `${filtrados.length} livro(s) encontrado(s)`;
     renderizarGrade(filtrados);
