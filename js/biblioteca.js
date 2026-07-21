@@ -106,7 +106,7 @@ const Biblioteca = (() => {
           <div class="flex-grow-1 me-3">
             <div class="titulo fw-bold mb-1">${livro.Título || 'Sem título'}</div>
             <div class="autor text-muted small mb-2">${livro.Autor || 'Desconhecido'}</div>
-            <span class="badge bg-primary me-1">${livro.Status}</span>
+            <span class="badge ${getStatusBadgeClass(livro.Status)} me-1">${livro.Status}</span>
             <div class="mt-2">${renderizarEstrelas(livro.Nota, livro.ID, true)}</div>
           </div>
           <!-- Capa à direita -->
