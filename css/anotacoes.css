@@ -10,11 +10,12 @@
 }
 
 /* Cada anotação como um post-it */
+/* Cada anotação como um post-it */
 .anotacao-card {
   width: 220px;
   min-height: 180px;
   padding: 1.2rem 1rem 1rem 1rem;
-  background: #fef9c3;         /* amarelo padrão */
+  background: #fef9c3;
   box-shadow: 2px 3px 8px rgba(0,0,0,0.15);
   border-radius: 2px 20px 2px 20px;
   position: relative;
@@ -24,9 +25,11 @@
   color: #333;
   transition: transform 0.2s, box-shadow 0.2s;
   word-break: break-word;
+  display: flex;
+  flex-direction: column;
 }
 
-/* Puxadinho (fita adesiva) no topo */
+/* Puxadinho (fita adesiva) no topo – mantido */
 .anotacao-card::before {
   content: '';
   position: absolute;
@@ -41,12 +44,13 @@
   z-index: 1;
 }
 
-/* Efeito de hover */
-.anotacao-card:hover {
-  transform: rotate(0deg) scale(1.02);
-  box-shadow: 3px 6px 12px rgba(0,0,0,0.2);
+/* Data agora empurrada para o fundo */
+.anotacao-card .text-muted {
+  font-size: 0.7rem;
+  margin-top: auto;
+  text-align: right;
+  padding-top: 0.5rem;
 }
-
 /* Cores alternadas automaticamente */
 .anotacao-card:nth-child(4n+1) { background: #fef9c3; }   /* amarelo */
 .anotacao-card:nth-child(4n+2) { background: #fcd5ce; }   /* rosa claro */
