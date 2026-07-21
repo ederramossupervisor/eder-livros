@@ -226,7 +226,17 @@ const Biblioteca = (() => {
       }
     });
   }
-
+  function getStatusBadgeClass(status) {
+    const normalized = (status || '').toLowerCase().trim();
+    const map = {
+      'lendo': 'badge-status-lendo',
+      'quero ler': 'badge-status-quero-ler',
+      'finalizado': 'badge-status-finalizado',
+      'abandonado': 'badge-status-abandonado',
+      'relendo': 'badge-status-relendo'
+    };
+    return map[normalized] || 'bg-primary';
+  }
   function formatarData(dataISO) {
     if (!dataISO) return '-';
     try {
