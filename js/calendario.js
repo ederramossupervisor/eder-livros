@@ -115,41 +115,74 @@ const CalendarioLeitura = (() => {
 
   // NOVA FUNÇÃO: captura o calendário e baixa como PNG
   async function compartilharCalendario() {
-    const btn = document.getElementById('btn-compartilhar-calendario');
-    const originalHTML = btn.innerHTML;
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+  const btn = document.getElementById('btn-compartilhar-calendario');
+  const originalHTML = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
 
-    try {
-      const elemento = document.querySelector('#calendario-grid').closest('.card-body');
-      const estilo = getComputedStyle(document.documentElement);
-      const corFundo = estilo.getPropertyValue('--bg-card') || '#ffffff';
-
-      const canvas = await html2canvas(elemento, {
-        backgroundColor: corFundo,
-        scale: 2,
-        useCORS: true,
-        allowTaint: true
-      });
-
-      canvas.toBlob(blob => {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        const mesAno = document.getElementById('calendario-mes-ano').textContent.replace(/\s+/g, '_');
-        a.download = `calendario_leitura_${mesAno}.png`;
-        a.href = url;
-        a.click();
-        URL.revokeObjectURL(url);
-        Util.toast('Calendário baixado!', 'success');
-      }, 'image/png');
-    } catch (error) {
-      console.error(error);
-      Util.toast('Erro ao gerar imagem.', 'danger');
-    } finally {
-      btn.disabled = false;
-      btn.innerHTML = originalHTML;
+  try {
+    const elemento = document.querySelector('#calendario-grid').closest('.card-body');
+    const imagens = elemento.querySelectorAll('img');
+    
+    // Guarda os src originais para restaurar depois
+    const srcsOriginais = [];
+    
+    // Converte cada imagem em base64 usando o proxy
+    for (const img of imagens) {
+      srcsOriginais.push(img.src);
+      if (img.src.startsWith('http')) {
+        try {
+          const resp = await API.enviar({ acao: 'proxyImage', url: img.src });
+          if (resp && resp.dataUrl) {
+            img.src = resp.dataUrl;
+          }
+        } catch (e) {
+          console.warn('Falha ao converter imagem:', img.src, e);
+        }
+      }
     }
-  }
 
+    // Aguarda as imagens carregarem (importante para o canvas)
+    await Promise.all(Array.from(imagens).map(img => {
+      if (img.complete) return Promise.resolve();
+      return new Promise(resolve => {
+        img.onload = resolve;
+        img.onerror = resolve;
+      });
+    }));
+
+    const estilo = getComputedStyle(document.documentElement);
+    const corFundo = estilo.getPropertyValue('--bg-card') || '#ffffff';
+
+    const canvas = await html2canvas(elemento, {
+      backgroundColor: corFundo,
+      scale: 2,
+      useCORS: true,
+      allowTaint: false
+    });
+
+    // Restaura as imagens originais
+    imagens.forEach((img, i) => {
+      if (srcsOriginais[i]) img.src = srcsOriginais[i];
+    });
+
+    canvas.toBlob(blob => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const mesAno = document.getElementById('calendario-mes-ano').textContent.replace(/\s+/g, '_');
+      a.download = `calendario_leitura_${mesAno}.png`;
+      a.href = url;
+      a.click();
+      URL.revokeObjectURL(url);
+      Util.toast('Calendário baixado!', 'success');
+    }, 'image/png');
+  } catch (error) {
+    console.error(error);
+    Util.toast('Erro ao gerar imagem.', 'danger');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = originalHTML;
+  }
+}
   return { init };
 })();
