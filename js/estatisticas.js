@@ -243,13 +243,12 @@ const Estatisticas = (() => {
   }
 
   function getHeatColor(intensidade) {
-    if (intensidade === 0) return '#ebedf0';
-    if (intensidade < 0.25) return '#9be9a8';
-    if (intensidade < 0.5) return '#40c463';
-    if (intensidade < 0.75) return '#30a14e';
-    return '#216e39';
+    if (intensidade === 0) return '#ebedf0';  // cinza claro (sem leitura)
+    if (intensidade < 0.25) return '#fff9c4'; // amarelo claro
+    if (intensidade < 0.5) return '#ffcc80';  // laranja claro
+    if (intensidade < 0.75) return '#ff7043'; // laranja escuro
+    return '#d32f2f';                         // vermelho intenso
   }
-
   function preencherTopAutores(autores) {
     const ul = document.getElementById('top-autores');
     if (!ul) return;
