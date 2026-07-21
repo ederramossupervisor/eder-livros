@@ -72,12 +72,10 @@ const Anotacoes = (() => {
   // --- ABRIR MODAL DE COMPARTILHAMENTO (CORRIGIDO) ---
   function abrirModalCompartilhamento(trecho, livro, autor, urlCapa) {
     const modalElement = document.getElementById('modal-compartilhar-citacao');
-
     // Fecha qualquer instância anterior com segurança
     const existingModal = bootstrap.Modal.getInstance(modalElement);
     if (existingModal) {
       existingModal.hide();
-      // Aguarda o término do hide antes de abrir novamente
       modalElement.addEventListener('hidden.bs.modal', () => {
         configurarEAbrirModal(trecho, livro, autor, urlCapa);
       }, { once: true });
@@ -87,6 +85,8 @@ const Anotacoes = (() => {
   }
 
   function configurarEAbrirModal(trecho, livro, autor, urlCapa) {
+    const modalElement = document.getElementById('modal-compartilhar-citacao'); // <-- corrigido
+
     // Preenche os campos de texto
     document.getElementById('citacao-texto').textContent = `"${trecho}"`;
     document.getElementById('citacao-livro').textContent = livro;
@@ -207,7 +207,7 @@ const Anotacoes = (() => {
     const modal = new bootstrap.Modal(modalElement);
     modal.show();
 
-    // Força foco no botão de download após abertura completa (resolve o aria-hidden)
+    // Força foco no botão de download após abertura completa
     modalElement.addEventListener('shown.bs.modal', () => {
       document.getElementById('btn-baixar-citacao')?.focus();
     }, { once: true });
@@ -287,7 +287,7 @@ const Anotacoes = (() => {
   return { init };
 })();
 
-// Inicialização segura
+// Inicialização
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => Anotacoes.init());
 } else {
