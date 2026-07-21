@@ -11,6 +11,9 @@ const CalendarioLeitura = (() => {
     document.getElementById('calendario-mes-anterior').addEventListener('click', () => mudarMes(-1));
     document.getElementById('calendario-mes-proximo').addEventListener('click', () => mudarMes(1));
 
+    // Evento do botão de compartilhar/baixar imagem
+    document.getElementById('btn-compartilhar-calendario')?.addEventListener('click', compartilharCalendario);
+
     await carregarCalendario();
   }
 
@@ -67,37 +70,34 @@ const CalendarioLeitura = (() => {
       div.style.position = 'relative';
 
       if (livros.length > 0) {
-      div.classList.add('com-leitura');
+        div.classList.add('com-leitura');
       
-      // ÚLTIMO livro do array (mais recente no dia)
-      const ultimoLivro = livros[livros.length - 1];
-      const totalLivros = livros.length;
+        const ultimoLivro = livros[livros.length - 1];
+        const totalLivros = livros.length;
     
-      // Capa do último livro
-      const imgHtml = ultimoLivro.urlCapa
-        ? `<img src="${ultimoLivro.urlCapa}" alt="${ultimoLivro.titulo}" title="${ultimoLivro.titulo}" style="width:100%; max-height:45px; object-fit:contain; border-radius:4px;">`
-        : `<i class="fas fa-book text-primary" title="${ultimoLivro.titulo}"></i>`;
+        const imgHtml = ultimoLivro.urlCapa
+          ? `<img src="${ultimoLivro.urlCapa}" alt="${ultimoLivro.titulo}" title="${ultimoLivro.titulo}" style="width:100%; max-height:45px; object-fit:contain; border-radius:4px;">`
+          : `<i class="fas fa-book text-primary" title="${ultimoLivro.titulo}"></i>`;
     
-      // Badge +N se houver mais de um livro
-      let badgeHtml = '';
-      if (totalLivros > 1) {
-        const outrosLivros = livros.slice(0, -1); // todos exceto o último
-        const outrosTitulos = outrosLivros.map(l => l.titulo).join(', ');
-        badgeHtml = `<span class="position-absolute bottom-0 end-0 badge rounded-pill bg-primary" 
-                  style="font-size:0.6rem; transform: translate(25%, 25%);" 
-                  title="Também leu: ${outrosTitulos}">+${totalLivros - 1}</span>`;
+        let badgeHtml = '';
+        if (totalLivros > 1) {
+          const outrosLivros = livros.slice(0, -1);
+          const outrosTitulos = outrosLivros.map(l => l.titulo).join(', ');
+          badgeHtml = `<span class="position-absolute bottom-0 end-0 badge rounded-pill bg-primary" 
+                            style="font-size:0.6rem; transform: translate(25%, 25%);" 
+                            title="Também leu: ${outrosTitulos}">+${totalLivros - 1}</span>`;
+        }
+    
+        div.innerHTML = `
+          <small class="d-block">${dia}</small>
+          <div style="position: relative; width: 100%;">
+            ${imgHtml}
+            ${badgeHtml}
+          </div>
+        `;
+      } else {
+        div.innerHTML = `<small>${dia}</small>`;
       }
-    
-      div.innerHTML = `
-        <small class="d-block">${dia}</small>
-        <div style="position: relative; width: 100%;">
-          ${imgHtml}
-          ${badgeHtml}
-        </div>
-      `;
-    } else {
-      div.innerHTML = `<small>${dia}</small>`;
-    }
 
       // Ícone de citação sobreposto
       if (temCitacao) {
@@ -113,7 +113,43 @@ const CalendarioLeitura = (() => {
     }
   }
 
+  // NOVA FUNÇÃO: captura o calendário e baixa como PNG
+  async function compartilharCalendario() {
+    const btn = document.getElementById('btn-compartilhar-calendario');
+    const originalHTML = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+    try {
+      const elemento = document.querySelector('#calendario-grid').closest('.card-body');
+      const estilo = getComputedStyle(document.documentElement);
+      const corFundo = estilo.getPropertyValue('--bg-card') || '#ffffff';
+
+      const canvas = await html2canvas(elemento, {
+        backgroundColor: corFundo,
+        scale: 2,
+        useCORS: true,
+        allowTaint: true
+      });
+
+      canvas.toBlob(blob => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const mesAno = document.getElementById('calendario-mes-ano').textContent.replace(/\s+/g, '_');
+        a.download = `calendario_leitura_${mesAno}.png`;
+        a.href = url;
+        a.click();
+        URL.revokeObjectURL(url);
+        Util.toast('Calendário baixado!', 'success');
+      }, 'image/png');
+    } catch (error) {
+      console.error(error);
+      Util.toast('Erro ao gerar imagem.', 'danger');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = originalHTML;
+    }
+  }
+
   return { init };
 })();
-
-// Inicialização segura – será chamada pelo módulo Estatisticas após carregar os gráficos
