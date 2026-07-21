@@ -9,7 +9,7 @@
   padding-bottom: 2rem;
 }
 
-/* Cada anotação como um post-it */
+
 /* Cada anotação como um post-it */
 .anotacao-card {
   width: 220px;
@@ -158,4 +158,35 @@
   .anotacao-card {
     width: 100%;
   }
+}
+
+/* Cabeçalho do post-it */
+.anotacao-card .cabecalho {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+}
+
+/* Informações à esquerda (badge + título) */
+.anotacao-card .info {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* Nome do livro truncado */
+.anotacao-card .titulo-livro {
+  font-size: 0.8rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* Data fixa à direita */
+.anotacao-card .data {
+  font-size: 0.7rem;
+  white-space: nowrap;
+  margin-left: 0.5rem;
 }
