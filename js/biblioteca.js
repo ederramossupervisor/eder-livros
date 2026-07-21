@@ -94,7 +94,7 @@ const Biblioteca = (() => {
 
   livrosFiltrados.forEach(livro => {
     const col = document.createElement('div');
-    col.className = 'col-12'; // um por linha em todos os tamanhos (mobile-first)
+    col.className = 'col-12'; // sempre um por linha
 
     const progresso = livro.NúmeroPáginas > 0 ? Math.round(((livro.PáginasLidas || 0) / livro.NúmeroPáginas) * 100) : 0;
     const statusClass = livro.Status === 'Finalizado' ? 'bg-success' : '';
@@ -102,15 +102,15 @@ const Biblioteca = (() => {
     col.innerHTML = `
       <div class="livro-card livro-card-horizontal" data-id="${livro.ID}">
         <div class="d-flex align-items-start p-3">
-          <!-- Lado esquerdo: informações -->
+          <!-- Informações à esquerda -->
           <div class="flex-grow-1 me-3">
             <div class="titulo fw-bold mb-1">${livro.Título || 'Sem título'}</div>
-            <div class="autor text-muted small mb-1">${livro.Autor || 'Desconhecido'}</div>
-            <span class="badge bg-primary badge-status">${livro.Status}</span>
+            <div class="autor text-muted small mb-2">${livro.Autor || 'Desconhecido'}</div>
+            <span class="badge bg-primary me-1">${livro.Status}</span>
             <div class="mt-2">${renderizarEstrelas(livro.Nota, livro.ID, true)}</div>
           </div>
-          <!-- Lado direito: capa -->
-          <div class="capa-wrapper flex-shrink-0" style="width:70px; height:100px; background:var(--bg-secondary); border-radius:4px; overflow:hidden;">
+          <!-- Capa à direita -->
+          <div class="capa-wrapper-horizontal flex-shrink-0" style="width:70px; height:100px; background:var(--bg-secondary); border-radius:4px; overflow:hidden;">
             ${livro.URLCapa ? `<img src="${livro.URLCapa}" alt="Capa" style="width:100%; height:100%; object-fit:cover;">` : '<i class="fas fa-book fa-2x text-muted d-flex align-items-center justify-content-center h-100"></i>'}
           </div>
         </div>
@@ -135,7 +135,7 @@ const Biblioteca = (() => {
       const notaAtual = Math.round(Number(livro?.Nota)) || 0;
       const novaNota = (estrelaClicada === notaAtual) ? 0 : estrelaClicada;
       await atualizarNota(livroID, novaNota);
-      aplicarFiltros(); // re-renderiza
+      aplicarFiltros();
     });
   });
 
@@ -147,7 +147,6 @@ const Biblioteca = (() => {
     });
   });
 }
-
   function abrirModal(id) {
     const livro = livros.find(l => l.ID === id);
     if (!livro) return;
