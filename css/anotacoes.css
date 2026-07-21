@@ -1,271 +1,184 @@
-const Anotacoes = (() => {
-  let todasAnotacoes = [];
-  let livrosCache = [];
+/* ========== ANOTAÇÕES (POST-IT) ========== */
 
-  async function init() {
-    const page = document.getElementById('page-anotacoes');
-    if (!page || !page.classList.contains('active')) return;
+/* Container da lista */
+#lista-anotacoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+  padding-bottom: 2rem;
+}
 
-    console.log('📝 Carregando Anotações...');
-    await carregarLivrosCache();
-    await carregarTodasAnotacoes();
-    configurarPesquisa();
-    console.log('✅ Módulo Anotações pronto.');
+/* Cada anotação como um post-it */
+.anotacao-card {
+  width: 220px;
+  min-height: 180px;
+  padding: 1.2rem 1rem 1rem 1rem;
+  background: #fef9c3;         /* amarelo padrão */
+  box-shadow: 2px 3px 8px rgba(0,0,0,0.15);
+  border-radius: 2px 20px 2px 20px;
+  position: relative;
+  font-family: 'Segoe UI', 'Inter', sans-serif;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: #333;
+  transition: transform 0.2s, box-shadow 0.2s;
+  word-break: break-word;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Puxadinho (fita adesiva) no topo */
+.anotacao-card::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 16px;
+  background: rgba(255,255,255,0.7);
+  border-radius: 2px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  z-index: 1;
+}
+
+/* Cores alternadas automaticamente */
+.anotacao-card:nth-child(4n+1) { background: #fef9c3; }   /* amarelo */
+.anotacao-card:nth-child(4n+2) { background: #fcd5ce; }   /* rosa claro */
+.anotacao-card:nth-child(4n+3) { background: #ccdbfd; }   /* azul claro */
+.anotacao-card:nth-child(4n+4) { background: #d8f3dc; }   /* verde claro */
+
+/* Rotações alternadas para dar um ar “solto” */
+.anotacao-card:nth-child(odd)  { transform: rotate(-1.5deg); }
+.anotacao-card:nth-child(even) { transform: rotate(1.5deg); }
+
+/* Ajuste de hover para manter a rotação suave */
+.anotacao-card:nth-child(odd):hover  { transform: rotate(-1deg) scale(1.02); }
+.anotacao-card:nth-child(even):hover { transform: rotate(1deg) scale(1.02); }
+
+/* Badge de categoria */
+.anotacao-card .badge {
+  font-size: 0.7rem;
+  background: rgba(0,0,0,0.15);
+  color: #333;
+}
+
+/* Texto menor dentro do post-it */
+.anotacao-card p, .anotacao-card blockquote {
+  margin-bottom: 0.4rem;
+  font-size: 0.85rem;
+}
+
+.anotacao-card blockquote {
+  border-left: 3px solid rgba(0,0,0,0.2);
+  padding-left: 0.6rem;
+  font-style: italic;
+}
+
+/* Cabeçalho do post-it (badge + data) */
+.anotacao-card .cabecalho {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+/* Data no cabeçalho */
+.anotacao-card .data {
+  font-size: 0.7rem;
+  white-space: nowrap;
+}
+
+/* Título e autor (sem truncamento) */
+.anotacao-card .titulo-livro {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #333;
+  line-height: 1.3;
+  word-break: break-word;
+}
+
+/* Botão de compartilhar citação */
+.anotacao-card .compartilhar-anotacao {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+.anotacao-card .compartilhar-anotacao:hover {
+  opacity: 1;
+  color: var(--primary);
+}
+
+/* ========== CITAÇÕES E MODAL (mantido) ========== */
+.citacao-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.citacao-card blockquote {
+  font-style: italic;
+  border-left: 4px solid var(--primary);
+  padding-left: 1rem;
+  margin: 0.5rem 0;
+}
+
+/* Cartão de citação no modal de compartilhamento */
+#cartao-citacao {
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  min-height: 250px;
+  position: relative;
+  transition: width 0.3s, height 0.3s;
+}
+
+#img-fundo-capa {
+  object-fit: cover;
+}
+
+/* Formatos */
+.format-feed {
+  width: 100%;
+  max-width: 400px;
+  aspect-ratio: 1 / 1;
+}
+
+.format-stories {
+  width: 100%;
+  max-width: 360px;
+  aspect-ratio: 9 / 16;
+}
+
+@media (max-width: 575px) {
+  #cartao-citacao {
+    width: 100%;
+    max-width: 100%;
   }
+}
 
-  async function carregarLivrosCache() {
-    try {
-      const resp = await API.enviar({ acao: 'listBooks' });
-      if (Array.isArray(resp)) {
-        livrosCache = resp;
-      }
-    } catch (e) {
-      console.warn('Erro ao carregar livros para cache de anotações', e);
-    }
+@media (min-width: 576px) and (max-width: 991px) {
+  #cartao-citacao {
+    max-height: 55vh;
   }
+}
 
-  async function carregarTodasAnotacoes() {
-    try {
-      const resp = await API.enviar({ acao: 'listNotes', livroID: '' });
-      if (Array.isArray(resp)) {
-        todasAnotacoes = resp;
-        DB.salvarAnotacoes(resp).catch(e => console.warn('Cache anotações falhou:', e));
-      }
-    } catch (e) {
-      console.warn('Falha na API, tentando cache offline...');
-      const cached = await DB.obterAnotacoes();
-      if (cached.length > 0) {
-        todasAnotacoes = cached;
-        Util.toast('Modo offline - dados do último acesso.', 'info');
-      }
-    }
-    renderizarAnotacoes(todasAnotacoes);
+/* ========== BARRA DE PESQUISA ========== */
+#page-anotacoes .search-wrapper {
+  margin-bottom: 1.5rem;
+}
+
+#anotacoes-search {
+  border-radius: 0.5rem;
+}
+
+/* Em telas pequenas, cartões ocupam a largura total */
+@media (max-width: 500px) {
+  .anotacao-card {
+    width: 100%;
   }
-
-  function configurarPesquisa() {
-    const searchInput = document.getElementById('anotacoes-search');
-    if (searchInput) {
-      searchInput.addEventListener('input', (e) => {
-        const termo = e.target.value.toLowerCase().trim();
-        if (!termo) {
-          renderizarAnotacoes(todasAnotacoes);
-          return;
-        }
-        const filtradas = todasAnotacoes.filter(anot => {
-          const livro = livrosCache.find(l => l.ID === anot.LivroID);
-          const nomeLivro = livro ? livro.Título + ' ' + livro.Autor : '';
-          const campos = [
-            nomeLivro,
-            anot.Capítulo || '',
-            anot.Trecho || '',
-            anot['Comentário'] || '',
-            anot.Resumo || '',
-            anot.Categoria || ''
-          ];
-          return campos.some(campo => String(campo || '').toLowerCase().includes(termo));
-        });
-        renderizarAnotacoes(filtradas);
-      });
-    }
-  }
-
-  function abrirModalCompartilhamento(trecho, livro, autor, urlCapa) {
-    // Preenche os campos de texto
-    document.getElementById('citacao-texto').textContent = `"${trecho}"`;
-    document.getElementById('citacao-livro').textContent = livro;
-    document.getElementById('citacao-autor').textContent = autor;
-
-    const cartao = document.getElementById('cartao-citacao');
-
-    // --- CORES DE FUNDO ---
-    const containerCores = document.getElementById('cores-predefinidas');
-    if (containerCores) {
-      const coresPredefinidas = [
-        { nome: 'Escuro padrão', valor: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', corTexto: '#fff' },
-        { nome: 'Roxo elegante', valor: 'linear-gradient(135deg, #4c1d95 0%, #1e1b4b 100%)', corTexto: '#fff' },
-        { nome: 'Azul sereno', valor: 'linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%)', corTexto: '#fff' },
-        { nome: 'Verde natureza', valor: 'linear-gradient(135deg, #064e3b 0%, #022c22 100%)', corTexto: '#fff' },
-        { nome: 'Vinho', valor: 'linear-gradient(135deg, #4c0519 0%, #1f0808 100%)', corTexto: '#fff' },
-        { nome: 'Claro limpo', valor: '#f8f9fa', corTexto: '#1e293b' },
-        { nome: 'Sépia', valor: '#f5e6d3', corTexto: '#3e2723' },
-        { nome: 'Preto', valor: '#000000', corTexto: '#ffffff' }
-      ];
-      containerCores.innerHTML = '';
-      coresPredefinidas.forEach(tema => {
-        const btn = document.createElement('button');
-        btn.className = 'btn btn-sm btn-outline-secondary';
-        btn.style.background = tema.valor;
-        btn.style.color = tema.corTexto;
-        btn.style.border = '1px solid var(--border-color)';
-        btn.textContent = tema.nome;
-        btn.addEventListener('click', () => {
-          cartao.style.background = tema.valor;
-          cartao.style.color = tema.corTexto;
-        });
-        containerCores.appendChild(btn);
-      });
-    }
-
-    // --- CAPA DO LIVRO (proxy) ---
-    const btnCapa = document.getElementById('btn-fundo-capa');
-    if (btnCapa) {
-      btnCapa.onclick = async () => {
-        if (!urlCapa) {
-          Util.toast('Este livro não possui capa cadastrada.', 'warning');
-          return;
-        }
-        try {
-          const resp = await API.enviar({ acao: 'proxyImage', url: urlCapa });
-          if (resp && resp.dataUrl) {
-            cartao.style.background = `url(${resp.dataUrl}) center/cover no-repeat`;
-            cartao.style.color = '#fff';
-          }
-        } catch (e) {
-          Util.toast('Falha ao carregar capa.', 'danger');
-        }
-      };
-    }
-
-    // --- GRADIENTE ALEATÓRIO ---
-    const btnGradiente = document.getElementById('btn-fundo-gradiente');
-    if (btnGradiente) {
-      btnGradiente.onclick = () => {
-        const cores = ['#1e293b', '#0f172a', '#4c1d95', '#1e3a5f', '#064e3b', '#4c0519', '#1e1b4b'];
-        const c1 = cores[Math.floor(Math.random() * cores.length)];
-        const c2 = cores[Math.floor(Math.random() * cores.length)];
-        cartao.style.background = `linear-gradient(135deg, ${c1} 0%, ${c2} 100%)`;
-        cartao.style.color = '#ffffff';
-      };
-    }
-
-    // --- TAMANHO DA FONTE ---
-    const rangeFonte = document.getElementById('range-tamanho-fonte');
-    if (rangeFonte) {
-      rangeFonte.oninput = (e) => {
-        document.getElementById('citacao-texto').style.fontSize = (e.target.value / 16) + 'rem';
-      };
-    }
-
-    // --- ALINHAMENTO ---
-    const botoesAlign = document.querySelectorAll('#modal-compartilhar-citacao [data-align]');
-    botoesAlign.forEach(btn => {
-      btn.addEventListener('click', function() {
-        botoesAlign.forEach(b => b.classList.remove('active'));
-        this.classList.add('active');
-        cartao.style.textAlign = this.dataset.align;
-      });
-    });
-    // Ativar centralizado por padrão
-    const btnCentro = document.querySelector('#modal-compartilhar-citacao [data-align="center"]');
-    if (btnCentro) {
-      btnCentro.classList.add('active');
-      cartao.style.textAlign = 'center';
-    }
-
-    // --- FORMATO (FEED / STORIES) ---
-    function definirFormato(formato) {
-      const btnFeed = document.querySelector('#modal-compartilhar-citacao [data-format="feed"]');
-      const btnStories = document.querySelector('#modal-compartilhar-citacao [data-format="stories"]');
-      cartao.classList.remove('format-feed', 'format-stories');
-      if (formato === 'stories') {
-        cartao.classList.add('format-stories');
-        btnStories.classList.add('active');
-        btnFeed.classList.remove('active');
-      } else {
-        cartao.classList.add('format-feed');
-        btnFeed.classList.add('active');
-        btnStories.classList.remove('active');
-      }
-    }
-
-    const btnFeed = document.querySelector('#modal-compartilhar-citacao [data-format="feed"]');
-    const btnStories = document.querySelector('#modal-compartilhar-citacao [data-format="stories"]');
-    if (btnFeed) btnFeed.onclick = () => definirFormato('feed');
-    if (btnStories) btnStories.onclick = () => definirFormato('stories');
-
-    // Iniciar com feed
-    definirFormato('feed');
-
-    // Abrir o modal
-    const modal = new bootstrap.Modal(document.getElementById('modal-compartilhar-citacao'));
-    modal.show();
-  }
-
-  function renderizarAnotacoes(lista) {
-    const container = document.getElementById('lista-anotacoes');
-    if (!container) return;
-    container.innerHTML = '';
-
-    if (lista.length === 0) {
-      container.innerHTML = `
-        <div class="empty-state text-center text-muted py-5">
-          <i class="fas fa-sticky-note fa-3x mb-3"></i>
-          <p>Nenhuma anotação encontrada.</p>
-        </div>`;
-      return;
-    }
-
-    lista.forEach(a => {
-      const livro = livrosCache.find(l => l.ID === a.LivroID);
-      const nomeLivro = livro ? livro.Título : 'Livro desconhecido';
-      const nomeAutor = livro ? livro.Autor : 'Autor desconhecido';
-      const urlCapa = livro ? (livro.URLCapa || livro.ImagemCapa || '') : '';
-      const trecho = a.Trecho || a['Comentário'] || '';
-
-      const div = document.createElement('div');
-      div.className = 'anotacao-card d-flex flex-column';
-
-      div.innerHTML = `
-        <div class="cabecalho d-flex justify-content-between align-items-center mb-2">
-          <span class="badge bg-secondary">${a.Categoria || 'Geral'}</span>
-          <div class="d-flex align-items-center gap-1">
-            ${trecho ? `
-            <button class="btn btn-sm btn-link p-0 text-secondary compartilhar-anotacao" 
-                    title="Compartilhar como citação" 
-                    data-trecho="${trecho.replace(/"/g, '&quot;')}" 
-                    data-livro="${nomeLivro}" 
-                    data-autor="${nomeAutor}" 
-                    data-capa="${urlCapa}">
-              <i class="fas fa-camera"></i>
-            </button>` : ''}
-            <span class="data text-muted" style="font-size:0.7rem; white-space:nowrap;">
-              ${a.Data ? new Date(a.Data).toLocaleDateString('pt-BR') : ''}
-            </span>
-          </div>
-        </div>
-
-        <div class="titulo-livro mb-2" style="font-size:0.85rem; font-weight:500; color:#333;">
-          ${nomeLivro} – ${nomeAutor}
-        </div>
-
-        ${a.Capítulo ? `<p class="mb-1"><strong>Capítulo:</strong> ${a.Capítulo}</p>` : ''}
-        ${a.Página ? `<p class="mb-1"><strong>Página:</strong> ${a.Página}</p>` : ''}
-        ${a.Resumo ? `<p class="mb-1"><strong>Resumo:</strong> ${a.Resumo}</p>` : ''}
-        ${a.Trecho ? `<blockquote class="blockquote mb-1">${a.Trecho}</blockquote>` : ''}
-        ${a['Comentário'] ? `<p class="mb-0 fst-italic text-secondary">${a['Comentário']}</p>` : ''}
-      `;
-
-      container.appendChild(div);
-    });
-
-    // Eventos de compartilhar
-    container.querySelectorAll('.compartilhar-anotacao').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const trecho = btn.dataset.trecho;
-        const livro = btn.dataset.livro;
-        const autor = btn.dataset.autor;
-        const capa = btn.dataset.capa;
-        abrirModalCompartilhamento(trecho, livro, autor, capa);
-      });
-    });
-  }
-
-  return { init };
-})();
-
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => Anotacoes.init());
-} else {
-  Anotacoes.init();
 }
