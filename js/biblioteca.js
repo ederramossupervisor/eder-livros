@@ -50,11 +50,39 @@ const Biblioteca = (() => {
       );
     }
 
-    // Ordenação padrão: por título
     filtrados.sort((a, b) => (a.Título || '').localeCompare(b.Título || ''));
 
     contador.textContent = `${filtrados.length} livro(s) encontrado(s)`;
     renderizarGrade(filtrados);
+  }
+
+  // Renderiza estrelas (1 a 5) como ícones Font Awesome
+  function renderizarEstrelas(nota, livroID, editavel = false) {
+    const notaNum = Math.round(Number(nota)) || 0; // garante inteiro 0-5
+    const maxEstrelas = 5;
+    let html = '<span class="estrelas-container" style="display:inline-flex; gap:2px; align-items:center;">';
+    for (let i = 1; i <= maxEstrelas; i++) {
+      const classe = i <= notaNum ? 'fas fa-star' : 'far fa-star';
+      if (editavel) {
+        html += `<i class="${classe} estrela-editavel" data-estrela="${i}" data-livro="${livroID}" style="cursor:pointer; color:#f59e0b; font-size:1rem;" title="${i} estrela(s)"></i>`;
+      } else {
+        html += `<i class="${classe}" style="color:#f59e0b; font-size:0.9rem;"></i>`;
+      }
+    }
+    html += '</span>';
+    return html;
+  }
+
+  async function atualizarNota(livroID, novaNota) {
+    try {
+      await API.enviar({ acao: 'updateBook', id: livroID, book: { nota: novaNota } });
+      // Atualiza o cache local
+      const livro = livros.find(l => l.ID === livroID);
+      if (livro) livro.Nota = novaNota;
+      Util.toast('Nota atualizada!', 'success');
+    } catch (e) {
+      Util.toast('Erro ao salvar nota', 'danger');
+    }
   }
 
   function renderizarGrade(livrosFiltrados) {
@@ -77,13 +105,34 @@ const Biblioteca = (() => {
           <div class="card-body">
             <div class="titulo" title="${livro.Título}">${livro.Título || 'Sem título'}</div>
             <div class="autor">${livro.Autor || 'Desconhecido'}</div>
+            <div class="mt-1">${renderizarEstrelas(livro.Nota, livro.ID, true)}</div>
           </div>
         </div>`;
       grid.appendChild(col);
     });
 
+    // Evento de clique nas estrelas dos cards
+    grid.querySelectorAll('.estrela-editavel').forEach(estrela => {
+      estrela.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const livroID = estrela.dataset.livro;
+        const estrelaClicada = parseInt(estrela.dataset.estrela);
+        // Se clicar na mesma estrela que já está ativa, remove a nota
+        const livro = livros.find(l => l.ID === livroID);
+        const notaAtual = Math.round(Number(livro?.Nota)) || 0;
+        const novaNota = (estrelaClicada === notaAtual) ? 0 : estrelaClicada;
+        await atualizarNota(livroID, novaNota);
+        aplicarFiltros(); // re-renderiza a grade
+      });
+    });
+
+    // Clique no card abre o modal (exceto nas estrelas)
     grid.querySelectorAll('.livro-card').forEach(card => {
-      card.addEventListener('click', () => abrirModal(card.dataset.id));
+      card.addEventListener('click', (e) => {
+        // Se o clique foi em uma estrela, não abrir modal
+        if (e.target.classList.contains('estrela-editavel')) return;
+        abrirModal(card.dataset.id);
+      });
     });
   }
 
@@ -102,6 +151,7 @@ const Biblioteca = (() => {
         <div class="col-md-8">
           <h4>${livro.Título}</h4>
           <p class="text-muted">${livro.Autor || 'Autor desconhecido'}</p>
+          <div class="mb-2">${renderizarEstrelas(livro.Nota, livro.ID, true)}</div>
           <table class="table table-sm">
             <tr><td><strong>Status</strong></td><td><span class="badge bg-primary">${livro.Status}</span></td></tr>
             <tr><td><strong>Editora</strong></td><td>${livro.Editora || '-'}</td></tr>
@@ -126,6 +176,20 @@ const Biblioteca = (() => {
 
     const modal = new bootstrap.Modal(document.getElementById('livro-modal'));
     modal.show();
+
+    // Eventos das estrelas no modal
+    document.querySelectorAll('#modal-conteudo .estrela-editavel').forEach(estrela => {
+      estrela.addEventListener('click', async (e) => {
+        const livroID = estrela.dataset.livro;
+        const estrelaClicada = parseInt(estrela.dataset.estrela);
+        const livro = livros.find(l => l.ID === livroID);
+        const notaAtual = Math.round(Number(livro?.Nota)) || 0;
+        const novaNota = (estrelaClicada === notaAtual) ? 0 : estrelaClicada;
+        await atualizarNota(livroID, novaNota);
+        // Atualiza a exibição no modal sem fechá-lo
+        abrirModal(livroID);
+      });
+    });
 
     document.querySelector('.btn-editar-livro').addEventListener('click', () => {
       modal.hide();
