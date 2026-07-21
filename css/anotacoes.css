@@ -18,14 +18,13 @@
 /* Cartão de citação no modal de compartilhamento */
 #cartao-citacao {
   width: 100%;
-  max-width: 400px;          /* limite para desktop */
-  margin: 0 auto;            /* centraliza */
+  max-width: 400px;
+  margin: 0 auto;
   min-height: 250px;
   position: relative;
   transition: width 0.3s, height 0.3s;
 }
 
-/* A imagem de fundo se ajusta sem extrapolar */
 #img-fundo-capa {
   object-fit: cover;
 }
@@ -52,42 +51,16 @@
 /* Em tablets */
 @media (min-width: 576px) and (max-width: 991px) {
   #cartao-citacao {
-    max-height: 55vh; /* opcional, se quiser um limite sutil no tablet */
+    max-height: 55vh;
   }
 }
 
-/* ========== PÁGINA DE ANOTAÇÕES (novo layout) ========== */
-
-/* Container principal ocupa a altura total da viewport menos a barra superior */
-#page-anotacoes .container {
-  height: 100%;
-  min-height: calc(100vh - 56px); /* ajuste conforme altura da sua mobile-navbar */
-}
-
-/* Área da lista com rolagem */
-#lista-anotacoes {
-  padding-bottom: 20px;
-}
-
-/* Barra de pesquisa no topo (desktop) */
+/* ========== BARRA DE PESQUISA DE ANOTAÇÕES ========== */
 #page-anotacoes .search-wrapper {
-  background: var(--bg-body, #fff);
+  margin-bottom: 1.5rem;
 }
 
-/* No mobile, fixa a barra de pesquisa na parte inferior */
-@media (max-width: 767.98px) {
-  #page-anotacoes .search-wrapper {
-    position: fixed;
-    bottom: 60px;  /* altura da bottom-nav, ajuste se necessário */
-    left: 0;
-    right: 0;
-    z-index: 10;
-    background: var(--bg-card, #fff);
-    padding: 8px 16px;
-    box-shadow: 0 -2px 6px rgba(0,0,0,0.08);
-  }
-  /* Compensa o espaço da barra fixa */
-  #page-anotacoes .container {
-    padding-bottom: 80px;
-  }
+/* Opcional: estilizar o input da pesquisa */
+#anotacoes-search {
+  border-radius: 0.5rem;
 }
