@@ -70,37 +70,45 @@ const Dashboard = (() => {
   }
 
   function preencherCards(d) {
-    window.__previsaoTermino = d.previsaoTermino;
-    containerCard = document.getElementById('livro-atual-card');
-    if (!containerCard) return;
+  window.__previsaoTermino = d.previsaoTermino;
+  containerCard = document.getElementById('livro-atual-card');
+  if (!containerCard) return;
 
-    livrosLendoList = d.livrosLendo || [];
-    if (d.livroAtual && livrosLendoList.length > 0) {
-      currentLivroIndex = livrosLendoList.findIndex(l => l.ID === d.livroAtual.ID);
-      if (currentLivroIndex < 0) currentLivroIndex = 0;
-    } else {
-      currentLivroIndex = 0;
-    }
-    livroAtualID = d.livroAtual ? d.livroAtual.ID : null;
-
-    renderizarLivroAtual();
-    criarControlesNavegacao();
-    adicionarSwipe();
-
-    animarContador('card-livros-mes', d.livrosFinalizadosMes);
-    animarContador('card-livros-ano', d.livrosFinalizadosAno);
-    animarContador('card-paginas-hoje', d.paginasHoje);
-    animarContador('card-paginas-semana', d.paginasSemana);
-    animarContador('card-horas', d.horasTotal);
-    animarContador('card-sequencia', d.sequenciaAtual);
-
-    document.getElementById('meta-texto').textContent =
-      `${d.livrosFinalizadosAno} de ${d.metaLivros} livros (${d.percentualMeta}%)`;
-    const barra = document.getElementById('barra-meta');
-    barra.style.width = d.percentualMeta + '%';
-    barra.textContent = d.percentualMeta + '%';
-    barra.setAttribute('aria-valuenow', d.percentualMeta);
+  livrosLendoList = d.livrosLendo || [];
+  if (d.livroAtual && livrosLendoList.length > 0) {
+    currentLivroIndex = livrosLendoList.findIndex(l => l.ID === d.livroAtual.ID);
+    if (currentLivroIndex < 0) currentLivroIndex = 0;
+  } else {
+    currentLivroIndex = 0;
   }
+  livroAtualID = d.livroAtual ? d.livroAtual.ID : null;
+
+  renderizarLivroAtual();
+  criarControlesNavegacao();
+  adicionarSwipe();
+
+  animarContador('card-livros-mes', d.livrosFinalizadosMes);
+  animarContador('card-livros-ano', d.livrosFinalizadosAno);
+  animarContador('card-paginas-hoje', d.paginasHoje);
+  animarContador('card-paginas-semana', d.paginasSemana);
+  animarContador('card-horas', d.horasTotal);
+  animarContador('card-sequencia', d.sequenciaAtual);
+
+  document.getElementById('meta-texto').textContent =
+    `${d.livrosFinalizadosAno} de ${d.metaLivros} livros (${d.percentualMeta}%)`;
+  const barra = document.getElementById('barra-meta');
+  barra.style.width = d.percentualMeta + '%';
+  barra.textContent = d.percentualMeta + '%';
+  barra.setAttribute('aria-valuenow', d.percentualMeta);
+
+  // Badge com total de páginas dos últimos 30 dias
+  const total30dias = d.paginasUltimos7Dias.reduce((acc, dia) => acc + dia.paginas, 0);
+  const badge = document.getElementById('badge-total-30dias');
+  if (badge) {
+    badge.textContent = `${total30dias} pág.`;
+    badge.title = `Total de páginas lidas nos últimos 30 dias`;
+  }
+}
 
   function animarContador(id, valorFinal) {
     const el = document.getElementById(id);
