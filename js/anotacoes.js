@@ -26,7 +26,7 @@ const Anotacoes = (() => {
 
   async function carregarTodasAnotacoes() {
     try {
-      const resp = await API.enviar({ acao: 'listNotes', livroID: '' }); // vazio = todas
+      const resp = await API.enviar({ acao: 'listNotes', livroID: '' });
       if (Array.isArray(resp)) {
         todasAnotacoes = resp;
         DB.salvarAnotacoes(resp).catch(e => console.warn('Cache anotações falhou:', e));
@@ -52,7 +52,6 @@ const Anotacoes = (() => {
           return;
         }
         const filtradas = todasAnotacoes.filter(anot => {
-          // Busca nos campos relevantes
           const livro = livrosCache.find(l => l.ID === anot.LivroID);
           const nomeLivro = livro ? livro.Título + ' ' + livro.Autor : '';
           const campos = [
@@ -70,52 +69,104 @@ const Anotacoes = (() => {
     }
   }
 
-  function renderizarAnotacoes(lista) {
-  const container = document.getElementById('lista-anotacoes');
-  if (!container) return;
-  container.innerHTML = '';
+  function abrirModalCompartilhamento(trecho, livro, autor, urlCapa) {
+    // Preenche o modal de citação
+    document.getElementById('citacao-texto').textContent = `"${trecho}"`;
+    document.getElementById('citacao-livro').textContent = livro;
+    document.getElementById('citacao-autor').textContent = autor;
 
-  if (lista.length === 0) {
-    container.innerHTML = `
-      <div class="empty-state text-center text-muted py-5">
-        <i class="fas fa-sticky-note fa-3x mb-3"></i>
-        <p>Nenhuma anotação encontrada.</p>
-      </div>`;
-    return;
+    // Configura botão de fundo com capa
+    const btnCapa = document.getElementById('btn-fundo-capa');
+    if (btnCapa) {
+      btnCapa.onclick = async () => {
+        if (!urlCapa) {
+          Util.toast('Este livro não possui capa cadastrada.', 'warning');
+          return;
+        }
+        const cartao = document.getElementById('cartao-citacao');
+        const resp = await API.enviar({ acao: 'proxyImage', url: urlCapa });
+        if (resp && resp.dataUrl) {
+          cartao.style.background = `url(${resp.dataUrl}) center/cover no-repeat`;
+          cartao.style.color = '#fff';
+        }
+      };
+    }
+
+    // Abre o modal (Bootstrap)
+    const modal = new bootstrap.Modal(document.getElementById('modal-compartilhar-citacao'));
+    modal.show();
   }
 
-  lista.forEach(a => {
-    const livro = livrosCache.find(l => l.ID === a.LivroID);
-    const nomeLivro = livro ? livro.Título : 'Livro desconhecido';
-    const nomeAutor = livro ? livro.Autor : 'Autor desconhecido';
+  function renderizarAnotacoes(lista) {
+    const container = document.getElementById('lista-anotacoes');
+    if (!container) return;
+    container.innerHTML = '';
 
-    const div = document.createElement('div');
-    div.className = 'anotacao-card d-flex flex-column';
+    if (lista.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state text-center text-muted py-5">
+          <i class="fas fa-sticky-note fa-3x mb-3"></i>
+          <p>Nenhuma anotação encontrada.</p>
+        </div>`;
+      return;
+    }
 
-    div.innerHTML = `
-    <!-- Cabeçalho: badge + data -->
-    <div class="cabecalho d-flex justify-content-between align-items-center mb-2">
-      <span class="badge bg-secondary">${a.Categoria || 'Geral'}</span>
-      <span class="data text-muted" style="font-size:0.7rem; white-space:nowrap;">
-        ${a.Data ? new Date(a.Data).toLocaleDateString('pt-BR') : ''}
-      </span>
-    </div>
-  
-    <!-- Título e autor (linha própria, sem truncamento) -->
-    <div class="titulo-livro mb-2" style="font-size:0.85rem; font-weight:500; color:#333;">
-      ${nomeLivro} – ${nomeAutor}
-    </div>
-  
-    <!-- Conteúdo da anotação -->
-    ${a.Capítulo ? `<p class="mb-1"><strong>Capítulo:</strong> ${a.Capítulo}</p>` : ''}
-    ${a.Página ? `<p class="mb-1"><strong>Página:</strong> ${a.Página}</p>` : ''}
-    ${a.Resumo ? `<p class="mb-1"><strong>Resumo:</strong> ${a.Resumo}</p>` : ''}
-    ${a.Trecho ? `<blockquote class="blockquote mb-1">${a.Trecho}</blockquote>` : ''}
-    ${a['Comentário'] ? `<p class="mb-0 fst-italic text-secondary">${a['Comentário']}</p>` : ''}
-  `;
-    container.appendChild(div);
-  });
-}
+    lista.forEach(a => {
+      const livro = livrosCache.find(l => l.ID === a.LivroID);
+      const nomeLivro = livro ? livro.Título : 'Livro desconhecido';
+      const nomeAutor = livro ? livro.Autor : 'Autor desconhecido';
+      const urlCapa = livro ? (livro.URLCapa || livro.ImagemCapa || '') : '';
+      const trecho = a.Trecho || a['Comentário'] || '';
+
+      const div = document.createElement('div');
+      div.className = 'anotacao-card d-flex flex-column';
+
+      div.innerHTML = `
+        <div class="cabecalho d-flex justify-content-between align-items-center mb-2">
+          <span class="badge bg-secondary">${a.Categoria || 'Geral'}</span>
+          <div class="d-flex align-items-center gap-1">
+            ${trecho ? `
+            <button class="btn btn-sm btn-link p-0 text-secondary compartilhar-anotacao" 
+                    title="Compartilhar como citação" 
+                    data-trecho="${trecho.replace(/"/g, '&quot;')}" 
+                    data-livro="${nomeLivro}" 
+                    data-autor="${nomeAutor}" 
+                    data-capa="${urlCapa}">
+              <i class="fas fa-camera"></i>
+            </button>` : ''}
+            <span class="data text-muted" style="font-size:0.7rem; white-space:nowrap;">
+              ${a.Data ? new Date(a.Data).toLocaleDateString('pt-BR') : ''}
+            </span>
+          </div>
+        </div>
+
+        <div class="titulo-livro mb-2" style="font-size:0.85rem; font-weight:500; color:#333;">
+          ${nomeLivro} – ${nomeAutor}
+        </div>
+
+        ${a.Capítulo ? `<p class="mb-1"><strong>Capítulo:</strong> ${a.Capítulo}</p>` : ''}
+        ${a.Página ? `<p class="mb-1"><strong>Página:</strong> ${a.Página}</p>` : ''}
+        ${a.Resumo ? `<p class="mb-1"><strong>Resumo:</strong> ${a.Resumo}</p>` : ''}
+        ${a.Trecho ? `<blockquote class="blockquote mb-1">${a.Trecho}</blockquote>` : ''}
+        ${a['Comentário'] ? `<p class="mb-0 fst-italic text-secondary">${a['Comentário']}</p>` : ''}
+      `;
+
+      container.appendChild(div);
+    });
+
+    // Eventos de compartilhar
+    container.querySelectorAll('.compartilhar-anotacao').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const trecho = btn.dataset.trecho;
+        const livro = btn.dataset.livro;
+        const autor = btn.dataset.autor;
+        const capa = btn.dataset.capa;
+        abrirModalCompartilhamento(trecho, livro, autor, capa);
+      });
+    });
+  }
+
   return { init };
 })();
 
