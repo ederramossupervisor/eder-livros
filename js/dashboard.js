@@ -239,20 +239,51 @@ const Dashboard = (() => {
     if (chartInstance) chartInstance.destroy();
     const ctx = document.getElementById('grafico-semanal')?.getContext('2d');
     if (!ctx) return;
+
+    // Gradiente vertical para a área
+    const gradient = ctx.createLinearGradient(0, 0, 0, ctx.canvas.height);
+    gradient.addColorStop(0, 'rgba(99, 102, 241, 0.35)');
+    gradient.addColorStop(1, 'rgba(99, 102, 241, 0.02)');
+
     chartInstance = new Chart(ctx, {
-      type: 'bar',
+      type: 'line',
       data: {
         labels: dados.map(item => item.dia),
         datasets: [{
           label: 'Páginas lidas',
           data: dados.map(item => item.paginas),
-          backgroundColor: 'rgba(99, 102, 241, 0.7)',
-          borderRadius: 4
+          borderColor: '#6366f1',         // roxo/indigo
+          backgroundColor: gradient,
+          borderWidth: 2.5,
+          pointBackgroundColor: '#6366f1',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2,
+          pointRadius: 4,
+          pointHoverRadius: 7,
+          tension: 0.3,                   // suaviza as curvas
+          fill: true
         }]
       },
       options: {
         responsive: true,
-        scales: { y: { beginAtZero: true, ticks: { stepSize: 10 } } }
+        plugins: {
+          legend: { display: false }      // esconde a legenda para ficar limpo
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: { color: 'rgba(0,0,0,0.05)' },
+            ticks: { stepSize: 10, font: { size: 11 } }
+          },
+          x: {
+            grid: { display: false },
+            ticks: { font: { size: 10 } }
+          }
+        },
+        interaction: {
+          intersect: false,
+          mode: 'index'
+        }
       }
     });
   }
