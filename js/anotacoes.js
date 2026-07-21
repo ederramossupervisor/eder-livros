@@ -71,44 +71,52 @@ const Anotacoes = (() => {
   }
 
   function renderizarAnotacoes(lista) {
-    const container = document.getElementById('lista-anotacoes');
-    if (!container) return;
-    container.innerHTML = '';
+  const container = document.getElementById('lista-anotacoes');
+  if (!container) return;
+  container.innerHTML = '';
 
-    if (lista.length === 0) {
-      container.innerHTML = `
-        <div class="empty-state text-center text-muted py-5">
-          <i class="fas fa-sticky-note fa-3x mb-3"></i>
-          <p>Nenhuma anotação encontrada.</p>
-        </div>`;
-      return;
-    }
-
-    lista.forEach(a => {
-      const livro = livrosCache.find(l => l.ID === a.LivroID);
-      const nomeLivro = livro ? livro.Título : 'Livro desconhecido';
-      const nomeAutor = livro ? livro.Autor : 'Autor desconhecido';
-
-      const div = document.createElement('div');
-      div.className = 'anotacao-card mb-3 p-3 border rounded shadow-sm';
-      div.innerHTML = `
-        <div class="d-flex justify-content-between align-items-start mb-2">
-          <div>
-            <span class="badge bg-secondary me-2">${a.Categoria || 'Geral'}</span>
-            <small class="text-muted">${nomeLivro} – ${nomeAutor}</small>
-          </div>
-          <small class="text-muted">${a.Data ? new Date(a.Data).toLocaleDateString('pt-BR') : ''}</small>
-        </div>
-        ${a.Capítulo ? `<p class="mb-1"><strong>Capítulo:</strong> ${a.Capítulo}</p>` : ''}
-        ${a.Página ? `<p class="mb-1"><strong>Página:</strong> ${a.Página}</p>` : ''}
-        ${a.Resumo ? `<p class="mb-1"><strong>Resumo:</strong> ${a.Resumo}</p>` : ''}
-        ${a.Trecho ? `<blockquote class="blockquote mb-1">${a.Trecho}</blockquote>` : ''}
-        ${a['Comentário'] ? `<p class="mb-0 fst-italic text-secondary">${a['Comentário']}</p>` : ''}
-      `;
-      container.appendChild(div);
-    });
+  if (lista.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state text-center text-muted py-5">
+        <i class="fas fa-sticky-note fa-3x mb-3"></i>
+        <p>Nenhuma anotação encontrada.</p>
+      </div>`;
+    return;
   }
 
+  lista.forEach(a => {
+    const livro = livrosCache.find(l => l.ID === a.LivroID);
+    const nomeLivro = livro ? livro.Título : 'Livro desconhecido';
+    const nomeAutor = livro ? livro.Autor : 'Autor desconhecido';
+
+    const div = document.createElement('div');
+    div.className = 'anotacao-card d-flex flex-column';
+
+    div.innerHTML = `
+      <!-- Cabeçalho: badge + livro na esquerda, data na direita -->
+      <div class="cabecalho d-flex justify-content-between align-items-start mb-2">
+        <div class="info d-flex align-items-center flex-wrap me-2" style="min-width:0;">
+          <span class="badge bg-secondary me-2">${a.Categoria || 'Geral'}</span>
+          <span class="titulo-livro text-truncate" style="max-width: 150px;" title="${nomeLivro} – ${nomeAutor}">
+            ${nomeLivro} – ${nomeAutor}
+          </span>
+        </div>
+        <span class="data text-muted flex-shrink-0" style="font-size:0.7rem;">
+          ${a.Data ? new Date(a.Data).toLocaleDateString('pt-BR') : ''}
+        </span>
+      </div>
+
+      <!-- Conteúdo da anotação -->
+      ${a.Capítulo ? `<p class="mb-1"><strong>Capítulo:</strong> ${a.Capítulo}</p>` : ''}
+      ${a.Página ? `<p class="mb-1"><strong>Página:</strong> ${a.Página}</p>` : ''}
+      ${a.Resumo ? `<p class="mb-1"><strong>Resumo:</strong> ${a.Resumo}</p>` : ''}
+      ${a.Trecho ? `<blockquote class="blockquote mb-1">${a.Trecho}</blockquote>` : ''}
+      ${a['Comentário'] ? `<p class="mb-0 fst-italic text-secondary">${a['Comentário']}</p>` : ''}
+    `;
+
+    container.appendChild(div);
+  });
+}
   return { init };
 })();
 
