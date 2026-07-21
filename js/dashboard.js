@@ -236,58 +236,38 @@ const Dashboard = (() => {
   }
 
   function criarGrafico(dados) {
-    if (chartInstance) chartInstance.destroy();
-    const ctx = document.getElementById('grafico-semanal')?.getContext('2d');
-    if (!ctx) return;
+  if (chartInstance) chartInstance.destroy();
+  const ctx = document.getElementById('grafico-semanal')?.getContext('2d');
+  if (!ctx) return;
 
-    // Gradiente vertical para a área
-    const gradient = ctx.createLinearGradient(0, 0, 0, ctx.canvas.height);
-    gradient.addColorStop(0, 'rgba(99, 102, 241, 0.35)');
-    gradient.addColorStop(1, 'rgba(99, 102, 241, 0.02)');
+  const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+  gradient.addColorStop(0, 'rgba(139, 92, 246, 0.4)');
+  gradient.addColorStop(1, 'rgba(99, 102, 241, 0.01)');
 
-    chartInstance = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: dados.map(item => item.dia),
-        datasets: [{
-          label: 'Páginas lidas',
-          data: dados.map(item => item.paginas),
-          borderColor: '#6366f1',         // roxo/indigo
-          backgroundColor: gradient,
-          borderWidth: 2.5,
-          pointBackgroundColor: '#6366f1',
-          pointBorderColor: '#fff',
-          pointBorderWidth: 2,
-          pointRadius: 4,
-          pointHoverRadius: 7,
-          tension: 0.3,                   // suaviza as curvas
-          fill: true
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { display: false }      // esconde a legenda para ficar limpo
-        },
-        scales: {
-          y: {
-            beginAtZero: true,
-            grid: { color: 'rgba(0,0,0,0.05)' },
-            ticks: { stepSize: 10, font: { size: 11 } }
-          },
-          x: {
-            grid: { display: false },
-            ticks: { font: { size: 10 } }
-          }
-        },
-        interaction: {
-          intersect: false,
-          mode: 'index'
-        }
+  chartInstance = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: dados.map(item => item.dia),
+      datasets: [{
+        data: dados.map(item => item.paginas),
+        borderColor: '#8b5cf6',
+        borderWidth: 3,
+        backgroundColor: gradient,
+        fill: true,
+        pointRadius: 0,
+        tension: 0.4
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } },
+        x: { grid: { display: false } }
       }
-    });
-  }
-
+    }
+  });
+}
   return { init };
 })();
 
