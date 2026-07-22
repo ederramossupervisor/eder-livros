@@ -1218,6 +1218,10 @@
               <button class="btn btn-sm btn-outline-secondary w-100 mb-3" id="btn-fundo-gradiente">
                 <i class="fas fa-fill-drip"></i> Gradiente aleatório
               </button>
+              <h6>📷 Captura rápida</h6>
+              <button class="btn btn-sm btn-outline-secondary w-100 mb-3" id="btn-ocr">
+                <i class="fas fa-camera"></i> Escanear página do livro
+              </button>
   
               <h6>🔤 Texto</h6>
               <div class="mb-2">
@@ -1286,7 +1290,8 @@
   <script src="js/exportar.js"></script>
   <script src="js/configuracoes.js"></script>
   <script src="js/tema-sazonal.js"></script>
-
+  <!-- Tesseract.js para OCR -->
+  <script src='https://unpkg.com/tesseract.js@v5.0.4/dist/tesseract.min.js'></script>
   <!-- Controlador principal (sempre por último) -->
   <script src="js/app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga2@1.8.3/dist/quagga.min.js"></script>
