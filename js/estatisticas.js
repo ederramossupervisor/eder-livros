@@ -49,8 +49,6 @@ const Estatisticas = (() => {
         CalendarioLeitura.init(hoje.getFullYear(), hoje.getMonth() + 1);
       }
     
-      // Carrega a lista de locais de leitura
-      carregarLocais();
       // Inicializa o mapa de locais
       if (typeof MapaLeitura !== 'undefined' && MapaLeitura.init) {
         MapaLeitura.init();
