@@ -39,12 +39,19 @@ const Estatisticas = (() => {
       try { criarGraficoGeneros(dados.generos); } catch(e) { console.warn(e); }
       try { criarGraficoDiaSemana(dados.tempoPorDiaSemana); } catch(e) { console.warn(e); }
       try { criarHeatmap(dados.heatmap); } catch(e) { console.warn(e); }
-      // NOVO: gráfico de velocidade mensal (se os dados existirem)
       if (dados.velocidadeMensal) {
         try { criarGraficoVelocidadeMensal(dados.velocidadeMensal); } catch(e) { console.warn(e); }
       }
+    
+      // Inicializa o Calendário de Leitura
+      if (typeof CalendarioLeitura !== 'undefined' && CalendarioLeitura.init) {
+        const hoje = new Date();
+        CalendarioLeitura.init(hoje.getFullYear(), hoje.getMonth() + 1);
+      }
+    
+      // Carrega a lista de locais de leitura
+      carregarLocais();
     }, 100);
-
     preencherTopAutores(dados.topAutores);
     preencherTopEditoras(dados.topEditoras);
 
@@ -292,7 +299,36 @@ const Estatisticas = (() => {
     const el = document.getElementById(id);
     if (el) el.textContent = value;
   }
+async function carregarLocais() {
+  try {
+    const locais = await API.enviar({ acao: 'listarLocais' });
+    const container = document.getElementById('locais-container');
+    if (!container) return;
 
+    container.innerHTML = '';
+    if (!locais.length) {
+      container.innerHTML = '<p class="text-muted">Nenhum local registrado ainda.</p>';
+      return;
+    }
+
+    locais.forEach(l => {
+      const col = document.createElement('div');
+      col.className = 'col-12 col-md-6 col-lg-4';
+      col.innerHTML = `
+        <div class="local-card">
+          <h5><i class="fas fa-map-marker-alt me-2"></i>${l.local}</h5>
+          <hr>
+          <p class="mb-1"><strong>Sessões:</strong> ${l.sessoes}</p>
+          <p class="mb-1"><strong>Páginas lidas:</strong> ${l.paginas}</p>
+          <p class="mb-1"><strong>Horas:</strong> ${l.horas}</p>
+          <p class="mb-0"><strong>Livros diferentes:</strong> ${l.livrosUnicos}</p>
+        </div>`;
+      container.appendChild(col);
+    });
+  } catch (e) {
+    console.error('Erro ao carregar locais:', e);
+  }
+}
   function criarInsights(lista) {
     const ul = document.getElementById('insights-list');
     if (!ul) return;
