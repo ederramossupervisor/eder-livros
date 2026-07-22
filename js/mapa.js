@@ -56,9 +56,9 @@ const MapaLeitura = (() => {
         if (local.ultimaCapa) {
           const icone = L.icon({
             iconUrl: local.ultimaCapa,
-            iconSize: [40, 56],       // tamanho do marcador
-            iconAnchor: [20, 56],     // ponto de ancoragem (base do pin)
-            popupAnchor: [0, -56],    // onde o popup abre
+            iconSize: [20, 28],
+            iconAnchor: [10, 28],
+            popupAnchor: [0, -28],
             className: 'icone-capa-marcador' // para CSS extra, se quiser
           });
           marker = L.marker([lat, lng], { icon: icone }).addTo(mapa);
