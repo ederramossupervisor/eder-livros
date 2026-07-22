@@ -13,7 +13,6 @@ const OCR = (() => {
     return worker;
   }
 
-  // Pré-processamento básico (contraste) – aplicado após recorte
   function preprocessarImagem(imageFile) {
     return new Promise((resolve, reject) => {
       const img = new Image();
@@ -43,15 +42,14 @@ const OCR = (() => {
     });
   }
 
-  // Etapa de recorte interativo
   function recortarImagem(file) {
     return new Promise((resolve, reject) => {
       const img = new Image();
       img.onload = () => {
-        // Cria modal dinâmico
+        const modalId = 'modal-recorte-ocr-' + Date.now();
         const modal = document.createElement('div');
         modal.className = 'modal fade';
-        modal.id = 'modal-recorte-ocr';
+        modal.id = modalId;
         modal.tabIndex = -1;
         modal.innerHTML = `
           <div class="modal-dialog modal-xl modal-dialog-centered">
@@ -61,22 +59,34 @@ const OCR = (() => {
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
               </div>
               <div class="modal-body p-0" style="position:relative; overflow:auto; background:#333; display:flex; justify-content:center;">
-                <canvas id="canvas-recorte" style="max-width:100%; cursor:crosshair;"></canvas>
+                <canvas id="canvas-recorte-${modalId}" style="max-width:100%; cursor:crosshair;"></canvas>
               </div>
               <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary" id="btn-processar-recorte" disabled>Processar seleção</button>
+                <button type="button" class="btn btn-primary" id="btn-processar-recorte-${modalId}" disabled>Processar seleção</button>
               </div>
             </div>
           </div>`;
         document.body.appendChild(modal);
 
         const bsModal = new bootstrap.Modal(modal);
+        let recorteResolvido = false;
+
+        modal.addEventListener('hidden.bs.modal', () => {
+          // Só remove o modal do DOM se ele ainda existir
+          if (modal.parentNode) {
+            document.body.removeChild(modal);
+          }
+          // Se o recorte não foi resolvido (cancelou), rejeita a Promise
+          if (!recorteResolvido) {
+            reject(new Error('Recorte cancelado'));
+          }
+        });
+
         bsModal.show();
 
-        const canvas = document.getElementById('canvas-recorte');
+        const canvas = document.getElementById(`canvas-recorte-${modalId}`);
         const ctx = canvas.getContext('2d');
-        // Ajusta tamanho máximo
         const maxWidth = window.innerWidth * 0.9;
         const maxHeight = window.innerHeight * 0.7;
         let drawWidth = img.width;
@@ -154,8 +164,7 @@ const OCR = (() => {
         function stop(e) {
           if (!drawing) return;
           drawing = false;
-          const btnProcessar = document.getElementById('btn-processar-recorte');
-          if (btnProcessar) btnProcessar.disabled = false;
+          document.getElementById(`btn-processar-recorte-${modalId}`).disabled = false;
         }
 
         canvas.addEventListener('mousedown', start);
@@ -165,8 +174,7 @@ const OCR = (() => {
         canvas.addEventListener('touchmove', move);
         canvas.addEventListener('touchend', stop);
 
-        // Botão processar
-        document.getElementById('btn-processar-recorte').addEventListener('click', () => {
+        document.getElementById(`btn-processar-recorte-${modalId}`).addEventListener('click', () => {
           const x = Math.min(startX, endX);
           const y = Math.min(startY, endY);
           const w = Math.abs(endX - startX);
@@ -175,24 +183,16 @@ const OCR = (() => {
             Util.toast('Selecione uma área maior.', 'warning');
             return;
           }
-          // Recorta a região
           const recorteCanvas = document.createElement('canvas');
           recorteCanvas.width = w;
           recorteCanvas.height = h;
           const recorteCtx = recorteCanvas.getContext('2d');
           recorteCtx.drawImage(canvas, x, y, w, h, 0, 0, w, h);
           recorteCanvas.toBlob(blob => {
+            recorteResolvido = true;
             bsModal.hide();
-            modal.addEventListener('hidden.bs.modal', () => {
-              document.body.removeChild(modal);
-              resolve(blob);
-            });
+            resolve(blob);
           }, 'image/jpeg', 0.95);
-        });
-
-        modal.addEventListener('hidden.bs.modal', () => {
-          if (modal.parentNode) document.body.removeChild(modal);
-          reject(new Error('Recorte cancelado'));
         });
       };
       img.onerror = reject;
@@ -224,15 +224,12 @@ const OCR = (() => {
       }
 
       try {
-        // Etapa de recorte
         const recorteBlob = await recortarImagem(file);
         
         Util.toast('Reconhecendo texto... Isso pode levar alguns segundos.', 'info');
         if (btn) btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Processando...';
 
-        // Pré-processa a imagem recortada
         const processedBlob = await preprocessarImagem(recorteBlob);
-        
         const w = await initWorker();
         const { data: { text } } = await w.recognize(processedBlob);
         
@@ -258,7 +255,6 @@ const OCR = (() => {
             }
           }
         }
-
         Util.toast('Texto capturado com sucesso!', 'success');
       } catch (erro) {
         console.error('Erro no OCR:', erro);
