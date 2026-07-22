@@ -1153,71 +1153,102 @@
       <div class="container py-4">
         <h1 class="mb-4">Configurações</h1>
 
-        <!-- Preferências -->
-        <div class="card mb-4 shadow-sm">
-          <div class="card-header fw-bold"><i class="fas fa-sliders-h me-2"></i>Preferências</div>
-          <div class="card-body">
-            <form id="form-config">
-              <div class="row g-3">
-                <div class="col-md-6">
-                  <label for="config-meta-livros" class="form-label">Meta anual de livros (padrão)</label>
-                  <input type="number" id="config-meta-livros" class="form-control" min="0">
-                </div>
-                <div class="col-md-6">
-                  <label for="config-meta-paginas" class="form-label">Meta anual de páginas (padrão)</label>
-                  <input type="number" id="config-meta-paginas" class="form-control" min="0">
-                </div>
-                <div class="col-md-4">
-                  <label for="config-cor" class="form-label">Cor principal</label>
-                  <input type="color" id="config-cor" class="form-control form-control-color">
-                </div>
-                <div class="col-md-4">
-                  <label class="form-label">Tema padrão</label>
-                  <select id="config-tema" class="form-select">
-                    <option value="light">Claro</option>
-                    <option value="dark">Escuro</option>
-                  </select>
-                </div>
-              </div>
-              <button type="submit" class="btn btn-primary mt-3"><i class="fas fa-save me-1"></i>Salvar Preferências</button>
-            </form>
-          </div>
-        </div>
+        <div id="page-configuracoes" class="page">
+  <div class="container py-4">
+    <h1 class="mb-4">Configurações</h1>
 
-        <!-- Backup e Restauração -->
-        <div class="row g-4">
-          <div class="col-md-6">
-            <div class="card shadow-sm">
-              <div class="card-header fw-bold"><i class="fas fa-cloud-download-alt me-2"></i>Backup</div>
-              <div class="card-body">
-                <p>Baixe todos os seus dados em um arquivo JSON para manter uma cópia de segurança.</p>
-                <button id="btn-backup" class="btn btn-outline-primary"><i class="fas fa-download"></i> Baixar Backup</button>
-              </div>
+    <!-- Preferências -->
+    <div class="card mb-4 shadow-sm">
+      <div class="card-header fw-bold"><i class="fas fa-sliders-h me-2"></i>Preferências</div>
+      <div class="card-body">
+        <form id="form-config">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label for="config-meta-livros" class="form-label">Meta anual de livros (padrão)</label>
+              <input type="number" id="config-meta-livros" class="form-control" min="0">
+            </div>
+            <div class="col-md-6">
+              <label for="config-meta-paginas" class="form-label">Meta anual de páginas (padrão)</label>
+              <input type="number" id="config-meta-paginas" class="form-control" min="0">
+            </div>
+            <div class="col-md-4">
+              <label for="config-cor" class="form-label">Cor principal</label>
+              <input type="color" id="config-cor" class="form-control form-control-color">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Tema padrão</label>
+              <select id="config-tema" class="form-select">
+                <option value="light">Claro</option>
+                <option value="dark">Escuro</option>
+              </select>
             </div>
           </div>
-          <div class="col-md-6">
-            <div class="card shadow-sm">
-              <div class="card-header fw-bold"><i class="fas fa-cloud-upload-alt me-2"></i>Restaurar Backup</div>
-              <div class="card-body">
-                <p>Selecione um arquivo de backup (.json) previamente salvo para restaurar todos os dados. <strong class="text-danger">Isso substituirá seus dados atuais!</strong></p>
-                <input type="file" id="input-restore" accept=".json" class="form-control mb-2">
-                <button id="btn-restore" class="btn btn-outline-danger" disabled><i class="fas fa-upload"></i> Restaurar</button>
-              </div>
-            </div>
+          <button type="submit" class="btn btn-primary mt-3"><i class="fas fa-save me-1"></i>Salvar Preferências</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Cadastro de coordenadas para o mapa -->
+    <div class="card mb-4 shadow-sm">
+      <div class="card-header fw-bold"><i class="fas fa-map-marker-alt me-2"></i>Coordenadas dos Locais</div>
+      <div class="card-body">
+        <div class="row g-3 align-items-end">
+          <div class="col-md-5">
+            <label for="coord-local" class="form-label">Nome do Local</label>
+            <input type="text" id="coord-local" class="form-control" placeholder="Ex: Casa, Trabalho, Vitória...">
+            <small class="text-muted">Use exatamente o mesmo nome das sessões.</small>
+          </div>
+          <div class="col-md-5">
+            <label for="coord-valor" class="form-label">Latitude, Longitude</label>
+            <input type="text" id="coord-valor" class="form-control" placeholder="-20.3155,-40.3128">
+            <small class="text-muted">Formato: latitude,longitude</small>
+          </div>
+          <div class="col-md-2">
+            <button class="btn btn-primary w-100" id="btn-salvar-coordenada">
+              <i class="fas fa-save"></i> Salvar
+            </button>
           </div>
         </div>
+        <hr>
+        <h6>Locais já cadastrados</h6>
+        <ul id="lista-coordenadas" class="list-unstyled"></ul>
+      </div>
+    </div>
 
-        <!-- Informações do sistema -->
-        <div class="card mt-4 shadow-sm">
-          <div class="card-header fw-bold"><i class="fas fa-info-circle me-2"></i>Informações do Sistema</div>
+    <!-- Backup e Restauração -->
+    <div class="row g-4">
+      <div class="col-md-6">
+        <div class="card shadow-sm">
+          <div class="card-header fw-bold"><i class="fas fa-cloud-download-alt me-2"></i>Backup</div>
           <div class="card-body">
-            <p><strong>Versão:</strong> 1.0.0</p>
-            <p><strong>Total de livros na biblioteca:</strong> <span id="info-total-livros">...</span></p>
-            <p><strong>Espaço estimado usado:</strong> <span id="info-espaco">...</span></p>
+            <p>Baixe todos os seus dados em um arquivo JSON para manter uma cópia de segurança.</p>
+            <button id="btn-backup" class="btn btn-outline-primary"><i class="fas fa-download"></i> Baixar Backup</button>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card shadow-sm">
+          <div class="card-header fw-bold"><i class="fas fa-cloud-upload-alt me-2"></i>Restaurar Backup</div>
+          <div class="card-body">
+            <p>Selecione um arquivo de backup (.json) previamente salvo para restaurar todos os dados. <strong class="text-danger">Isso substituirá seus dados atuais!</strong></p>
+            <input type="file" id="input-restore" accept=".json" class="form-control mb-2">
+            <button id="btn-restore" class="btn btn-outline-danger" disabled><i class="fas fa-upload"></i> Restaurar</button>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- Informações do sistema -->
+    <div class="card mt-4 shadow-sm">
+      <div class="card-header fw-bold"><i class="fas fa-info-circle me-2"></i>Informações do Sistema</div>
+      <div class="card-body">
+        <p><strong>Versão:</strong> 1.0.0</p>
+        <p><strong>Total de livros na biblioteca:</strong> <span id="info-total-livros">...</span></p>
+        <p><strong>Espaço estimado usado:</strong> <span id="info-espaco">...</span></p>
+      </div>
+    </div>
+  </div>
+</div>
   </main>
 
   <!-- Modal para edição do texto escaneado via OCR -->
