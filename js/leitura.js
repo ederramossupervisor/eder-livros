@@ -182,26 +182,21 @@ const Leitura = (() => {
   }
 
   function configurarMediaSession() {
-    if (!('mediaSession' in navigator)) return;
-    const audio = document.getElementById('audio-fantasma');
-    if (audio) {
-      audio.play().catch(() => {}); // necessário para alguns navegadores
-    }
-
-    const actionHandlers = [
-      ['play', () => { if (!cronometroAtivo) iniciarCronometro(); }],
-      ['pause', () => { if (cronometroAtivo) pausarCronometro(); }],
-      ['stop', () => { finalizarCronometro(); }]
-    ];
-
-    for (const [action, handler] of actionHandlers) {
-      try {
-        navigator.mediaSession.setActionHandler(action, handler);
-      } catch (error) {
-        console.log(`Media Session action ${action} not supported`);
-      }
+  if (!('mediaSession' in navigator)) return;
+  // Apenas configura os action handlers – não inicia áudio ainda.
+  const actionHandlers = [
+    ['play', () => { if (!cronometroAtivo) iniciarCronometro(); }],
+    ['pause', () => { if (cronometroAtivo) pausarCronometro(); }],
+    ['stop', () => { finalizarCronometro(); }]
+  ];
+  for (const [action, handler] of actionHandlers) {
+    try {
+      navigator.mediaSession.setActionHandler(action, handler);
+    } catch (error) {
+      console.log(`Media Session action ${action} not supported`);
     }
   }
+}
 
   function atualizarMediaSession(livro) {
     if (!('mediaSession' in navigator)) return;
