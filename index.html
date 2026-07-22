@@ -677,7 +677,7 @@
     <div id="page-estatisticas" class="page">
       <div class="container py-4">
         <h1 class="mb-4">Estatísticas</h1>
-
+    
         <!-- Cards resumo -->
         <div class="row g-3 mb-4">
           <div class="col-6 col-md-3">
@@ -717,15 +717,15 @@
             </div>
           </div>
         </div>
-
+    
         <!-- Insights -->
         <div class="card mb-4 shadow-sm">
-          <div class="card-header fw-bold"><i class="fas fa-lightbulb text-warning me-2"></i>Percepções</div>
+          <div class="card-header fw-bold"><i class="fas fa-lightbulb text-warning me-2"></i>Insights</div>
           <div class="card-body" id="insights-container">
             <ul class="list-group list-group-flush" id="insights-list"></ul>
           </div>
         </div>
-
+    
         <!-- Gráficos -->
         <div class="row g-3">
           <div class="col-lg-6">
@@ -771,16 +771,16 @@
           <div class="col-12">
             <div class="card shadow-sm">
               <div class="card-body">
-                <h5>Map de calor de leitura (últimos meses)</h5>
+                <h5>Heatmap de leitura (últimos meses)</h5>
                 <div id="heatmap-container" class="d-flex flex-wrap gap-1 justify-content-center"></div>
                 <div class="d-flex justify-content-center mt-2">
                   <small class="me-2">Menos</small>
                   <div class="d-flex gap-1 align-items-center">
                     <span style="width:12px;height:12px;background:#ebedf0;border-radius:2px;"></span>
-                    <span style="width:12px;height:12px;background:#fff9c4;border-radius:2px;"></span>
-                    <span style="width:12px;height:12px;background:#ffcc80;border-radius:2px;"></span>
-                    <span style="width:12px;height:12px;background:#ff7043;border-radius:2px;"></span>
-                    <span style="width:12px;height:12px;background:#d32f2f;border-radius:2px;"></span>
+                    <span style="width:12px;height:12px;background:#ffcccc;border-radius:2px;"></span>
+                    <span style="width:12px;height:12px;background:#ff9999;border-radius:2px;"></span>
+                    <span style="width:12px;height:12px;background:#ff4d4d;border-radius:2px;"></span>
+                    <span style="width:12px;height:12px;background:#cc0000;border-radius:2px;"></span>
                   </div>
                   <small class="ms-2">Mais</small>
                 </div>
@@ -804,32 +804,42 @@
             </div>
           </div>
         </div>
-                  <!-- Calendário de Leitura -->
-          <div class="col-12 mt-4">
-            <div class="card shadow-sm">
-              <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                  <h5 class="mb-0"><i class="fa-solid fa-calendar-days"></i> Calendário de Leitura</h5>
-                  <div>
-                    <button id="calendario-mes-anterior" class="btn btn-sm btn-outline-secondary"><i class="fas fa-chevron-left"></i></button>
-                    <span id="calendario-mes-ano" class="mx-2 fw-bold"></span>
-                    <button id="calendario-mes-proximo" class="btn btn-sm btn-outline-secondary"><i class="fas fa-chevron-right"></i></button>
-                    <button id="btn-compartilhar-calendario" class="btn btn-sm btn-outline-primary ms-2" title="Baixar imagem do calendário">
-                    <i class="fas fa-camera"></i>
-                  </div>
+    
+        <!-- Calendário de Leitura -->
+        <div class="col-12 mt-4">
+          <div class="card shadow-sm">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0"><i class="fa-solid fa-calendar-days"></i> Calendário de Leitura</h5>
+                <div>
+                  <button id="calendario-mes-anterior" class="btn btn-sm btn-outline-secondary"><i class="fas fa-chevron-left"></i></button>
+                  <span id="calendario-mes-ano" class="mx-2 fw-bold"></span>
+                  <button id="calendario-mes-proximo" class="btn btn-sm btn-outline-secondary"><i class="fas fa-chevron-right"></i></button>
+                  <button id="btn-compartilhar-calendario" class="btn btn-sm btn-outline-primary ms-2" title="Baixar imagem do calendário"><i class="fas fa-camera"></i></button>
                 </div>
-                <div class="row row-cols-7 text-center fw-bold small mb-2" style="color: var(--text-secondary);">
-                  <div>Dom</div><div>Seg</div><div>Ter</div><div>Qua</div><div>Qui</div><div>Sex</div><div>Sáb</div>
-                </div>
-                <div id="calendario-grid" class="row row-cols-7 g-1">
-                  <!-- Preenchido dinamicamente -->
-                </div>
+              </div>
+              <div class="row row-cols-7 text-center fw-bold small mb-2" style="color: var(--text-secondary);">
+                <div>Dom</div><div>Seg</div><div>Ter</div><div>Qua</div><div>Qui</div><div>Sex</div><div>Sáb</div>
+              </div>
+              <div id="calendario-grid" class="row row-cols-7 g-1">
+                <!-- Preenchido dinamicamente -->
               </div>
             </div>
           </div>
+        </div>
+    
+        <!-- Locais de Leitura (NOVO) -->
+        <div class="col-12 mt-4">
+          <div class="card shadow-sm">
+            <div class="card-header fw-bold"><i class="fas fa-map-marker-alt me-2"></i>Locais de Leitura</div>
+            <div class="card-body">
+              <div id="locais-container" class="row g-3"></div>
+            </div>
+          </div>
+        </div>
+    
       </div>
     </div>
-
     <div id="page-metas" class="page">
       <div class="container py-4">
         <h1 class="mb-4">Metas e Conquistas</h1>
