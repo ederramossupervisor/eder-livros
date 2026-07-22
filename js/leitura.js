@@ -272,7 +272,7 @@ const Leitura = (() => {
     animFrameId = requestAnimationFrame(atualizarDisplayLoop);
   }
 
-  function iniciarCronometro() {
+    function iniciarCronometro() {
     if (cronometroAtivo) return;
     if (tempoAcumulado === 0) {
       horaInicio.value = new Date().toTimeString().slice(0, 5);
@@ -287,6 +287,13 @@ const Leitura = (() => {
     horaInicio.disabled = true;
     horaFim.disabled = true;
     atualizarDisplayLoop();
+
+    // Inicia áudio fantasma para controles de mídia
+    const audio = document.getElementById('audio-fantasma');
+    if (audio) {
+      audio.volume = 0;
+      audio.play().catch(() => {});
+    }
     if ('mediaSession' in navigator) {
       navigator.mediaSession.playbackState = 'playing';
     }
@@ -303,6 +310,11 @@ const Leitura = (() => {
     btnRetomar.classList.remove('d-none');
     horaInicio.disabled = false;
     horaFim.disabled = false;
+
+    // Pausa áudio fantasma
+    const audio = document.getElementById('audio-fantasma');
+    if (audio) audio.pause();
+
     if ('mediaSession' in navigator) {
       navigator.mediaSession.playbackState = 'paused';
     }
@@ -318,6 +330,13 @@ const Leitura = (() => {
     horaInicio.disabled = true;
     horaFim.disabled = true;
     atualizarDisplayLoop();
+
+    // Retoma áudio fantasma
+    const audio = document.getElementById('audio-fantasma');
+    if (audio) {
+      audio.volume = 0;
+      audio.play().catch(() => {});
+    }
     if ('mediaSession' in navigator) {
       navigator.mediaSession.playbackState = 'playing';
     }
@@ -344,6 +363,10 @@ const Leitura = (() => {
     btnFinalizar.classList.add('d-none');
     horaInicio.disabled = false;
     horaFim.disabled = false;
+
+    // Para áudio fantasma
+    const audio = document.getElementById('audio-fantasma');
+    if (audio) audio.pause();
     if ('mediaSession' in navigator) {
       navigator.mediaSession.playbackState = 'none';
     }
@@ -366,11 +389,13 @@ const Leitura = (() => {
     horaFim.disabled = false;
     horaInicio.value = '';
     horaFim.value = '';
+
+    const audio = document.getElementById('audio-fantasma');
+    if (audio) audio.pause();
     if ('mediaSession' in navigator) {
       navigator.mediaSession.playbackState = 'none';
     }
   }
-
   async function carregarLivros() {
     try {
       livroInput.value = '';
