@@ -75,84 +75,97 @@ const Leitura = (() => {
   }
 
   function init() {
-    if (!form) return;
+  if (!form) return;
 
-    initSpeech();
-    const hoje = new Date();
-    const dia = String(hoje.getDate()).padStart(2, '0');
-    const mes = String(hoje.getMonth() + 1).padStart(2, '0');
-    const ano = hoje.getFullYear();
-    dataInput.value = `${ano}-${mes}-${dia}`;
+  initSpeech();
+  const hoje = new Date();
+  const dia = String(hoje.getDate()).padStart(2, '0');
+  const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+  const ano = hoje.getFullYear();
+  dataInput.value = `${ano}-${mes}-${dia}`;
 
-    horaInicio.addEventListener('input', () => formatarHora(horaInicio));
-    horaFim.addEventListener('input', () => formatarHora(horaFim));
+  horaInicio.addEventListener('input', () => formatarHora(horaInicio));
+  horaFim.addEventListener('input', () => formatarHora(horaFim));
 
-    horaInicio.addEventListener('blur', () => {
-      if (horaInicio.value && !horaInicio.value.includes(':')) {
-        horaInicio.value = horaInicio.value.padEnd(2, '0') + ':00';
-        if (horaInicio.value.length > 5) horaInicio.value = horaInicio.value.slice(0, 5);
-      }
-      calcularTempo();
-    });
-
-    horaFim.addEventListener('blur', () => {
-      if (horaFim.value && !horaFim.value.includes(':')) {
-        horaFim.value = horaFim.value.padEnd(2, '0') + ':00';
-        if (horaFim.value.length > 5) horaFim.value = horaFim.value.slice(0, 5);
-      }
-      calcularTempo();
-    });
-
-    livroInput.addEventListener('change', () => {
-      const texto = livroInput.value.trim();
-      const id = livroMap[texto];
-      if (id) {
-        const livro = livrosCache.find(l => l.ID === id);
-        if (livro) {
-          livroInfo.innerHTML = `
-            <strong>${livro.Título}</strong> | ${livro.Autor}<br>
-            Páginas totais: ${livro.NúmeroPáginas || '?'} | Status: ${livro.Status} | Lidas: ${livro.PáginasLidasAcumuladas || 0}
-          `;
-        }
-      } else {
-        livroInfo.innerHTML = '';
-      }
-    });
-
-    [pagInicial, pagFinal].forEach(el => el.addEventListener('input', calcularPaginas));
-    refreshBtn.addEventListener('click', carregarLivros);
-    form.addEventListener('submit', salvarSessao);
-    document.getElementById('clear-session-btn')?.addEventListener('click', limparFormulario);
-
-    btnIniciar.addEventListener('click', iniciarCronometro);
-    btnPausar.addEventListener('click', pausarCronometro);
-    btnRetomar.addEventListener('click', retomarCronometro);
-    btnFinalizar.addEventListener('click', finalizarCronometro);
-
-    const btnVoz = document.getElementById('btn-voz-obs-sessao');
-    const obsInput = document.getElementById('observacoes-sessao');
-    if (btnVoz && obsInput) {
-      btnVoz.addEventListener('click', () => {
-        if (!recognition) {
-          Util.toast('Reconhecimento de voz não suportado.', 'warning');
-          return;
-        }
-        if (targetInput === obsInput) {
-          recognition.stop();
-          return;
-        }
-        if (targetInput) recognition.stop();
-        targetInput = obsInput;
-        btnVoz.innerHTML = '<i class="fas fa-stop"></i>';
-        recognition.start();
-      });
+  horaInicio.addEventListener('blur', () => {
+    if (horaInicio.value && !horaInicio.value.includes(':')) {
+      horaInicio.value = horaInicio.value.padEnd(2, '0') + ':00';
+      if (horaInicio.value.length > 5) horaInicio.value = horaInicio.value.slice(0, 5);
     }
+    calcularTempo();
+  });
 
-    carregarLivros();
-    carregarHistorico();
-    console.log('✅ Módulo Leitura pronto.');
+  horaFim.addEventListener('blur', () => {
+    if (horaFim.value && !horaFim.value.includes(':')) {
+      horaFim.value = horaFim.value.padEnd(2, '0') + ':00';
+      if (horaFim.value.length > 5) horaFim.value = horaFim.value.slice(0, 5);
+    }
+    calcularTempo();
+  });
+
+  livroInput.addEventListener('change', () => {
+    const texto = livroInput.value.trim();
+    const id = livroMap[texto];
+    if (id) {
+      const livro = livrosCache.find(l => l.ID === id);
+      if (livro) {
+        livroInfo.innerHTML = `
+          <strong>${livro.Título}</strong> | ${livro.Autor}<br>
+          Páginas totais: ${livro.NúmeroPáginas || '?'} | Status: ${livro.Status} | Lidas: ${livro.PáginasLidasAcumuladas || 0}
+        `;
+      }
+    } else {
+      livroInfo.innerHTML = '';
+    }
+  });
+
+  [pagInicial, pagFinal].forEach(el => el.addEventListener('input', calcularPaginas));
+  refreshBtn.addEventListener('click', carregarLivros);
+  form.addEventListener('submit', salvarSessao);
+  document.getElementById('clear-session-btn')?.addEventListener('click', limparFormulario);
+
+  btnIniciar.addEventListener('click', iniciarCronometro);
+  btnPausar.addEventListener('click', pausarCronometro);
+  btnRetomar.addEventListener('click', retomarCronometro);
+  btnFinalizar.addEventListener('click', finalizarCronometro);
+
+  // Botão de voz para observações (já existente)
+  const btnVoz = document.getElementById('btn-voz-obs-sessao');
+  const obsInput = document.getElementById('observacoes-sessao');
+  if (btnVoz && obsInput) {
+    btnVoz.addEventListener('click', () => {
+      if (!recognition) {
+        Util.toast('Reconhecimento de voz não suportado.', 'warning');
+        return;
+      }
+      if (targetInput === obsInput) {
+        recognition.stop();
+        return;
+      }
+      if (targetInput) recognition.stop();
+      targetInput = obsInput;
+      btnVoz.innerHTML = '<i class="fas fa-stop"></i>';
+      recognition.start();
+    });
   }
 
+  // ✅ NOVO: Botão OCR para capturar texto da câmera
+  const btnOcrSessao = document.getElementById('btn-ocr-sessao');
+  const obsSessao = document.getElementById('observacoes-sessao');
+  if (btnOcrSessao && obsSessao) {
+    btnOcrSessao.addEventListener('click', () => {
+      if (typeof OCR !== 'undefined' && OCR.capturarECapturarTexto) {
+        OCR.capturarECapturarTexto(obsSessao);
+      } else {
+        Util.toast('Funcionalidade de OCR não carregada.', 'warning');
+      }
+    });
+  }
+
+  carregarLivros();
+  carregarHistorico();
+  console.log('✅ Módulo Leitura pronto.');
+}
   function atualizarDisplay(segundos) {
     const mins = Math.floor(segundos / 60);
     const secs = segundos % 60;
