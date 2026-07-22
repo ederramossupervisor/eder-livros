@@ -24,10 +24,11 @@ const Leitura = (() => {
   let livrosCache = [];
   let editandoSessaoID = null;
   let livroMap = {};
+  // Novas variáveis do cronômetro
   let cronometroAtivo = false;
-  let tempoAcumulado = 0;
-  let inicioCronometro = null;
-  let timerInterval = null;
+  let inicioCronometro = null; // timestamp (ms) de quando iniciou/retomou
+  let tempoAcumulado = 0;      // ms acumulados antes da última pausa
+  let animFrameId = null;
   let recognition = null;
   let targetInput = null;
 
@@ -123,6 +124,7 @@ const Leitura = (() => {
             <strong>${livro.Título}</strong> | ${livro.Autor}<br>
             Páginas totais: ${livro.NúmeroPáginas || '?'} | Status: ${livro.Status} | Lidas: ${livro.PáginasLidasAcumuladas || 0}
           `;
+          atualizarMediaSession(livro); // Atualiza os metadados para a tela de bloqueio
         }
       } else {
         livroInfo.innerHTML = '';
@@ -139,14 +141,10 @@ const Leitura = (() => {
     btnRetomar.addEventListener('click', retomarCronometro);
     btnFinalizar.addEventListener('click', finalizarCronometro);
 
-    // Configuração das múltiplas anotações
+    // Configura múltiplas anotações
     containerAnotacoes = document.getElementById('anotacoes-sessao-container');
     templateAnotacao = document.getElementById('template-anotacao-item');
-
-    // Adiciona o primeiro item vazio
     adicionarItemAnotacao();
-
-    // Botão para adicionar mais itens
     document.getElementById('btn-adicionar-anotacao')?.addEventListener('click', () => {
       adicionarItemAnotacao();
     });
@@ -161,9 +159,59 @@ const Leitura = (() => {
       }
     };
 
+    // Configurar Media Session para controles na tela de bloqueio
+    configurarMediaSession();
+
+    // Listener de visibilidade para atualizar o display ao retornar
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && cronometroAtivo) {
+        // Força atualização imediata
+        const agora = Date.now();
+        const totalMs = tempoAcumulado + (agora - inicioCronometro);
+        const totalSeg = Math.floor(totalMs / 1000);
+        const mins = Math.floor(totalSeg / 60);
+        const secs = totalSeg % 60;
+        display.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        if (!animFrameId) atualizarDisplayLoop();
+      }
+    });
+
     carregarLivros();
     carregarHistorico();
     console.log('✅ Módulo Leitura pronto.');
+  }
+
+  function configurarMediaSession() {
+    if (!('mediaSession' in navigator)) return;
+    const audio = document.getElementById('audio-fantasma');
+    if (audio) {
+      audio.play().catch(() => {}); // necessário para alguns navegadores
+    }
+
+    const actionHandlers = [
+      ['play', () => { if (!cronometroAtivo) iniciarCronometro(); }],
+      ['pause', () => { if (cronometroAtivo) pausarCronometro(); }],
+      ['stop', () => { finalizarCronometro(); }]
+    ];
+
+    for (const [action, handler] of actionHandlers) {
+      try {
+        navigator.mediaSession.setActionHandler(action, handler);
+      } catch (error) {
+        console.log(`Media Session action ${action} not supported`);
+      }
+    }
+  }
+
+  function atualizarMediaSession(livro) {
+    if (!('mediaSession' in navigator)) return;
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: livro?.Título || 'Leitura',
+      artist: livro?.Autor || 'Eder Livros',
+      artwork: [
+        { src: livro?.URLCapa || 'img/icons/logo.png', sizes: '96x96', type: 'image/png' }
+      ]
+    });
   }
 
   function adicionarItemAnotacao() {
@@ -213,68 +261,82 @@ const Leitura = (() => {
     containerAnotacoes.appendChild(item);
   }
 
-  function atualizarDisplay(segundos) {
-    const mins = Math.floor(segundos / 60);
-    const secs = segundos % 60;
+  function atualizarDisplayLoop() {
+    if (!cronometroAtivo) return;
+    const agora = Date.now();
+    const totalMs = tempoAcumulado + (inicioCronometro ? agora - inicioCronometro : 0);
+    const totalSeg = Math.floor(totalMs / 1000);
+    const mins = Math.floor(totalSeg / 60);
+    const secs = totalSeg % 60;
     display.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    animFrameId = requestAnimationFrame(atualizarDisplayLoop);
   }
 
   function iniciarCronometro() {
+    if (cronometroAtivo) return;
     if (tempoAcumulado === 0) {
       horaInicio.value = new Date().toTimeString().slice(0, 5);
     }
     inicioCronometro = Date.now();
     cronometroAtivo = true;
-
     display.classList.add('pulsando');
-
     btnIniciar.classList.add('d-none');
     btnPausar.classList.remove('d-none');
     btnRetomar.classList.add('d-none');
     btnFinalizar.classList.remove('d-none');
     horaInicio.disabled = true;
     horaFim.disabled = true;
-
-    timerInterval = setInterval(() => {
-      const agora = Date.now();
-      const decorrido = Math.floor((agora - inicioCronometro) / 1000);
-      const total = tempoAcumulado + decorrido;
-      atualizarDisplay(total);
-    }, 1000);
+    atualizarDisplayLoop();
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.playbackState = 'playing';
+    }
   }
 
   function pausarCronometro() {
     if (!cronometroAtivo) return;
-    clearInterval(timerInterval);
-    tempoAcumulado += Math.floor((Date.now() - inicioCronometro) / 1000);
     cronometroAtivo = false;
+    if (animFrameId) cancelAnimationFrame(animFrameId);
+    tempoAcumulado += Date.now() - inicioCronometro;
+    inicioCronometro = null;
+    display.classList.remove('pulsando');
     btnPausar.classList.add('d-none');
     btnRetomar.classList.remove('d-none');
+    horaInicio.disabled = false;
+    horaFim.disabled = false;
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.playbackState = 'paused';
+    }
   }
 
   function retomarCronometro() {
+    if (cronometroAtivo) return;
     inicioCronometro = Date.now();
     cronometroAtivo = true;
-    display.classList.remove('pulsando');
+    display.classList.add('pulsando');
     btnRetomar.classList.add('d-none');
     btnPausar.classList.remove('d-none');
-    timerInterval = setInterval(() => {
-      const agora = Date.now();
-      const decorrido = Math.floor((agora - inicioCronometro) / 1000);
-      const total = tempoAcumulado + decorrido;
-      atualizarDisplay(total);
-    }, 1000);
+    horaInicio.disabled = true;
+    horaFim.disabled = true;
+    atualizarDisplayLoop();
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.playbackState = 'playing';
+    }
   }
 
   function finalizarCronometro() {
     if (cronometroAtivo) {
-      clearInterval(timerInterval);
-      tempoAcumulado += Math.floor((Date.now() - inicioCronometro) / 1000);
       cronometroAtivo = false;
+      if (animFrameId) cancelAnimationFrame(animFrameId);
+      tempoAcumulado += Date.now() - inicioCronometro;
+      inicioCronometro = null;
     }
     display.classList.remove('pulsando');
+    const totalMs = tempoAcumulado;
+    const totalSeg = Math.floor(totalMs / 1000);
+    const mins = Math.floor(totalSeg / 60);
+    const secs = totalSeg % 60;
+    display.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     horaFim.value = new Date().toTimeString().slice(0, 5);
-    atualizarDisplay(tempoAcumulado);
     calcularTempo();
     btnIniciar.classList.remove('d-none');
     btnPausar.classList.add('d-none');
@@ -282,14 +344,19 @@ const Leitura = (() => {
     btnFinalizar.classList.add('d-none');
     horaInicio.disabled = false;
     horaFim.disabled = false;
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.playbackState = 'none';
+    }
   }
 
   function resetarCronometro() {
-    clearInterval(timerInterval);
-    cronometroAtivo = false;
+    if (cronometroAtivo) {
+      cronometroAtivo = false;
+      if (animFrameId) cancelAnimationFrame(animFrameId);
+    }
     tempoAcumulado = 0;
     inicioCronometro = null;
-    atualizarDisplay(0);
+    display.textContent = '00:00';
     display.classList.remove('pulsando');
     btnIniciar.classList.remove('d-none');
     btnPausar.classList.add('d-none');
@@ -299,6 +366,9 @@ const Leitura = (() => {
     horaFim.disabled = false;
     horaInicio.value = '';
     horaFim.value = '';
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.playbackState = 'none';
+    }
   }
 
   async function carregarLivros() {
@@ -516,6 +586,7 @@ const Leitura = (() => {
     const livroEdit = livrosCache.find(l => l.ID === sess.LivroID);
     if (livroEdit) {
       livroInput.value = `${livroEdit.Título} - ${livroEdit.Autor} (${livroEdit.Status})`;
+      atualizarMediaSession(livroEdit);
     }
     dataInput.value = sess.Data;
     horaInicio.value = sess.HoraInício || '';
