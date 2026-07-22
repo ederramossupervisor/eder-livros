@@ -162,6 +162,18 @@ const Leitura = (() => {
     // Configurar Media Session para controles na tela de bloqueio
     configurarMediaSession();
 
+    // Fallback defensivo: garante que o áudio fantasma continue tocando
+    // mesmo se o loop nativo falhar em algum navegador/situação de fundo.
+    const audioFantasma = document.getElementById('audio-fantasma');
+    if (audioFantasma) {
+      audioFantasma.addEventListener('ended', () => {
+        if (cronometroAtivo) {
+          audioFantasma.currentTime = 0;
+          audioFantasma.play().catch(() => {});
+        }
+      });
+    }
+
     // Listener de visibilidade para atualizar o display ao retornar
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible' && cronometroAtivo) {
@@ -207,6 +219,18 @@ const Leitura = (() => {
         { src: livro?.URLCapa || 'img/icons/logo.png', sizes: '96x96', type: 'image/png' }
       ]
     });
+  }
+
+  // Garante que a metadata reflita o livro selecionado no momento em que o
+  // cronômetro realmente inicia/retoma — antes ela só era setada no evento
+  // "change" do datalist, então iniciar sem reselecionar deixava a metadata
+  // vazia/desatualizada e o Android/iOS podem se recusar a mostrar os
+  // controles na tela de bloqueio sem uma metadata válida.
+  function atualizarMediaSessionAtual() {
+    const texto = livroInput.value.trim();
+    const id = livroMap[texto];
+    const livro = livrosCache.find(l => l.ID === id);
+    atualizarMediaSession(livro);
   }
 
   function adicionarItemAnotacao() {
@@ -283,10 +307,13 @@ const Leitura = (() => {
     horaFim.disabled = true;
     atualizarDisplayLoop();
 
-    // Áudio fantasma: inicia e força loop
+    // Metadata precisa estar setada ANTES/junto do play() para o SO aceitar
+    // o áudio como uma sessão de mídia válida e mostrar os controles.
+    atualizarMediaSessionAtual();
+
+    // Áudio fantasma: inicia e força loop (arquivo com duração real — ver silencio.wav)
     const audio = document.getElementById('audio-fantasma');
     if (audio) {
-      audio.volume = 0;
       audio.loop = true;
       audio.play().catch(() => {});
     }
@@ -326,9 +353,10 @@ const Leitura = (() => {
     horaFim.disabled = true;
     atualizarDisplayLoop();
 
+    atualizarMediaSessionAtual();
+
     const audio = document.getElementById('audio-fantasma');
     if (audio) {
-      audio.volume = 0;
       audio.loop = true;
       audio.play().catch(() => {});
     }
