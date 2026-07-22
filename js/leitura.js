@@ -272,7 +272,7 @@ const Leitura = (() => {
     animFrameId = requestAnimationFrame(atualizarDisplayLoop);
   }
 
-    function iniciarCronometro() {
+      function iniciarCronometro() {
     if (cronometroAtivo) return;
     if (tempoAcumulado === 0) {
       horaInicio.value = new Date().toTimeString().slice(0, 5);
@@ -288,10 +288,11 @@ const Leitura = (() => {
     horaFim.disabled = true;
     atualizarDisplayLoop();
 
-    // Inicia áudio fantasma para controles de mídia
+    // Áudio fantasma: inicia e força loop
     const audio = document.getElementById('audio-fantasma');
     if (audio) {
       audio.volume = 0;
+      audio.loop = true;
       audio.play().catch(() => {});
     }
     if ('mediaSession' in navigator) {
@@ -299,7 +300,7 @@ const Leitura = (() => {
     }
   }
 
-  function pausarCronometro() {
+    function pausarCronometro() {
     if (!cronometroAtivo) return;
     cronometroAtivo = false;
     if (animFrameId) cancelAnimationFrame(animFrameId);
@@ -311,7 +312,6 @@ const Leitura = (() => {
     horaInicio.disabled = false;
     horaFim.disabled = false;
 
-    // Pausa áudio fantasma
     const audio = document.getElementById('audio-fantasma');
     if (audio) audio.pause();
 
@@ -320,7 +320,7 @@ const Leitura = (() => {
     }
   }
 
-  function retomarCronometro() {
+    function retomarCronometro() {
     if (cronometroAtivo) return;
     inicioCronometro = Date.now();
     cronometroAtivo = true;
@@ -331,18 +331,18 @@ const Leitura = (() => {
     horaFim.disabled = true;
     atualizarDisplayLoop();
 
-    // Retoma áudio fantasma
     const audio = document.getElementById('audio-fantasma');
     if (audio) {
       audio.volume = 0;
+      audio.loop = true;
       audio.play().catch(() => {});
     }
     if ('mediaSession' in navigator) {
       navigator.mediaSession.playbackState = 'playing';
     }
   }
-
-  function finalizarCronometro() {
+  
+    function finalizarCronometro() {
     if (cronometroAtivo) {
       cronometroAtivo = false;
       if (animFrameId) cancelAnimationFrame(animFrameId);
@@ -364,15 +364,15 @@ const Leitura = (() => {
     horaInicio.disabled = false;
     horaFim.disabled = false;
 
-    // Para áudio fantasma
     const audio = document.getElementById('audio-fantasma');
     if (audio) audio.pause();
+
     if ('mediaSession' in navigator) {
       navigator.mediaSession.playbackState = 'none';
     }
   }
-
-  function resetarCronometro() {
+  
+    function resetarCronometro() {
     if (cronometroAtivo) {
       cronometroAtivo = false;
       if (animFrameId) cancelAnimationFrame(animFrameId);
@@ -392,10 +392,12 @@ const Leitura = (() => {
 
     const audio = document.getElementById('audio-fantasma');
     if (audio) audio.pause();
+
     if ('mediaSession' in navigator) {
       navigator.mediaSession.playbackState = 'none';
     }
   }
+  
   async function carregarLivros() {
     try {
       livroInput.value = '';
