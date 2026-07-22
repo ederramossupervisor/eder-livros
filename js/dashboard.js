@@ -167,7 +167,7 @@ const Dashboard = (() => {
         }
       }
 
-      // Tempo restante e velocidade (individual)
+            // Tempo restante e velocidade (individual)
       if (tempoRestEl) {
         if (livro.tempoRestanteMinutos && livro.tempoRestanteMinutos > 0) {
           const horas = Math.floor(livro.tempoRestanteMinutos / 60);
