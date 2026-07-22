@@ -84,3 +84,7 @@
 .local-card i {
   color: var(--primary);
 }
+.icone-capa-marcador {
+  border-radius: 4px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
