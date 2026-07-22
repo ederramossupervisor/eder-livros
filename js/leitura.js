@@ -31,6 +31,10 @@ const Leitura = (() => {
   let recognition = null;
   let targetInput = null;
 
+  // Container e template para múltiplas anotações
+  let containerAnotacoes = null;
+  let templateAnotacao = null;
+
   function initSpeech() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
@@ -49,14 +53,20 @@ const Leitura = (() => {
     });
 
     recognition.addEventListener('end', () => {
-      const btn = document.getElementById('btn-voz-obs-sessao');
-      if (btn) btn.innerHTML = '<i class="fas fa-microphone"></i>';
+      const btn = document.querySelector('.btn-recording');
+      if (btn) {
+        btn.classList.remove('btn-recording', 'btn-danger');
+        btn.innerHTML = '<i class="fas fa-microphone"></i>';
+      }
       targetInput = null;
     });
 
     recognition.addEventListener('error', () => {
-      const btn = document.getElementById('btn-voz-obs-sessao');
-      if (btn) btn.innerHTML = '<i class="fas fa-microphone"></i>';
+      const btn = document.querySelector('.btn-recording');
+      if (btn) {
+        btn.classList.remove('btn-recording', 'btn-danger');
+        btn.innerHTML = '<i class="fas fa-microphone"></i>';
+      }
       targetInput = null;
     });
   }
@@ -75,97 +85,134 @@ const Leitura = (() => {
   }
 
   function init() {
-  if (!form) return;
+    if (!form) return;
 
-  initSpeech();
-  const hoje = new Date();
-  const dia = String(hoje.getDate()).padStart(2, '0');
-  const mes = String(hoje.getMonth() + 1).padStart(2, '0');
-  const ano = hoje.getFullYear();
-  dataInput.value = `${ano}-${mes}-${dia}`;
+    initSpeech();
+    const hoje = new Date();
+    const dia = String(hoje.getDate()).padStart(2, '0');
+    const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+    const ano = hoje.getFullYear();
+    dataInput.value = `${ano}-${mes}-${dia}`;
 
-  horaInicio.addEventListener('input', () => formatarHora(horaInicio));
-  horaFim.addEventListener('input', () => formatarHora(horaFim));
+    horaInicio.addEventListener('input', () => formatarHora(horaInicio));
+    horaFim.addEventListener('input', () => formatarHora(horaFim));
 
-  horaInicio.addEventListener('blur', () => {
-    if (horaInicio.value && !horaInicio.value.includes(':')) {
-      horaInicio.value = horaInicio.value.padEnd(2, '0') + ':00';
-      if (horaInicio.value.length > 5) horaInicio.value = horaInicio.value.slice(0, 5);
-    }
-    calcularTempo();
-  });
-
-  horaFim.addEventListener('blur', () => {
-    if (horaFim.value && !horaFim.value.includes(':')) {
-      horaFim.value = horaFim.value.padEnd(2, '0') + ':00';
-      if (horaFim.value.length > 5) horaFim.value = horaFim.value.slice(0, 5);
-    }
-    calcularTempo();
-  });
-
-  livroInput.addEventListener('change', () => {
-    const texto = livroInput.value.trim();
-    const id = livroMap[texto];
-    if (id) {
-      const livro = livrosCache.find(l => l.ID === id);
-      if (livro) {
-        livroInfo.innerHTML = `
-          <strong>${livro.Título}</strong> | ${livro.Autor}<br>
-          Páginas totais: ${livro.NúmeroPáginas || '?'} | Status: ${livro.Status} | Lidas: ${livro.PáginasLidasAcumuladas || 0}
-        `;
+    horaInicio.addEventListener('blur', () => {
+      if (horaInicio.value && !horaInicio.value.includes(':')) {
+        horaInicio.value = horaInicio.value.padEnd(2, '0') + ':00';
+        if (horaInicio.value.length > 5) horaInicio.value = horaInicio.value.slice(0, 5);
       }
-    } else {
-      livroInfo.innerHTML = '';
-    }
-  });
+      calcularTempo();
+    });
 
-  [pagInicial, pagFinal].forEach(el => el.addEventListener('input', calcularPaginas));
-  refreshBtn.addEventListener('click', carregarLivros);
-  form.addEventListener('submit', salvarSessao);
-  document.getElementById('clear-session-btn')?.addEventListener('click', limparFormulario);
+    horaFim.addEventListener('blur', () => {
+      if (horaFim.value && !horaFim.value.includes(':')) {
+        horaFim.value = horaFim.value.padEnd(2, '0') + ':00';
+        if (horaFim.value.length > 5) horaFim.value = horaFim.value.slice(0, 5);
+      }
+      calcularTempo();
+    });
 
-  btnIniciar.addEventListener('click', iniciarCronometro);
-  btnPausar.addEventListener('click', pausarCronometro);
-  btnRetomar.addEventListener('click', retomarCronometro);
-  btnFinalizar.addEventListener('click', finalizarCronometro);
+    livroInput.addEventListener('change', () => {
+      const texto = livroInput.value.trim();
+      const id = livroMap[texto];
+      if (id) {
+        const livro = livrosCache.find(l => l.ID === id);
+        if (livro) {
+          livroInfo.innerHTML = `
+            <strong>${livro.Título}</strong> | ${livro.Autor}<br>
+            Páginas totais: ${livro.NúmeroPáginas || '?'} | Status: ${livro.Status} | Lidas: ${livro.PáginasLidasAcumuladas || 0}
+          `;
+        }
+      } else {
+        livroInfo.innerHTML = '';
+      }
+    });
 
-  // Botão de voz para observações (já existente)
-  const btnVoz = document.getElementById('btn-voz-obs-sessao');
-  const obsInput = document.getElementById('observacoes-sessao');
-  if (btnVoz && obsInput) {
+    [pagInicial, pagFinal].forEach(el => el.addEventListener('input', calcularPaginas));
+    refreshBtn.addEventListener('click', carregarLivros);
+    form.addEventListener('submit', salvarSessao);
+    document.getElementById('clear-session-btn')?.addEventListener('click', limparFormulario);
+
+    btnIniciar.addEventListener('click', iniciarCronometro);
+    btnPausar.addEventListener('click', pausarCronometro);
+    btnRetomar.addEventListener('click', retomarCronometro);
+    btnFinalizar.addEventListener('click', finalizarCronometro);
+
+    // Configuração das múltiplas anotações
+    containerAnotacoes = document.getElementById('anotacoes-sessao-container');
+    templateAnotacao = document.getElementById('template-anotacao-item');
+
+    // Adiciona o primeiro item vazio
+    adicionarItemAnotacao();
+
+    // Botão para adicionar mais itens
+    document.getElementById('btn-adicionar-anotacao')?.addEventListener('click', () => {
+      adicionarItemAnotacao();
+    });
+
+    // Sobrescreve limparFormulario para limpar itens extras
+    const limparOriginal = limparFormulario;
+    limparFormulario = function() {
+      limparOriginal();
+      if (containerAnotacoes) {
+        containerAnotacoes.innerHTML = '';
+        adicionarItemAnotacao();
+      }
+    };
+
+    carregarLivros();
+    carregarHistorico();
+    console.log('✅ Módulo Leitura pronto.');
+  }
+
+  function adicionarItemAnotacao() {
+    if (!templateAnotacao || !containerAnotacoes) return;
+
+    const clone = templateAnotacao.content.cloneNode(true);
+    const item = clone.querySelector('.anotacao-item');
+
+    // Botão remover
+    const btnRemover = item.querySelector('.btn-remover-anotacao');
+    btnRemover.addEventListener('click', () => {
+      if (containerAnotacoes.children.length > 1) {
+        item.remove();
+      } else {
+        Util.toast('É necessário pelo menos um campo de anotação.', 'warning');
+      }
+    });
+
+    // Configurar botão de voz para este item
+    const btnVoz = item.querySelector('.btn-voz-obs');
+    const textarea = item.querySelector('.texto-obs');
     btnVoz.addEventListener('click', () => {
       if (!recognition) {
         Util.toast('Reconhecimento de voz não suportado.', 'warning');
         return;
       }
-      if (targetInput === obsInput) {
+      if (targetInput === textarea) {
         recognition.stop();
         return;
       }
       if (targetInput) recognition.stop();
-      targetInput = obsInput;
+      targetInput = textarea;
       btnVoz.innerHTML = '<i class="fas fa-stop"></i>';
       recognition.start();
     });
-  }
 
-  // ✅ NOVO: Botão OCR para capturar texto da câmera
-  const btnOcrSessao = document.getElementById('btn-ocr-sessao');
-  const obsSessao = document.getElementById('observacoes-sessao');
-  if (btnOcrSessao && obsSessao) {
-    btnOcrSessao.addEventListener('click', () => {
+    // Configurar botão de OCR para este item
+    const btnOcr = item.querySelector('.btn-ocr-obs');
+    btnOcr.addEventListener('click', () => {
       if (typeof OCR !== 'undefined' && OCR.capturarECapturarTexto) {
-        OCR.capturarECapturarTexto(obsSessao);
+        OCR.capturarECapturarTexto(textarea);
       } else {
         Util.toast('Funcionalidade de OCR não carregada.', 'warning');
       }
     });
+
+    containerAnotacoes.appendChild(item);
   }
 
-  carregarLivros();
-  carregarHistorico();
-  console.log('✅ Módulo Leitura pronto.');
-}
   function atualizarDisplay(segundos) {
     const mins = Math.floor(segundos / 60);
     const secs = segundos % 60;
@@ -336,7 +383,7 @@ const Leitura = (() => {
       humor: document.getElementById('humor').value,
       clima: document.getElementById('clima').value,
       distracoes: '',
-      observacoes: document.getElementById('observacoes-sessao').value
+      observacoes: '' // será ignorado, pois agora usamos múltiplas anotações
     };
 
     const btnSubmit = form.querySelector('button[type="submit"]');
@@ -352,26 +399,30 @@ const Leitura = (() => {
       }
 
       if (resposta && resposta.status === 'ok') {
-        const tipoObs = document.getElementById('tipo-obs-sessao')?.value || '';
-        const textoObs = document.getElementById('observacoes-sessao')?.value?.trim() || '';
-
-        if (tipoObs && textoObs) {
-          const paginaAnot = document.getElementById('pagina-obs-sessao')?.value || '';
-          const capituloAnot = document.getElementById('capitulo-obs-sessao')?.value || '';
-          await API.enviar({
-            acao: 'addNote',
-            anotacao: {
-              livroID,
-              capitulo: capituloAnot,  // ← adicionado
-              pagina: paginaAnot,
-              categoria: tipoObs,
-              resumo: '',
-              trecho: '',
-              comentario: textoObs,
-              imagem: ''
-            }
-          });
+        // Salva múltiplas anotações
+        const itens = containerAnotacoes.querySelectorAll('.anotacao-item');
+        for (const item of itens) {
+          const tipo = item.querySelector('.tipo-obs').value;
+          const texto = item.querySelector('.texto-obs').value.trim();
+          if (tipo && texto) {
+            const pagina = item.querySelector('.pagina-obs').value || '';
+            const capitulo = item.querySelector('.capitulo-obs').value || '';
+            await API.enviar({
+              acao: 'addNote',
+              anotacao: {
+                livroID,
+                capitulo: capitulo,
+                pagina: pagina,
+                categoria: tipo,
+                resumo: '',
+                trecho: '',
+                comentario: texto,
+                imagem: ''
+              }
+            });
+          }
         }
+
         Util.toast(editandoSessaoID ? 'Sessão atualizada!' : 'Sessão registrada!', 'success');
         limparFormulario();
         editandoSessaoID = null;
@@ -400,10 +451,12 @@ const Leitura = (() => {
     pagLidasDiv.classList.add('d-none');
     livroInfo.innerHTML = '';
     editandoSessaoID = null;
-    document.getElementById('tipo-obs-sessao').value = '';
-    document.getElementById('pagina-obs-sessao').value = '';
-    document.getElementById('capitulo-obs-sessao').value = '';
     resetarCronometro();
+    // Limpa anotações extras e adiciona um item vazio
+    if (containerAnotacoes) {
+      containerAnotacoes.innerHTML = '';
+      adicionarItemAnotacao();
+    }
   }
 
   async function carregarHistorico() {
@@ -472,7 +525,13 @@ const Leitura = (() => {
     document.getElementById('local-sessao').value = sess.Local || '';
     document.getElementById('humor').value = sess.Humor || '';
     document.getElementById('clima').value = sess.Clima || '';
-    document.getElementById('observacoes-sessao').value = sess.Observações || '';
+
+    // Limpa e adiciona um campo de anotação vazio (edição de anotações não é suportada nessa versão)
+    if (containerAnotacoes) {
+      containerAnotacoes.innerHTML = '';
+      adicionarItemAnotacao();
+    }
+
     calcularTempo();
     calcularPaginas();
     form.querySelector('button[type="submit"]').innerHTML = '<i class="fas fa-save me-1"></i> Atualizar Sessão';
