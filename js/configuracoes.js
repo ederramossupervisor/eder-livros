@@ -7,6 +7,29 @@ const Configuracoes = (() => {
     await carregarConfiguracoes();
     configurarEventos();
     await carregarInfoSistema();
+    await carregarCoordenadas();
+
+    // Salvar nova coordenada
+    document.getElementById('btn-salvar-coordenada')?.addEventListener('click', async () => {
+      const local = document.getElementById('coord-local').value.trim();
+      const coordenada = document.getElementById('coord-valor').value.trim();
+      if (!local || !coordenada) {
+        Util.toast('Preencha ambos os campos.', 'warning');
+        return;
+      }
+      try {
+        const resp = await API.enviar({ acao: 'salvarCoordenadaLocal', local, coordenada });
+        if (resp && resp.status === 'ok') {
+          Util.toast(resp.mensagem || 'Salvo!', 'success');
+          document.getElementById('coord-local').value = '';
+          document.getElementById('coord-valor').value = '';
+          carregarCoordenadas();
+        }
+      } catch (e) {
+        Util.toast('Erro ao salvar.', 'danger');
+      }
+    });
+
     console.log('✅ Módulo Configurações pronto.');
   }
 
@@ -25,7 +48,6 @@ const Configuracoes = (() => {
   }
 
   function configurarEventos() {
-    // Salvar preferências
     document.getElementById('form-config').addEventListener('submit', async (e) => {
       e.preventDefault();
       try {
@@ -34,7 +56,6 @@ const Configuracoes = (() => {
         await API.enviar({ acao: 'saveConfig', chave: 'corPrimaria', valor: document.getElementById('config-cor').value });
         await API.enviar({ acao: 'saveConfig', chave: 'tema', valor: document.getElementById('config-tema').value });
 
-        // Aplicar cor e tema imediatamente
         aplicarTemaCor();
         Util.toast('Configurações salvas!', 'success');
       } catch (erro) {
@@ -42,7 +63,6 @@ const Configuracoes = (() => {
       }
     });
 
-    // Backup
     document.getElementById('btn-backup').addEventListener('click', async () => {
       try {
         const backup = await API.enviar({ acao: 'exportBackup' });
@@ -62,7 +82,6 @@ const Configuracoes = (() => {
       }
     });
 
-    // Restauração
     const inputRestore = document.getElementById('input-restore');
     const btnRestore = document.getElementById('btn-restore');
 
@@ -94,12 +113,38 @@ const Configuracoes = (() => {
     });
   }
 
+  async function carregarCoordenadas() {
+    try {
+      const config = await API.enviar({ acao: 'getConfigs' });
+      const lista = document.getElementById('lista-coordenadas');
+      if (!lista) return;
+      lista.innerHTML = '';
+      for (const [chave, valor] of Object.entries(config)) {
+        if (chave.startsWith('local_coord_')) {
+          const local = chave.replace('local_coord_', '').replace(/_/g, ' ');
+          const li = document.createElement('li');
+          li.className = 'd-flex justify-content-between align-items-center py-1';
+          li.innerHTML = `<span><i class="fas fa-map-pin me-2 text-danger"></i>${local}: ${valor}</span>
+            <button class="btn btn-sm btn-outline-danger btn-remover-coord" data-chave="${chave}"><i class="fas fa-trash"></i></button>`;
+          lista.appendChild(li);
+        }
+      }
+      document.querySelectorAll('.btn-remover-coord').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          await API.enviar({ acao: 'saveConfig', chave: btn.dataset.chave, valor: '' });
+          carregarCoordenadas();
+        });
+      });
+    } catch (e) {
+      console.error('Erro ao carregar coordenadas:', e);
+    }
+  }
+
   async function carregarInfoSistema() {
     try {
       const livros = await API.enviar({ acao: 'listAllBooks' });
       const total = Array.isArray(livros) ? livros.length : 0;
       document.getElementById('info-total-livros').textContent = total;
-      // Estimativa grosseira de espaço (1KB por livro)
       document.getElementById('info-espaco').textContent = (total * 1).toFixed(0) + ' KB (estimado)';
     } catch (e) {
       console.error(e);
@@ -109,15 +154,12 @@ const Configuracoes = (() => {
   function aplicarTemaCor() {
     const cor = document.getElementById('config-cor').value;
     const tema = document.getElementById('config-tema').value;
-    // Aplica cor principal
     document.documentElement.style.setProperty('--primary', cor);
-    // Aplica tema
     if (tema === 'dark') {
       document.body.classList.add('dark-mode');
     } else {
       document.body.classList.remove('dark-mode');
     }
-    // Salva localmente também
     Util.setPreference('darkMode', tema === 'dark');
     Util.setPreference('corPrimaria', cor);
   }
