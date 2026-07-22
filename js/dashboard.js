@@ -1,6 +1,3 @@
-/**
- * Módulo Dashboard – com cache offline
- */
 const Dashboard = (() => {
   let chartInstance = null;
   let currentLivroIndex = 0;
@@ -70,65 +67,44 @@ const Dashboard = (() => {
   }
 
   function preencherCards(d) {
-  window.__previsaoTermino = d.previsaoTermino;
-  containerCard = document.getElementById('livro-atual-card');
-  if (!containerCard) return;
+    containerCard = document.getElementById('livro-atual-card');
+    if (!containerCard) return;
 
-  livrosLendoList = d.livrosLendo || [];
-  if (d.livroAtual && livrosLendoList.length > 0) {
-    currentLivroIndex = livrosLendoList.findIndex(l => l.ID === d.livroAtual.ID);
-    if (currentLivroIndex < 0) currentLivroIndex = 0;
-  } else {
-    currentLivroIndex = 0;
-  }
-  livroAtualID = d.livroAtual ? d.livroAtual.ID : null;
-
-  renderizarLivroAtual();
-  criarControlesNavegacao();
-  adicionarSwipe();
-
-  animarContador('card-livros-mes', d.livrosFinalizadosMes);
-  animarContador('card-livros-ano', d.livrosFinalizadosAno);
-  animarContador('card-paginas-hoje', d.paginasHoje);
-  animarContador('card-paginas-semana', d.paginasSemana);
-  animarContador('card-horas', d.horasTotal);
-  animarContador('card-sequencia', d.sequenciaAtual);
-
-  document.getElementById('meta-texto').textContent =
-    `${d.livrosFinalizadosAno} de ${d.metaLivros} livros (${d.percentualMeta}%)`;
-  const barra = document.getElementById('barra-meta');
-  barra.style.width = d.percentualMeta + '%';
-  barra.textContent = d.percentualMeta + '%';
-  barra.setAttribute('aria-valuenow', d.percentualMeta);
-
-  // Badge com total de páginas dos últimos 30 dias
-  const total30dias = d.paginasUltimos7Dias.reduce((acc, dia) => acc + dia.paginas, 0);
-  const badge = document.getElementById('badge-total-30dias');
-  if (badge) {
-    badge.textContent = `${total30dias} pág.`;
-    badge.title = `Total de páginas lidas nos últimos 30 dias`;
-  }
-
-  // Atualiza tempo restante e velocidade do livro atual
-  const tempoRestanteEl = document.getElementById('livro-atual-tempo-restante');
-  if (tempoRestanteEl) {
-    if (d.tempoRestanteMinutos && d.tempoRestanteMinutos > 0) {
-      const horas = Math.floor(d.tempoRestanteMinutos / 60);
-      const minutos = d.tempoRestanteMinutos % 60;
-      let texto = '⏱️ ';
-      if (horas > 0) texto += `${horas}h `;
-      if (minutos > 0) texto += `${minutos}min`;
-      texto += ' restantes';
-      if (d.velocidadeMediaLivro) {
-        texto += ` (${d.velocidadeMediaLivro} pág/h)`;
-      }
-      tempoRestanteEl.textContent = texto;
-      tempoRestanteEl.classList.remove('d-none');
+    livrosLendoList = d.livrosLendo || [];
+    if (d.livroAtual && livrosLendoList.length > 0) {
+      currentLivroIndex = livrosLendoList.findIndex(l => l.ID === d.livroAtual.ID);
+      if (currentLivroIndex < 0) currentLivroIndex = 0;
     } else {
-      tempoRestanteEl.classList.add('d-none');
+      currentLivroIndex = 0;
+    }
+    livroAtualID = d.livroAtual ? d.livroAtual.ID : null;
+
+    renderizarLivroAtual();
+    criarControlesNavegacao();
+    adicionarSwipe();
+
+    animarContador('card-livros-mes', d.livrosFinalizadosMes);
+    animarContador('card-livros-ano', d.livrosFinalizadosAno);
+    animarContador('card-paginas-hoje', d.paginasHoje);
+    animarContador('card-paginas-semana', d.paginasSemana);
+    animarContador('card-horas', d.horasTotal);
+    animarContador('card-sequencia', d.sequenciaAtual);
+
+    document.getElementById('meta-texto').textContent =
+      `${d.livrosFinalizadosAno} de ${d.metaLivros} livros (${d.percentualMeta}%)`;
+    const barra = document.getElementById('barra-meta');
+    barra.style.width = d.percentualMeta + '%';
+    barra.textContent = d.percentualMeta + '%';
+    barra.setAttribute('aria-valuenow', d.percentualMeta);
+
+    // Badge com total de páginas dos últimos 30 dias
+    const total30dias = d.paginasUltimos7Dias.reduce((acc, dia) => acc + dia.paginas, 0);
+    const badge = document.getElementById('badge-total-30dias');
+    if (badge) {
+      badge.textContent = `${total30dias} pág.`;
+      badge.title = `Total de páginas lidas nos últimos 30 dias`;
     }
   }
-}
 
   function animarContador(id, valorFinal) {
     const el = document.getElementById(id);
@@ -157,6 +133,7 @@ const Dashboard = (() => {
     const progressoEl = document.getElementById('livro-atual-progresso');
     const capaEl = document.getElementById('livro-atual-capa');
     const previsaoEl = document.getElementById('livro-atual-previsao');
+    const tempoRestEl = document.getElementById('livro-atual-tempo-restante');
 
     if (livro) {
       const progresso = livro.totalPag > 0 ? Math.round((livro.pagLidas / livro.totalPag) * 100) : 0;
@@ -167,9 +144,11 @@ const Dashboard = (() => {
           ? `<img src="${livro.urlCapa}" alt="Capa" class="img-fluid rounded" style="max-height:70px;">`
           : '';
       }
+
+      // Previsão de data (individual)
       if (previsaoEl) {
-        if (typeof window.__previsaoTermino !== 'undefined' && window.__previsaoTermino) {
-          const dataPrev = new Date(window.__previsaoTermino);
+        if (livro.previsaoTermino) {
+          const dataPrev = new Date(livro.previsaoTermino);
           const hoje = new Date();
           const diffDias = Math.ceil((dataPrev - hoje) / (1000 * 60 * 60 * 24));
           const dataFormatada = dataPrev.toLocaleDateString('pt-BR');
@@ -187,11 +166,31 @@ const Dashboard = (() => {
           previsaoEl.classList.add('d-none');
         }
       }
+
+      // Tempo restante e velocidade (individual)
+      if (tempoRestEl) {
+        if (livro.tempoRestanteMinutos && livro.tempoRestanteMinutos > 0) {
+          const horas = Math.floor(livro.tempoRestanteMinutos / 60);
+          const minutos = livro.tempoRestanteMinutos % 60;
+          let texto = '⏱️ ';
+          if (horas > 0) texto += `${horas}h `;
+          if (minutos > 0) texto += `${minutos}min`;
+          texto += ' restantes';
+          if (livro.velocidadeMedia) {
+            texto += ` (${livro.velocidadeMedia} pág/h)`;
+          }
+          tempoRestEl.textContent = texto;
+          tempoRestEl.classList.remove('d-none');
+        } else {
+          tempoRestEl.classList.add('d-none');
+        }
+      }
     } else {
       if (tituloEl) tituloEl.textContent = 'Nenhum livro em andamento';
       if (progressoEl) progressoEl.textContent = '';
       if (capaEl) capaEl.innerHTML = '';
       if (previsaoEl) previsaoEl.classList.add('d-none');
+      if (tempoRestEl) tempoRestEl.classList.add('d-none');
     }
   }
 
@@ -264,60 +263,60 @@ const Dashboard = (() => {
   }
 
   function criarGrafico(dados) {
-  if (chartInstance) chartInstance.destroy();
-  const ctx = document.getElementById('grafico-semanal')?.getContext('2d');
-  if (!ctx) return;
+    if (chartInstance) chartInstance.destroy();
+    const ctx = document.getElementById('grafico-semanal')?.getContext('2d');
+    if (!ctx) return;
 
-  // Gradiente vertical para as barras
-  const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-  gradient.addColorStop(0, '#8b5cf6');   // roxo mais claro no topo
-  gradient.addColorStop(1, '#6366f1');   // indigo na base
+    const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+    gradient.addColorStop(0, '#8b5cf6');
+    gradient.addColorStop(1, '#6366f1');
 
-  chartInstance = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: dados.map(item => item.dia),
-      datasets: [{
-        label: 'Páginas lidas',
-        data: dados.map(item => item.paginas),
-        backgroundColor: gradient,
-        borderRadius: 6,
-        borderSkipped: false,
-        barPercentage: 0.7,
-        categoryPercentage: 0.8
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          callbacks: {
-            title: function(items) {
-              const idx = items[0].dataIndex;
-              return `Dia ${dados[idx].dia}`;
+    chartInstance = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: dados.map(item => item.dia),
+        datasets: [{
+          label: 'Páginas lidas',
+          data: dados.map(item => item.paginas),
+          backgroundColor: gradient,
+          borderRadius: 6,
+          borderSkipped: false,
+          barPercentage: 0.7,
+          categoryPercentage: 0.8
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              title: function(items) {
+                const idx = items[0].dataIndex;
+                return `Dia ${dados[idx].dia}`;
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: { color: 'rgba(0,0,0,0.05)' },
+            ticks: { stepSize: 10, font: { size: 10 } }
+          },
+          x: {
+            grid: { display: false },
+            ticks: {
+              maxTicksLimit: 12,
+              autoSkip: true,
+              font: { size: 9 }
             }
           }
         }
-      },
-      scales: {
-        y: {
-          beginAtZero: true,
-          grid: { color: 'rgba(0,0,0,0.05)' },
-          ticks: { stepSize: 10, font: { size: 10 } }
-        },
-        x: {
-          grid: { display: false },
-          ticks: {
-            maxTicksLimit: 12,
-            autoSkip: true,
-            font: { size: 9 }
-          }
-        }
       }
-    }
-  });
-}
+    });
+  }
+
   return { init };
 })();
 
