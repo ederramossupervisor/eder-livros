@@ -34,6 +34,7 @@
   <link rel="stylesheet" href="css/skeleton.css">
   <link rel="stylesheet" href="css/dark-mode.css">
   <link rel="preload" as="image" href="img/fundo-splash.png">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
 </head>
 <body class="light-mode">
@@ -851,13 +852,18 @@
     
         <!-- Locais de Leitura (NOVO) -->
         <div class="col-12 mt-4">
-          <div class="card shadow-sm">
-            <div class="card-header fw-bold"><i class="fas fa-map-marker-alt me-2"></i>Locais de Leitura</div>
-            <div class="card-body">
-              <div id="locais-container" class="row g-3"></div>
-            </div>
+        <div class="card shadow-sm">
+          <div class="card-header fw-bold d-flex justify-content-between align-items-center">
+            <span><i class="fas fa-map-marker-alt me-2"></i>Mapa de Locais de Leitura</span>
+            <button id="btn-atualizar-mapa" class="btn btn-sm btn-outline-secondary" title="Atualizar mapa">
+              <i class="fas fa-sync-alt"></i>
+            </button>
+          </div>
+          <div class="card-body p-0">
+            <div id="mapa-locais" style="height: 450px;"></div>
           </div>
         </div>
+      </div>
     
       </div>
     </div>
@@ -1337,6 +1343,8 @@
   <script src="js/exportar.js"></script>
   <script src="js/configuracoes.js"></script>
   <script src="js/tema-sazonal.js"></script>  
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <!-- Tesseract.js para OCR -->
   <script src='https://unpkg.com/tesseract.js@v5.0.4/dist/tesseract.min.js'></script>
   <!-- Controlador principal (sempre por último) -->
