@@ -630,38 +630,18 @@
                 </div>
               </div>
 
-              <!-- Anotação da sessão -->
+                            <!-- Anotações da sessão (múltiplas) -->
               <div class="mt-3">
-                <label class="form-label fw-bold"><i class="fa-solid fa-pen-clip"></i> Anotação da sessão</label>
-                <small class="text-muted d-block mb-2">Será salva automaticamente como uma anotação vinculada ao livro.</small>
-                <div class="row g-2 mb-2">
-                  <div class="col-md-3">
-                    <select id="tipo-obs-sessao" class="form-select">
-                      <option value="">Tipo (opcional)</option>
-                      <option value="Geral">Geral</option>
-                      <option value="Reflexão">Reflexão</option>
-                      <option value="Personagem">Personagem</option>
-                      <option value="Enredo">Enredo</option>
-                      <option value="Citação">Citação</option>
-                    </select>
-                  </div>
-                  <div class="col-md-3">
-                    <input type="text" id="capitulo-obs-sessao" class="form-control" placeholder="Capítulo (opcional)">
-                  </div>
-                  <div class="col-md-3">
-                    <input type="number" id="pagina-obs-sessao" class="form-control" placeholder="Página" min="1">
-                  </div>
-                </div>
-                <div class="input-group">
-                <textarea id="observacoes-sessao" class="form-control" rows="2" placeholder="Alguma nota sobre esta sessão..."></textarea>
-                  <button class="btn btn-outline-secondary" type="button" id="btn-voz-obs-sessao" title="Ditar observação">
-                    <i class="fas fa-microphone"></i>
-                  </button>
-                  <!-- NOVO BOTÃO OCR -->
-                  <button class="btn btn-outline-secondary" type="button" id="btn-ocr-sessao" title="Escanear página do livro">
-                    <i class="fas fa-camera"></i>
-                  </button>
-                </div>
+                <label class="form-label fw-bold"><i class="fa-solid fa-pen-clip"></i> Anotações da sessão</label>
+                <small class="text-muted d-block mb-2">Adicione quantas anotações quiser. Serão salvas automaticamente ao registrar a sessão.</small>
+
+                <!-- Container que recebe todos os itens de anotação -->
+                <div id="anotacoes-sessao-container"></div>
+
+                <!-- Botão para adicionar mais anotações -->
+                <button type="button" class="btn btn-sm btn-outline-secondary mt-2" id="btn-adicionar-anotacao">
+                  <i class="fas fa-plus"></i> Adicionar outra anotação
+                </button>
               </div>
             </div>
           </div>
@@ -671,6 +651,43 @@
             <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i> Registrar Sessão</button>
           </div>
         </form>
+        <!-- Template oculto para item de anotação (clonado dinamicamente) -->
+        <template id="template-anotacao-item">
+          <div class="anotacao-item border rounded p-2 mb-2 bg-light">
+            <div class="row g-2 mb-2">
+              <div class="col-md-3">
+                <select class="form-select tipo-obs" style="font-size:0.85rem;">
+                  <option value="">Tipo (opcional)</option>
+                  <option value="Geral">Geral</option>
+                  <option value="Reflexão">Reflexão</option>
+                  <option value="Personagem">Personagem</option>
+                  <option value="Enredo">Enredo</option>
+                  <option value="Citação">Citação</option>
+                </select>
+              </div>
+              <div class="col-md-3">
+                <input type="text" class="form-control capitulo-obs" placeholder="Capítulo (opcional)" style="font-size:0.85rem;">
+              </div>
+              <div class="col-md-3">
+                <input type="number" class="form-control pagina-obs" placeholder="Página" min="1" style="font-size:0.85rem;">
+              </div>
+              <div class="col-md-3 text-end">
+                <button type="button" class="btn btn-sm btn-outline-danger btn-remover-anotacao" title="Remover esta anotação">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </div>
+            <div class="input-group">
+              <textarea class="form-control texto-obs" rows="2" placeholder="Alguma nota sobre esta sessão..." style="font-size:0.85rem;"></textarea>
+              <button class="btn btn-outline-secondary btn-voz-obs" type="button" title="Ditar observação">
+                <i class="fas fa-microphone"></i>
+              </button>
+              <button class="btn btn-outline-secondary btn-ocr-obs" type="button" title="Escanear página do livro">
+                <i class="fas fa-camera"></i>
+              </button>
+            </div>
+          </div>
+        </template>
         <div class="mt-5">
           <h5>Histórico de Sessões</h5>
           <div id="historico-sessoes"></div>
