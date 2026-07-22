@@ -108,6 +108,26 @@ const Dashboard = (() => {
     badge.textContent = `${total30dias} pág.`;
     badge.title = `Total de páginas lidas nos últimos 30 dias`;
   }
+
+  // Atualiza tempo restante e velocidade do livro atual
+  const tempoRestanteEl = document.getElementById('livro-atual-tempo-restante');
+  if (tempoRestanteEl) {
+    if (d.tempoRestanteMinutos && d.tempoRestanteMinutos > 0) {
+      const horas = Math.floor(d.tempoRestanteMinutos / 60);
+      const minutos = d.tempoRestanteMinutos % 60;
+      let texto = '⏱️ ';
+      if (horas > 0) texto += `${horas}h `;
+      if (minutos > 0) texto += `${minutos}min`;
+      texto += ' restantes';
+      if (d.velocidadeMediaLivro) {
+        texto += ` (${d.velocidadeMediaLivro} pág/h)`;
+      }
+      tempoRestanteEl.textContent = texto;
+      tempoRestanteEl.classList.remove('d-none');
+    } else {
+      tempoRestanteEl.classList.add('d-none');
+    }
+  }
 }
 
   function animarContador(id, valorFinal) {
