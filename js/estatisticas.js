@@ -57,12 +57,6 @@ const Estatisticas = (() => {
     preencherTopAutores(dados.topAutores);
     preencherTopEditoras(dados.topEditoras);
 
-    // Inicializa o Calendário de Leitura (mês e ano atuais)
-    if (typeof CalendarioLeitura !== 'undefined' && CalendarioLeitura.init) {
-      const hoje = new Date();
-      CalendarioLeitura.init(hoje.getFullYear(), hoje.getMonth() + 1);
-    }
-
     console.log('✅ Módulo Estatísticas pronto (com calendário).');
   }
 
