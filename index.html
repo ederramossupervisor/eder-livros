@@ -1197,6 +1197,25 @@
     </div>
   </main>
 
+  <!-- Modal para edição do texto escaneado via OCR -->
+  <div class="modal fade" id="modal-ocr-edicao" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Editar texto capturado</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <textarea id="ocr-texto-editavel" class="form-control" rows="10" style="font-family: 'Georgia', serif; font-size: 1rem;"></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" id="btn-confirmar-ocr">Confirmar e inserir</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Modal de detalhes do livro (FORA do main) -->
   <div class="modal fade" id="livro-modal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
