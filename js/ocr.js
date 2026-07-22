@@ -6,55 +6,197 @@ const OCR = (() => {
     worker = await Tesseract.createWorker('por', 1, {
       logger: m => console.log(m)
     });
-    // Define parâmetros para melhorar a precisão
     await worker.setParameters({
-      tessedit_pageseg_mode: Tesseract.PSM.AUTO,         // Modo automático de segmentação
-      tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzÁÀÂÃÄÉÈÊËÍÌÎÏÓÒÔÕÖÚÙÛÜÇáàâãäéèêëíìîïóòôõöúùûüç0123456789.,;:!?\'\"-–—()[]{}«»“”‘’/&@#$%*+= \n', // caracteres permitidos (português)
+      tessedit_pageseg_mode: Tesseract.PSM.AUTO,
+      tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzÁÀÂÃÄÉÈÊËÍÌÎÏÓÒÔÕÖÚÙÛÜÇáàâãäéèêëíìîïóòôõöúùûüç0123456789.,;:!?\'\"-–—()[]{}«»“”‘’/&@#$%*+= \n',
     });
     return worker;
   }
 
-  // Pré-processamento da imagem para melhorar OCR
+  // Pré-processamento básico (contraste) – aplicado após recorte
   function preprocessarImagem(imageFile) {
     return new Promise((resolve, reject) => {
       const img = new Image();
       img.onload = () => {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
-        
-        // Aumenta o tamanho se a imagem for muito pequena
         let scale = 1;
-        if (img.width < 1000) {
-          scale = Math.max(2, Math.ceil(1500 / img.width));
-        }
+        if (img.width < 1000) scale = Math.max(2, Math.ceil(1500 / img.width));
         canvas.width = img.width * scale;
         canvas.height = img.height * scale;
-        
-        // Desenha a imagem redimensionada
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        
-        // Aplica filtros: escala de cinza + contraste
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         const data = imageData.data;
         for (let i = 0; i < data.length; i += 4) {
           const gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
-          // Aumenta o contraste: valores abaixo de 128 ficam mais escuros, acima ficam mais claros
-          const contrast = ((gray - 128) * 1.5) + 128; // fator 1.5 de contraste
+          const contrast = ((gray - 128) * 1.5) + 128;
           const val = Math.min(255, Math.max(0, contrast));
-          data[i] = val;       // R
-          data[i + 1] = val;   // G
-          data[i + 2] = val;   // B
-          // data[i+3] é alpha – mantido
+          data[i] = val;
+          data[i + 1] = val;
+          data[i + 2] = val;
         }
         ctx.putImageData(imageData, 0, 0);
-        
-        // Converte o canvas para Blob (tipo de arquivo que o Tesseract aceita)
-        canvas.toBlob(blob => {
-          resolve(blob);
-        }, 'image/jpeg', 0.95);
+        canvas.toBlob(blob => resolve(blob), 'image/jpeg', 0.95);
       };
       img.onerror = reject;
       img.src = URL.createObjectURL(imageFile);
+    });
+  }
+
+  // Etapa de recorte interativo
+  function recortarImagem(file) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        // Cria modal dinâmico
+        const modal = document.createElement('div');
+        modal.className = 'modal fade';
+        modal.id = 'modal-recorte-ocr';
+        modal.tabIndex = -1;
+        modal.innerHTML = `
+          <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">Recortar área do texto</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+              </div>
+              <div class="modal-body p-0" style="position:relative; overflow:auto; background:#333; display:flex; justify-content:center;">
+                <canvas id="canvas-recorte" style="max-width:100%; cursor:crosshair;"></canvas>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btn-processar-recorte" disabled>Processar seleção</button>
+              </div>
+            </div>
+          </div>`;
+        document.body.appendChild(modal);
+
+        const bsModal = new bootstrap.Modal(modal);
+        bsModal.show();
+
+        const canvas = document.getElementById('canvas-recorte');
+        const ctx = canvas.getContext('2d');
+        // Ajusta tamanho máximo
+        const maxWidth = window.innerWidth * 0.9;
+        const maxHeight = window.innerHeight * 0.7;
+        let drawWidth = img.width;
+        let drawHeight = img.height;
+        if (drawWidth > maxWidth) {
+          const ratio = maxWidth / drawWidth;
+          drawWidth = maxWidth;
+          drawHeight = img.height * ratio;
+        }
+        if (drawHeight > maxHeight) {
+          const ratio = maxHeight / drawHeight;
+          drawHeight = maxHeight;
+          drawWidth = drawWidth * ratio;
+        }
+        canvas.width = drawWidth;
+        canvas.height = drawHeight;
+        ctx.drawImage(img, 0, 0, drawWidth, drawHeight);
+
+        let startX, startY, endX, endY;
+        let drawing = false;
+
+        function getPos(e) {
+          const rect = canvas.getBoundingClientRect();
+          const scaleX = drawWidth / rect.width;
+          const scaleY = drawHeight / rect.height;
+          let clientX, clientY;
+          if (e.touches) {
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+          } else {
+            clientX = e.clientX;
+            clientY = e.clientY;
+          }
+          return {
+            x: (clientX - rect.left) * scaleX,
+            y: (clientY - rect.top) * scaleY
+          };
+        }
+
+        function drawRect() {
+          ctx.clearRect(0, 0, drawWidth, drawHeight);
+          ctx.drawImage(img, 0, 0, drawWidth, drawHeight);
+          if (startX !== undefined && endX !== undefined) {
+            const x = Math.min(startX, endX);
+            const y = Math.min(startY, endY);
+            const w = Math.abs(endX - startX);
+            const h = Math.abs(endY - startY);
+            ctx.fillStyle = 'rgba(0,150,255,0.3)';
+            ctx.fillRect(x, y, w, h);
+            ctx.strokeStyle = '#0096ff';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(x, y, w, h);
+          }
+        }
+
+        function start(e) {
+          e.preventDefault();
+          const pos = getPos(e);
+          startX = pos.x;
+          startY = pos.y;
+          endX = pos.x;
+          endY = pos.y;
+          drawing = true;
+        }
+
+        function move(e) {
+          if (!drawing) return;
+          e.preventDefault();
+          const pos = getPos(e);
+          endX = pos.x;
+          endY = pos.y;
+          drawRect();
+        }
+
+        function stop(e) {
+          if (!drawing) return;
+          drawing = false;
+          const btnProcessar = document.getElementById('btn-processar-recorte');
+          if (btnProcessar) btnProcessar.disabled = false;
+        }
+
+        canvas.addEventListener('mousedown', start);
+        canvas.addEventListener('mousemove', move);
+        canvas.addEventListener('mouseup', stop);
+        canvas.addEventListener('touchstart', start);
+        canvas.addEventListener('touchmove', move);
+        canvas.addEventListener('touchend', stop);
+
+        // Botão processar
+        document.getElementById('btn-processar-recorte').addEventListener('click', () => {
+          const x = Math.min(startX, endX);
+          const y = Math.min(startY, endY);
+          const w = Math.abs(endX - startX);
+          const h = Math.abs(endY - startY);
+          if (w < 10 || h < 10) {
+            Util.toast('Selecione uma área maior.', 'warning');
+            return;
+          }
+          // Recorta a região
+          const recorteCanvas = document.createElement('canvas');
+          recorteCanvas.width = w;
+          recorteCanvas.height = h;
+          const recorteCtx = recorteCanvas.getContext('2d');
+          recorteCtx.drawImage(canvas, x, y, w, h, 0, 0, w, h);
+          recorteCanvas.toBlob(blob => {
+            bsModal.hide();
+            modal.addEventListener('hidden.bs.modal', () => {
+              document.body.removeChild(modal);
+              resolve(blob);
+            });
+          }, 'image/jpeg', 0.95);
+        });
+
+        modal.addEventListener('hidden.bs.modal', () => {
+          if (modal.parentNode) document.body.removeChild(modal);
+          reject(new Error('Recorte cancelado'));
+        });
+      };
+      img.onerror = reject;
+      img.src = URL.createObjectURL(file);
     });
   }
 
@@ -74,39 +216,39 @@ const OCR = (() => {
         return;
       }
 
-      Util.toast('Reconhecendo texto... Isso pode levar alguns segundos.', 'info');
+      Util.toast('Recorte a área do texto desejada.', 'info');
       const btn = document.querySelector('#btn-ocr-sessao, #btn-ocr');
       if (btn) {
         btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Processando...';
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Aguardando recorte...';
       }
 
       try {
-        // Pré-processa a imagem para melhorar o OCR
-        const processedBlob = await preprocessarImagem(file);
+        // Etapa de recorte
+        const recorteBlob = await recortarImagem(file);
+        
+        Util.toast('Reconhecendo texto... Isso pode levar alguns segundos.', 'info');
+        if (btn) btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Processando...';
+
+        // Pré-processa a imagem recortada
+        const processedBlob = await preprocessarImagem(recorteBlob);
         
         const w = await initWorker();
         const { data: { text } } = await w.recognize(processedBlob);
         
-        // Pós-processamento do texto reconhecido
         let textoLimpo = text.trim()
-          .replace(/\n{3,}/g, '\n\n')           // Reduz múltiplas quebras de linha
-          .replace(/[ \t]+/g, ' ')              // Remove espaços múltiplos
-          .replace(/([a-z])- ([a-z])/g, '$1$2') // Junta palavras hifenizadas no final da linha
-          // Correções comuns de OCR
-          .replace(/[\u2018\u2019]/g, "'")      // Aspas simples curvas → retas
-          .replace(/[\u201C\u201D]/g, '"')      // Aspas duplas curvas → retas
-          .replace(/\u2013|\u2014/g, '-')       // Travessão → hífen
-          .replace(/\u00B4/g, "'")              // Acento agudo isolado → apóstrofo
-          .replace(/\u0060/g, "'")              // Acento grave → apóstrofo
-          .replace(/^\s*["']\s*/, '"')          // Limpa aspas no início
-          .replace(/\s*["']\s*$/, '"');         // Limpa aspas no final
+          .replace(/\n{3,}/g, '\n\n')
+          .replace(/[ \t]+/g, ' ')
+          .replace(/([a-z])- ([a-z])/g, '$1$2')
+          .replace(/[\u2018\u2019]/g, "'")
+          .replace(/[\u201C\u201D]/g, '"')
+          .replace(/\u2013|\u2014/g, '-')
+          .replace(/\u00B4/g, "'")
+          .replace(/\u0060/g, "'");
 
-        // Se houver um targetElement (textarea), abre o modal de edição
         if (targetElement && targetElement.tagName === 'TEXTAREA') {
           abrirModalEdicaoOCR(textoLimpo, targetElement);
         } else {
-          // Caso contrário, insere direto no elemento (ex.: div do modal de citação)
           const destino = targetElement || document.getElementById('citacao-texto');
           if (destino) {
             if (destino.tagName === 'TEXTAREA' || destino.tagName === 'INPUT') {
@@ -120,39 +262,29 @@ const OCR = (() => {
         Util.toast('Texto capturado com sucesso!', 'success');
       } catch (erro) {
         console.error('Erro no OCR:', erro);
-        Util.toast('Falha ao processar a imagem. Tente novamente.', 'danger');
+        if (erro.message !== 'Recorte cancelado') {
+          Util.toast('Falha ao processar a imagem.', 'danger');
+        }
       } finally {
         if (btn) {
           btn.disabled = false;
-          const icon = btn.querySelector('i');
-          if (icon) {
-            btn.innerHTML = '';
-            btn.appendChild(icon);
-            btn.appendChild(document.createTextNode(' Escanear página'));
-          } else {
-            btn.innerHTML = '<i class="fas fa-camera"></i> Escanear página';
-          }
+          btn.innerHTML = '<i class="fas fa-camera"></i> Escanear página';
         }
         document.body.removeChild(input);
       }
     });
   }
 
-  // Abre o modal de edição do texto OCR
   function abrirModalEdicaoOCR(texto, targetTextarea) {
     const modalElement = document.getElementById('modal-ocr-edicao');
     const textarea = document.getElementById('ocr-texto-editavel');
     if (!modalElement || !textarea) {
-      // Se o modal não existir, insere diretamente
       targetTextarea.value = texto;
       return;
     }
-
     textarea.value = texto;
     const modal = new bootstrap.Modal(modalElement);
     modal.show();
-
-    // Botão confirmar
     const btnConfirmar = document.getElementById('btn-confirmar-ocr');
     const handler = () => {
       targetTextarea.value = textarea.value;
@@ -160,11 +292,7 @@ const OCR = (() => {
       btnConfirmar.removeEventListener('click', handler);
     };
     btnConfirmar.addEventListener('click', handler);
-
-    // Quando o modal fechar, foca no textarea destino
-    modalElement.addEventListener('hidden.bs.modal', () => {
-      targetTextarea.focus();
-    }, { once: true });
+    modalElement.addEventListener('hidden.bs.modal', () => targetTextarea.focus(), { once: true });
   }
 
   return { capturarECapturarTexto };
