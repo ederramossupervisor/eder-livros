@@ -231,6 +231,20 @@ const Anotacoes = (() => {
       };
     }
 
+    // --- REGISTRAR EVENTO DO BOTÃO OCR ---
+    const btnOCR = document.getElementById('btn-ocr');
+    if (btnOCR) {
+      // Remove listener antigo para não duplicar
+      btnOCR.replaceWith(btnOCR.cloneNode(true));
+      document.getElementById('btn-ocr').addEventListener('click', () => {
+        if (typeof OCR !== 'undefined' && OCR.capturarECapturarTexto) {
+          OCR.capturarECapturarTexto();
+        } else {
+          Util.toast('Funcionalidade de OCR não carregada.', 'warning');
+        }
+      });
+    }
+
     // --- ABRIR O MODAL ---
     const modal = new bootstrap.Modal(modalElement);
     modal.show();
