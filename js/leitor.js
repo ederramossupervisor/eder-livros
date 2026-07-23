@@ -51,7 +51,33 @@ const Leitor = (() => {
     };
   }
 
-  // ========== INICIALIZAÇÃO E DEPENDÊNCIAS ==========
+  // ========== CONFIGURAÇÕES VISUAIS ==========
+  function aplicarConfigVisual() {
+    atualizarCacheEls();
+    if (!els.container) return;
+
+    els.container.classList.remove('tema-claro', 'tema-sepia', 'tema-escuro');
+    els.container.classList.add(`tema-${config.tema}`);
+
+    if (tipoArquivo === 'epub' && rendition) {
+      rendition.themes.select(config.tema);
+      rendition.themes.font(config.fonte);
+      rendition.themes.fontSize(config.tamanho + 'px');
+      rendition.themes.override('line-height', config.espacamento);
+      rendition.themes.override('padding', `0 ${config.margem}%`);
+    }
+  }
+
+  function lerConfiguracoes() {
+    const f = document.getElementById('leitor-fonte');
+    const t = document.getElementById('leitor-tamanho-fonte');
+    const tm = document.getElementById('leitor-tema');
+    if (f) config.fonte = f.value;
+    if (t) config.tamanho = parseInt(t.value);
+    if (tm) config.tema = tm.value;
+  }
+
+  // ========== INICIALIZAÇÃO ==========
   async function init() {
     const page = document.getElementById('page-leitor');
     if (!page || !page.classList.contains('active')) return;
@@ -189,10 +215,6 @@ const Leitor = (() => {
     if (els.totalPaginas) els.totalPaginas.textContent = '0';
   }
 
-  function abrirArquivo() {
-    document.getElementById('input-leitor-arquivo')?.click();
-  }
-
   function destruirLeitorAtual() {
     if (rendition) { try { rendition.destroy(); } catch(e){} rendition = null; }
     if (book) { try { book.destroy(); } catch(e){} book = null; }
@@ -244,7 +266,8 @@ const Leitor = (() => {
       height: '100%',
       spread: 'none',
       flow: 'paginated',
-      manager: 'default'
+      manager: 'default',
+      allowScriptedContent: true
     });
 
     criarTemasRendition();
@@ -258,6 +281,17 @@ const Leitor = (() => {
 
     aplicarConfigVisual();
     await rendition.display(cfiSalvo || undefined);
+
+    // Captura cliques direto dentro do iframe do EPUB
+    rendition.on('click', (e) => {
+      const width = els.container.clientWidth;
+      const clickX = e.clientX;
+      if (clickX < width * 0.3) {
+        paginaAnterior();
+      } else if (clickX > width * 0.7) {
+        proximaPagina();
+      }
+    });
 
     rendition.on('relocated', (location) => {
       atualizarProgresso(location);
@@ -334,50 +368,18 @@ const Leitor = (() => {
 
   // ========== NAVEGAÇÃO ==========
   function proximaPagina() {
-    console.log(`➡️ [Diagnóstico] proximaPagina() acionada. Formato atual: "${tipoArquivo}"`);
-    
-    if (tipoArquivo === 'epub') {
-      if (rendition) {
-        console.log('📖 [EPUB] Chamando rendition.next()');
-        rendition.next();
-      } else {
-        console.warn('⚠️ [EPUB] Objeto "rendition" não existe!');
-      }
-    } else if (tipoArquivo === 'pdf') {
-      if (pdfDoc && pdfNumPage < pdfDoc.numPages) {
-        console.log(`📄 [PDF] Avançando da página ${pdfNumPage} para ${pdfNumPage + 1}`);
-        renderizarPaginaPDF(pdfNumPage + 1);
-      } else {
-        console.warn('⚠️ [PDF] Fim do documento ou pdfDoc não carregado.');
-      }
-    } else if (tipoArquivo === 'docx') {
-      console.log('📝 [DOCX] Rando rolagem para baixo');
+    if (tipoArquivo === 'epub' && rendition) rendition.next();
+    else if (tipoArquivo === 'pdf' && pdfNumPage < pdfDoc?.numPages) renderizarPaginaPDF(pdfNumPage + 1);
+    else if (tipoArquivo === 'docx') {
       const w = els.container?.querySelector('.docx-wrapper');
       if (w) w.scrollTop += w.clientHeight * 0.8;
-    } else {
-      console.warn('⚠️ [Diagnóstico] Nenhum tipoArquivo definido para navegar.');
     }
   }
 
   function paginaAnterior() {
-    console.log(`⬅️ [Diagnóstico] paginaAnterior() acionada. Formato atual: "${tipoArquivo}"`);
-    
-    if (tipoArquivo === 'epub') {
-      if (rendition) {
-        console.log('📖 [EPUB] Chamando rendition.prev()');
-        rendition.prev();
-      } else {
-        console.warn('⚠️ [EPUB] Objeto "rendition" não existe!');
-      }
-    } else if (tipoArquivo === 'pdf') {
-      if (pdfDoc && pdfNumPage > 1) {
-        console.log(`📄 [PDF] Voltando da página ${pdfNumPage} para ${pdfNumPage - 1}`);
-        renderizarPaginaPDF(pdfNumPage - 1);
-      } else {
-        console.warn('⚠️ [PDF] Primeira página atingida ou pdfDoc não carregado.');
-      }
-    } else if (tipoArquivo === 'docx') {
-      console.log('📝 [DOCX] Rando rolagem para cima');
+    if (tipoArquivo === 'epub' && rendition) rendition.prev();
+    else if (tipoArquivo === 'pdf' && pdfNumPage > 1) renderizarPaginaPDF(pdfNumPage - 1);
+    else if (tipoArquivo === 'docx') {
       const w = els.container?.querySelector('.docx-wrapper');
       if (w) w.scrollTop -= w.clientHeight * 0.8;
     }
@@ -615,16 +617,10 @@ const Leitor = (() => {
   }
 
   function criarZonasClique() {
-    console.log('🎯 [Diagnóstico] Executando criarZonasClique()...');
-    
     document.getElementById('zona-clique-esquerda')?.remove();
     document.getElementById('zona-clique-direita')?.remove();
     atualizarCacheEls();
-
-    if (!els.container) {
-      console.warn('❌ [Diagnóstico] els.container não encontrado!');
-      return;
-    }
+    if (!els.container) return;
 
     const zE = document.createElement('div');
     zE.id = 'zona-clique-esquerda';
@@ -637,27 +633,8 @@ const Leitor = (() => {
     els.container.appendChild(zE);
     els.container.appendChild(zD);
 
-    zE.addEventListener('click', (e) => {
-      console.log('🖱️ [Diagnóstico] Clique detectado na ZONA ESQUERDA');
-      e.stopPropagation();
-      paginaAnterior();
-    });
-
-    zD.addEventListener('click', (e) => {
-      console.log('🖱️ [Diagnóstico] Clique detectado na ZONA DIREITA');
-      e.stopPropagation();
-      proximaPagina();
-    });
-
-    console.log('✅ [Diagnóstico] Zonas de clique criadas e anexadas ao leitor-container.');
-  }
-  function lerConfiguracoes() {
-    const f = document.getElementById('leitor-fonte');
-    const t = document.getElementById('leitor-tamanho-fonte');
-    const tm = document.getElementById('leitor-tema');
-    if (f) config.fonte = f.value;
-    if (t) config.tamanho = parseInt(t.value);
-    if (tm) config.tema = tm.value;
+    zE.addEventListener('click', paginaAnterior);
+    zD.addEventListener('click', proximaPagina);
   }
 
   function atualizarProgresso(location) {
