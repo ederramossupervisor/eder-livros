@@ -20,7 +20,6 @@ const Leitor = (() => {
   // Variáveis de Controle
   let timeoutSincronizacao = null;
   let modalAssociacaoInstancia = null;
-  let eventosConfigurados = false;
 
   // Configurações
   let config = {
@@ -74,7 +73,6 @@ const Leitor = (() => {
     }
   }
 
-  // Carrega scripts externos sob demanda (EPUB, PDF, DOCX)
   function carregarScript(src) {
     return new Promise((resolve, reject) => {
       if (document.querySelector(`script[src="${src}"]`)) return resolve();
@@ -122,54 +120,60 @@ const Leitor = (() => {
   }
 
   function configurarEventos() {
-  // 1. Evento de Seleção de Arquivo (Input oculto)
-  const inputArquivo = document.getElementById('input-leitor-arquivo');
-  if (inputArquivo) {
-    inputArquivo.onchange = (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        carregarArquivo(file);
-        inputArquivo.value = ''; // Limpa para permitir reabrir o mesmo arquivo se necessário
-      }
-    };
-  }
+    const inputArquivo = document.getElementById('input-leitor-arquivo');
+    if (inputArquivo) {
+      inputArquivo.onchange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          carregarArquivo(file);
+          inputArquivo.value = '';
+        }
+      };
+    }
 
-  // 2. Botões de Abrir Arquivo
-  document.querySelectorAll('#btn-abrir-epub, #btn-trocar-epub').forEach(btn => {
-    btn.onclick = (e) => {
-      e.preventDefault();
-      document.getElementById('input-leitor-arquivo')?.click();
-    };
-  });
-
-  // 3. Botões do Cronômetro
-  document.getElementById('btn-leitor-iniciar')?.onclick = (e) => { e.preventDefault(); iniciarCronometro(); };
-  document.getElementById('btn-leitor-pausar')?.onclick = (e) => { e.preventDefault(); pausarCronometro(); };
-  document.getElementById('btn-leitor-retomar')?.onclick = (e) => { e.preventDefault(); retomarCronometro(); };
-  document.getElementById('btn-leitor-finalizar')?.onclick = (e) => { e.preventDefault(); finalizarSessao(); };
-
-  // 4. Configurações & Modal
-  document.getElementById('modal-config-leitor')?.addEventListener('hidden.bs.modal', () => {
-    lerConfiguracoes();
-    aplicarConfigVisual();
-  });
-
-  // 5. Botão Voltar para Biblioteca
-  document.getElementById('btn-voltar-biblioteca')?.onclick = (e) => {
-    e.preventDefault();
-    document.querySelector('.nav-link[data-page="biblioteca"]')?.click();
-  };
-
-  // 6. Navegação por Teclas (Seta Esquerda / Direita)
-  if (!window.leitorAtalhosTeclado) {
-    document.addEventListener('keydown', (e) => {
-      if (!document.getElementById('page-leitor')?.classList.contains('active')) return;
-      if (e.key === 'ArrowRight') proximaPagina();
-      if (e.key === 'ArrowLeft') paginaAnterior();
+    document.querySelectorAll('#btn-abrir-epub, #btn-trocar-epub').forEach(btn => {
+      btn.onclick = (e) => {
+        e.preventDefault();
+        document.getElementById('input-leitor-arquivo')?.click();
+      };
     });
-    window.leitorAtalhosTeclado = true;
+
+    document.getElementById('btn-leitor-iniciar')?.addEventListener('click', (e) => { e.preventDefault(); iniciarCronometro(); });
+    document.getElementById('btn-leitor-pausar')?.addEventListener('click', (e) => { e.preventDefault(); pausarCronometro(); });
+    document.getElementById('btn-leitor-retomar')?.addEventListener('click', (e) => { e.preventDefault(); retomarCronometro(); });
+    document.getElementById('btn-leitor-finalizar')?.addEventListener('click', (e) => { e.preventDefault(); finalizarSessao(); });
+
+    document.getElementById('modal-config-leitor')?.addEventListener('hidden.bs.modal', () => {
+      lerConfiguracoes();
+      aplicarConfigVisual();
+    });
+
+    document.getElementById('btn-indice')?.addEventListener('click', (e) => {
+      if (tipoArquivo !== 'epub') {
+        e.preventDefault();
+        e.stopPropagation();
+        if (typeof Util !== 'undefined' && Util.toast) {
+          Util.toast('Índice interativo disponível apenas para arquivos EPUB.', 'info');
+        }
+        return;
+      }
+      carregarIndice();
+    });
+
+    document.getElementById('btn-voltar-biblioteca')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      document.querySelector('.nav-link[data-page="biblioteca"]')?.click();
+    });
+
+    if (!window.leitorAtalhosTeclado) {
+      document.addEventListener('keydown', (e) => {
+        if (!document.getElementById('page-leitor')?.classList.contains('active')) return;
+        if (e.key === 'ArrowRight') proximaPagina();
+        if (e.key === 'ArrowLeft') paginaAnterior();
+      });
+      window.leitorAtalhosTeclado = true;
+    }
   }
-}
 
   function mostrarTelaInicial() {
     atualizarCacheEls();
@@ -186,8 +190,8 @@ const Leitor = (() => {
   }
 
   function abrirArquivo() {
-  document.getElementById('input-leitor-arquivo')?.click();
-}
+    document.getElementById('input-leitor-arquivo')?.click();
+  }
 
   function destruirLeitorAtual() {
     if (rendition) { try { rendition.destroy(); } catch(e){} rendition = null; }
@@ -230,7 +234,6 @@ const Leitor = (() => {
 
   // ========== PROCESSADORES POR FORMATO ==========
 
-  // 1. EPUB
   async function processarEPUB(file, cfiSalvo) {
     book = ePub(file);
     await book.ready;
@@ -265,7 +268,6 @@ const Leitor = (() => {
     });
   }
 
-  // 2. PDF
   async function processarPDF(file) {
     const arrayBuffer = await file.arrayBuffer();
     pdfDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
@@ -304,7 +306,6 @@ const Leitor = (() => {
     if (els.barraProgresso) els.barraProgresso.style.width = `${pct}%`;
   }
 
-  // 3. DOCX
   async function processarDOCX(file) {
     const arrayBuffer = await file.arrayBuffer();
     const result = await mammoth.convertToHtml({ arrayBuffer });
@@ -331,7 +332,7 @@ const Leitor = (() => {
     });
   }
 
-  // ========== CONTROLE UNIFICADO DE NAVEGAÇÃO ==========
+  // ========== NAVEGAÇÃO ==========
   function proximaPagina() {
     if (tipoArquivo === 'epub' && rendition) rendition.next();
     else if (tipoArquivo === 'pdf' && pdfNumPage < pdfDoc?.numPages) renderizarPaginaPDF(pdfNumPage + 1);
@@ -570,7 +571,7 @@ const Leitor = (() => {
     }
   }
 
-  // ========== AUXILIARES E ÁUDIO FANTASMA ==========
+  // ========== AUXILIARES ==========
   function iniciarAudioFantasma() {
     const audio = document.getElementById('audio-fantasma');
     if (audio) { audio.loop = true; audio.play().catch(() => {}); }
