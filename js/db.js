@@ -4,13 +4,25 @@
 const DB = (() => {
   const db = new Dexie('EderLivrosDB');
   db.version(1).stores({
-    livros: 'ID',        // chave primária = ID do livro
-    sessoes: 'ID',       // chave primária = ID da sessão
-    anotacoes: 'ID',     // chave primária = ID da anotação
-    metas: 'Ano',        // chave primária = Ano
-    conquistas: 'ID',    // chave primária = ID da conquista
-    dashboard: 'chave',  // armazena um único objeto com chave='principal'
-    estatisticas: 'chave'// armazena um único objeto com chave='principal'
+    livros: 'ID',
+    sessoes: 'ID',
+    anotacoes: 'ID',
+    metas: 'Ano',
+    conquistas: 'ID',
+    dashboard: 'chave',
+    estatisticas: 'chave'
+  });
+
+  // Nova versão — adiciona tabela para persistir o EPUB aberto e a posição de leitura
+  db.version(2).stores({
+    livros: 'ID',
+    sessoes: 'ID',
+    anotacoes: 'ID',
+    metas: 'Ano',
+    conquistas: 'ID',
+    dashboard: 'chave',
+    estatisticas: 'chave',
+    leitorEstado: 'chave' // armazena um único objeto com chave='ultimo-livro'
   });
 
   async function salvarLivros(livros) {
@@ -77,6 +89,39 @@ const DB = (() => {
     return await db.conquistas.toArray();
   }
 
+  // ===== Estado do leitor de EPUB (arquivo + posição) =====
+  async function salvarEstadoLeitor(arquivo, nomeArquivo, livroID = null) {
+      // Presumindo que sua store seja 'leitorEstado' e use um ID fixo (ex: 1) para o leitor atual
+      const estadoAtual = await db.leitorEstado.get(1) || {};
+      
+      await db.leitorEstado.put({
+          id: 1, // Chave primária fixa para manter apenas um livro em memória de leitura
+          arquivo: arquivo,
+          nomeArquivo: nomeArquivo,
+          cfi: estadoAtual.cfi || null,
+          livroID: livroID !== null ? livroID : estadoAtual.livroID // Mantém o ID se já existir
+      });
+  }
+
+  async function vincularLivroAoEstado(livroID) {
+      const estadoAtual = await db.leitorEstado.get(1);
+      if (estadoAtual) {
+          await db.leitorEstado.update(1, { livroID: livroID });
+      }
+  }
+
+  async function salvarPosicaoLeitor(cfi) {
+    await db.leitorEstado.update('ultimo-livro', { cfi });
+  }
+
+  async function obterEstadoLeitor() {
+    return await db.leitorEstado.get('ultimo-livro');
+  }
+
+  async function limparEstadoLeitor() {
+    await db.leitorEstado.delete('ultimo-livro');
+  }
+
   return {
     salvarLivros,
     obterLivros,
@@ -91,6 +136,10 @@ const DB = (() => {
     salvarMetas,
     obterMetas,
     salvarConquistas,
-    obterConquistas
+    obterConquistas,
+    salvarEstadoLeitor,
+    salvarPosicaoLeitor,
+    obterEstadoLeitor,
+    limparEstadoLeitor
   };
 })();
