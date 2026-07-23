@@ -1260,7 +1260,7 @@
   <!-- ==================== PÁGINA: Leitor de eBook ==================== -->
   <div id="page-leitor" class="page">
     <div class="container-fluid p-0 d-flex flex-column" style="height: 100%;">
-      <!-- Barra superior -->
+      <!-- Barra superior do Leitor -->
       <div class="leitor-topbar d-flex justify-content-between align-items-center px-3 py-2 bg-white border-bottom">
         <div class="d-flex align-items-center">
           <button class="btn btn-sm btn-outline-secondary me-2" id="btn-voltar-biblioteca" title="Voltar">
@@ -1275,20 +1275,23 @@
           <button class="btn btn-sm btn-warning d-none" id="btn-leitor-pausar" title="Pausar"><i class="fas fa-pause"></i></button>
           <button class="btn btn-sm btn-info d-none" id="btn-leitor-retomar" title="Retomar"><i class="fas fa-play"></i></button>
           <button class="btn btn-sm btn-danger d-none" id="btn-leitor-finalizar" title="Finalizar leitura"><i class="fas fa-stop"></i></button>
-          <!-- Configurações -->
-          <button class="btn btn-sm btn-outline-secondary" id="btn-ajustes-leitor" title="Ajustar visualização">
+          
+          <!-- Configurações (Conectado ao Modal #modal-config-leitor) -->
+          <button class="btn btn-sm btn-outline-secondary" id="btn-ajustes-leitor" data-bs-toggle="modal" data-bs-target="#modal-config-leitor" title="Ajustar visualização">
             <i class="fas fa-text-height"></i>
           </button>
+
+          <!-- Abrir EPUB -->
           <button class="btn btn-outline-primary btn-sm" id="btn-trocar-epub" title="Abrir outro EPUB">
             <i class="fas fa-folder-open"></i>
           </button>
-          <!-- Índice -->
-          <button class="btn btn-sm btn-outline-secondary" id="btn-indice" title="Índice">
+
+          <!-- Índice (Conectado ao Offcanvas #offcanvasIndice) -->
+          <button class="btn btn-sm btn-outline-secondary" id="btn-indice" data-bs-toggle="offcanvas" data-bs-target="#offcanvasIndice" title="Índice">
             <i class="fas fa-list"></i>
           </button>
         </div>
       </div>
-
       <!-- Área de leitura -->
       <div id="leitor-container" class="flex-grow-1">
       </div>
