@@ -1321,56 +1321,93 @@
     <div class="modal-dialog modal-sm modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Ajustes de Leitura</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          <h5 class="modal-title"><i class="fas fa-sliders-h me-2"></i>Ajustes de Leitura</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
         </div>
         <div class="modal-body">
+          
+          <!-- Fonte do Texto -->
           <div class="mb-3">
-            <label class="form-label">Família da fonte</label>
+            <label for="leitor-fonte" class="form-label fw-bold">Fonte do Texto</label>
             <select id="leitor-fonte" class="form-select">
-              <option value="Georgia, serif">Serifada (padrão)</option>
-              <option value="Arial, sans-serif">Sans-serif</option>
-              <option value="Courier, monospace">Monospace</option>
+              
+              <!-- SERIFADAS (Clássicas para livros) -->
+              <optgroup label="Serifadas (Estilo Livro)">
+                <option value="Georgia, serif">Georgia (Padrão de Sistema)</option>
+                <option value="'Merriweather', serif">Merriweather (Super legível)</option>
+                <option value="'Lora', serif">Lora (Elegante)</option>
+                <option value="'PT Serif', serif">PT Serif (Moderna)</option>
+                <option value="'Crimson Text', serif">Crimson Text (Especial para ficção)</option>
+                <option value="'Vollkorn', serif">Vollkorn (Robusta e clássica)</option>
+                <option value="'Playfair Display', serif">Playfair Display (Sofisticada)</option>
+              </optgroup>
+            
+              <!-- SEM SERIFA (Limpas e modernas) -->
+              <optgroup label="Sem Serifa (Telas e Minimalista)">
+                <option value="'Open Sans', sans-serif">Open Sans (Muito clara)</option>
+                <option value="'Roboto', sans-serif">Roboto (Padrão Android)</option>
+                <option value="'Inter', sans-serif">Inter (Alta legibilidade)</option>
+                <option value="'Lato', sans-serif">Lato (Suave e harmoniosa)</option>
+                <option value="'Nunito', sans-serif">Nunito (Arredondada)</option>
+                <option value="'Montserrat', sans-serif">Montserrat (Moderna)</option>
+              </optgroup>
+            
+              <!-- MONOSPAÇADA E ACESSIBILIDADE -->
+              <optgroup label="Especiais e Acessibilidade">
+                <option value="'Fira Code', monospace">Fira Code (Programação/Código)</option>
+                <option value="'OpenDyslexic', sans-serif">OpenDyslexic (Acessibilidade para Dislexia)</option>
+              </optgroup>
+            
             </select>
           </div>
+  
+          <!-- Tamanho da Fonte -->
           <div class="mb-3">
-            <label class="form-label">Tamanho da fonte</label>
+            <label for="leitor-tamanho-fonte" class="form-label fw-bold">Tamanho da fonte</label>
             <input type="range" class="form-range" id="leitor-tamanho-fonte" min="12" max="28" value="18" step="1">
-            <small><span id="leitor-valor-tamanho">18</span>px</small>
+            <small class="text-muted"><span id="leitor-valor-tamanho">18</span>px</small>
           </div>
+  
+          <!-- Espaçamento entre Linhas -->
           <div class="mb-3">
-            <label class="form-label">Espaçamento entre linhas</label>
+            <label for="leitor-espacamento" class="form-label fw-bold">Espaçamento entre linhas</label>
             <input type="range" class="form-range" id="leitor-espacamento" min="1.0" max="2.5" value="1.5" step="0.1">
-            <small><span id="leitor-valor-espacamento">1.5</span></small>
+            <small class="text-muted"><span id="leitor-valor-espacamento">1.5</span></small>
           </div>
+  
+          <!-- Margens -->
           <div class="mb-3">
-            <label class="form-label">Margens</label>
+            <label for="leitor-margem" class="form-label fw-bold">Margens</label>
             <input type="range" class="form-range" id="leitor-margem" min="0" max="15" value="5" step="1">
-            <small><span id="leitor-valor-margem">5</span>%</small>
+            <small class="text-muted"><span id="leitor-valor-margem">5</span>%</small>
           </div>
+  
+          <!-- Tema -->
           <div class="mb-3">
-            <label class="form-label">Tema</label>
+            <label for="leitor-tema" class="form-label fw-bold">Tema</label>
             <select id="leitor-tema" class="form-select">
               <option value="claro">Claro</option>
               <option value="sepia">Sépia</option>
               <option value="escuro">Escuro</option>
             </select>
           </div>
+  
+          <!-- Modo de Rolagem -->
           <div class="mb-3">
-            <label class="form-label">Modo de rolagem</label>
+            <label for="leitor-modo-rolagem" class="form-label fw-bold">Modo de rolagem</label>
             <select id="leitor-modo-rolagem" class="form-select">
               <option value="continuo">Contínuo</option>
               <option value="paginado" selected>Paginado</option>
             </select>
           </div>
+  
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Aplicar</button>
         </div>
       </div>
     </div>
   </div>
-
   <!-- Modal para edição do texto escaneado via OCR -->
   <div class="modal fade" id="modal-ocr-edicao" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
