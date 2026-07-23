@@ -61,6 +61,9 @@ function activatePageGlobal(pageName) {
     case 'leitura':
       if (typeof Leitura !== 'undefined' && Leitura.init) Leitura.init();
       break;
+    case 'leitor':
+      if (typeof Leitor !== 'undefined' && Leitor.init) Leitor.init();
+      break;
     case 'adicionar':
       if (typeof Livros !== 'undefined' && Livros.init) Livros.init();
       break;
@@ -76,9 +79,6 @@ function activatePageGlobal(pageName) {
     case 'anotacoes':
       if (typeof Anotacoes !== 'undefined' && Anotacoes.init) Anotacoes.init();
       break;
-    case 'leitor':
-      if (typeof Leitor !== 'undefined' && Leitor.init) Leitor.init();
-      break;
     case 'desejos':
       if (typeof DesejosEmprestimos !== 'undefined' && DesejosEmprestimos.init) DesejosEmprestimos.init();
       break;
@@ -89,7 +89,6 @@ function activatePageGlobal(pageName) {
       if (typeof Configuracoes !== 'undefined' && Configuracoes.init) Configuracoes.init();
       break;
   }
-
   // Fecha o offcanvas mobile se estiver aberto
   try {
     const offcanvasEl = document.getElementById('mobileMenu');
