@@ -51,6 +51,40 @@ const Leitor = (() => {
     };
   }
 
+  // ========== ESTRUTURAÇÃO DO CONTAINER DE LEITURA ==========
+  function prepararEstruturaContainer() {
+    atualizarCacheEls();
+    if (!els.container) return null;
+
+    els.container.style.position = 'relative';
+    els.container.innerHTML = `
+      <div id="leitor-conteudo" style="width:100%; height:100%; overflow:hidden;"></div>
+      <div id="zona-clique-esquerda" style="position:absolute; top:0; left:0; width:35%; height:100%; z-index:100; cursor:pointer;"></div>
+      <div id="zona-clique-direita" style="position:absolute; top:0; right:0; width:35%; height:100%; z-index:100; cursor:pointer;"></div>
+    `;
+
+    const zE = document.getElementById('zona-clique-esquerda');
+    const zD = document.getElementById('zona-clique-direita');
+
+    if (zE) {
+      zE.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        paginaAnterior();
+      };
+    }
+
+    if (zD) {
+      zD.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        proximaPagina();
+      };
+    }
+
+    return document.getElementById('leitor-conteudo');
+  }
+
   // ========== CONFIGURAÇÕES VISUAIS ==========
   function aplicarConfigVisual() {
     atualizarCacheEls();
@@ -174,10 +208,20 @@ const Leitor = (() => {
     document.getElementById('btn-leitor-retomar')?.addEventListener('click', (e) => { e.preventDefault(); retomarCronometro(); });
     document.getElementById('btn-leitor-finalizar')?.addEventListener('click', (e) => { e.preventDefault(); finalizarSessao(); });
 
-    // 4. Modal de Configurações
-    document.getElementById('modal-config-leitor')?.addEventListener('hidden.bs.modal', () => {
-      lerConfiguracoes();
-      aplicarConfigVisual();
+    // 4. Prevenção de focar em aria-hidden nos modais
+    ['modal-config-leitor', 'modalAssociarEpub'].forEach(modalId => {
+      const mEl = document.getElementById(modalId);
+      if (mEl) {
+        mEl.addEventListener('hide.bs.modal', () => {
+          if (document.activeElement && typeof document.activeElement.blur === 'function') {
+            document.activeElement.blur();
+          }
+        });
+        mEl.addEventListener('hidden.bs.modal', () => {
+          lerConfiguracoes();
+          aplicarConfigVisual();
+        });
+      }
     });
 
     // 5. Botão Índice
@@ -255,22 +299,22 @@ const Leitor = (() => {
     currentBookInfo.author = 'Autor desconhecido';
     if (els.titulo) els.titulo.textContent = currentBookInfo.title;
 
-    if (ext === 'epub') await processarEPUB(file, cfiSalvo);
-    else if (ext === 'pdf') await processarPDF(file);
-    else if (ext === 'docx') await processarDOCX(file);
+    const conteinerConteudo = prepararEstruturaContainer();
+
+    if (ext === 'epub') await processarEPUB(file, cfiSalvo, conteinerConteudo);
+    else if (ext === 'pdf') await processarPDF(file, conteinerConteudo);
+    else if (ext === 'docx') await processarDOCX(file, conteinerConteudo);
 
     await associarLivro(currentBookInfo.title, currentBookInfo.author);
-    criarZonasClique();
   }
 
   // ========== PROCESSADORES POR FORMATO ==========
 
-  async function processarEPUB(file, cfiSalvo) {
+  async function processarEPUB(file, cfiSalvo, conteinerConteudo) {
     book = ePub(file);
     await book.ready;
-    if (els.container) els.container.innerHTML = '';
 
-    rendition = book.renderTo(els.container, {
+    rendition = book.renderTo(conteinerConteudo, {
       width: '100%',
       height: '100%',
       spread: 'none',
@@ -284,7 +328,6 @@ const Leitor = (() => {
     if (metadata?.creator) currentBookInfo.author = metadata.creator;
     if (els.titulo) els.titulo.textContent = currentBookInfo.title;
 
-    // Determina o capítulo/posição inicial exata para carregar imediatamente
     let pontoInicial = cfiSalvo;
     if (!pontoInicial && book.spine && book.spine.spineItems && book.spine.spineItems.length > 0) {
       pontoInicial = book.spine.spineItems[0].href;
@@ -293,12 +336,10 @@ const Leitor = (() => {
     aplicarConfigVisual();
     await rendition.display(pontoInicial || undefined);
 
-    // Redimensiona o quadro do leitor após exibição inicial
     setTimeout(() => {
       if (rendition) rendition.resize();
     }, 100);
 
-    // Calcula total de localizações em segundo plano
     book.locations.generate(1024).then(() => {
       if (els.totalPaginas && book.locations) {
         els.totalPaginas.textContent = book.locations.length();
@@ -314,35 +355,44 @@ const Leitor = (() => {
     });
   }
 
-  async function processarPDF(file) {
+  async function processarPDF(file, conteinerConteudo) {
     const arrayBuffer = await file.arrayBuffer();
     pdfDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
     
     if (els.totalPaginas) els.totalPaginas.textContent = pdfDoc.numPages;
-    await renderizarPaginaPDF(1);
+    await renderizarPaginaPDF(1, conteinerConteudo);
   }
 
-  async function renderizarPaginaPDF(num) {
+  async function renderizarPaginaPDF(num, conteinerConteudo) {
     if (!pdfDoc || num < 1 || num > pdfDoc.numPages) return;
     pdfNumPage = num;
 
-    if (!els.container) return;
+    const conteinerTarget = conteinerConteudo || document.getElementById('leitor-conteudo');
+    if (!conteinerTarget) return;
 
-    els.container.innerHTML = '';
+    conteinerTarget.innerHTML = '';
     const wrapper = document.createElement('div');
     wrapper.className = 'd-flex justify-content-center align-items-center w-100 h-100 overflow-auto';
 
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     wrapper.appendChild(canvas);
-    els.container.appendChild(wrapper);
+    conteinerTarget.appendChild(wrapper);
 
     const page = await pdfDoc.getPage(num);
-    const viewport = page.getViewport({ scale: 1.3 });
+
+    // Ajusta o tamanho da renderização para caber no container sem distorção
+    const widthDisponivel = conteinerTarget.clientWidth || window.innerWidth;
+    const heightDisponivel = conteinerTarget.clientHeight || window.innerHeight;
+    const vpOriginal = page.getViewport({ scale: 1.0 });
+
+    const scaleX = (widthDisponivel - 30) / vpOriginal.width;
+    const scaleY = (heightDisponivel - 30) / vpOriginal.height;
+    const scaleFinal = Math.max(0.6, Math.min(scaleX, scaleY, 2.0));
+
+    const viewport = page.getViewport({ scale: scaleFinal });
     canvas.height = viewport.height;
     canvas.width = viewport.width;
-    canvas.style.maxWidth = '100%';
-    canvas.style.height = 'auto';
 
     await page.render({ canvasContext: ctx, viewport }).promise;
 
@@ -352,23 +402,25 @@ const Leitor = (() => {
     if (els.barraProgresso) els.barraProgresso.style.width = `${pct}%`;
   }
 
-  async function processarDOCX(file) {
+  async function processarDOCX(file, conteinerConteudo) {
     const arrayBuffer = await file.arrayBuffer();
     const result = await mammoth.convertToHtml({ arrayBuffer });
     
-    if (!els.container) return;
-    els.container.innerHTML = `
+    const conteinerTarget = conteinerConteudo || document.getElementById('leitor-conteudo');
+    if (!conteinerTarget) return;
+
+    conteinerTarget.innerHTML = `
       <div class="docx-wrapper p-4 overflow-auto h-100" style="max-width: 850px; margin: 0 auto; color: inherit;">
         ${result.value}
       </div>`;
 
-    const texto = els.container.textContent || '';
+    const texto = conteinerTarget.textContent || '';
     const totalEstimado = Math.max(1, Math.ceil(texto.length / 2000));
 
     if (els.paginaAtual) els.paginaAtual.textContent = 1;
     if (els.totalPaginas) els.totalPaginas.textContent = totalEstimado;
 
-    const wrapper = els.container.querySelector('.docx-wrapper');
+    const wrapper = conteinerTarget.querySelector('.docx-wrapper');
     wrapper?.addEventListener('scroll', () => {
       const pct = wrapper.scrollTop / (wrapper.scrollHeight - wrapper.clientHeight || 1);
       const pag = Math.min(totalEstimado, Math.max(1, Math.round(pct * (totalEstimado - 1)) + 1));
@@ -383,7 +435,7 @@ const Leitor = (() => {
     if (tipoArquivo === 'epub' && rendition) rendition.next();
     else if (tipoArquivo === 'pdf' && pdfNumPage < pdfDoc?.numPages) renderizarPaginaPDF(pdfNumPage + 1);
     else if (tipoArquivo === 'docx') {
-      const w = els.container?.querySelector('.docx-wrapper');
+      const w = document.querySelector('#leitor-conteudo .docx-wrapper');
       if (w) w.scrollTop += w.clientHeight * 0.8;
     }
   }
@@ -392,44 +444,9 @@ const Leitor = (() => {
     if (tipoArquivo === 'epub' && rendition) rendition.prev();
     else if (tipoArquivo === 'pdf' && pdfNumPage > 1) renderizarPaginaPDF(pdfNumPage - 1);
     else if (tipoArquivo === 'docx') {
-      const w = els.container?.querySelector('.docx-wrapper');
+      const w = document.querySelector('#leitor-conteudo .docx-wrapper');
       if (w) w.scrollTop -= w.clientHeight * 0.8;
     }
-  }
-
-  // ========== ZONAS DE CLIQUE EXPLICITAS ==========
-  function criarZonasClique() {
-    document.getElementById('zona-clique-esquerda')?.remove();
-    document.getElementById('zona-clique-direita')?.remove();
-    atualizarCacheEls();
-    if (!els.container) return;
-
-    els.container.style.position = 'relative';
-
-    // Cria a zona da esquerda (primeiros 35% da tela)
-    const zE = document.createElement('div');
-    zE.id = 'zona-clique-esquerda';
-    zE.style.cssText = 'position:absolute; top:0; left:0; width:35%; height:100%; z-index:100; cursor:pointer;';
-
-    // Cria a zona da direita (últimos 35% da tela)
-    const zD = document.createElement('div');
-    zD.id = 'zona-clique-direita';
-    zD.style.cssText = 'position:absolute; top:0; right:0; width:35%; height:100%; z-index:100; cursor:pointer;';
-
-    els.container.appendChild(zE);
-    els.container.appendChild(zD);
-
-    zE.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      paginaAnterior();
-    });
-
-    zD.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      proximaPagina();
-    });
   }
 
   // ========== ASSOCIAÇÃO À BIBLIOTECA ==========
