@@ -146,7 +146,7 @@ const Leitor = (() => {
   }
 
   function configurarEventos() {
-    // 1. Delegação Global de Clique para Seleção de Arquivo (Funciona mesmo para botões criados dinamicamente)
+    // 1. Delegação Global de Clique para Seleção de Arquivo
     document.addEventListener('click', (e) => {
       const btn = e.target.closest('#btn-abrir-epub, #btn-trocar-epub');
       if (btn) {
@@ -284,32 +284,26 @@ const Leitor = (() => {
     if (metadata?.creator) currentBookInfo.author = metadata.creator;
     if (els.titulo) els.titulo.textContent = currentBookInfo.title;
 
-    // 1. Exibe a página IMEDIATAMENTE sem esperar pelo cálculo completo de páginas
-    aplicarConfigVisual();
-    await rendition.display(cfiSalvo || undefined);
+    // Determina o capítulo/posição inicial exata para carregar imediatamente
+    let pontoInicial = cfiSalvo;
+    if (!pontoInicial && book.spine && book.spine.spineItems && book.spine.spineItems.length > 0) {
+      pontoInicial = book.spine.spineItems[0].href;
+    }
 
-    // 2. Redimensiona o canvas para garantir que o layout renderize com a altura correta
+    aplicarConfigVisual();
+    await rendition.display(pontoInicial || undefined);
+
+    // Redimensiona o quadro do leitor após exibição inicial
     setTimeout(() => {
       if (rendition) rendition.resize();
-    }, 150);
+    }, 100);
 
-    // 3. Calcula total de localizações em segundo plano sem travar a interface
+    // Calcula total de localizações em segundo plano
     book.locations.generate(1024).then(() => {
       if (els.totalPaginas && book.locations) {
         els.totalPaginas.textContent = book.locations.length();
       }
     }).catch(console.warn);
-
-    // 4. Captura cliques direto no iframe do EPUB
-    rendition.on('click', (e) => {
-      const width = els.container?.clientWidth || window.innerWidth;
-      const clickX = e.clientX;
-      if (clickX < width * 0.3) {
-        paginaAnterior();
-      } else if (clickX > width * 0.7) {
-        proximaPagina();
-      }
-    });
 
     rendition.on('relocated', (location) => {
       atualizarProgresso(location);
@@ -401,6 +395,41 @@ const Leitor = (() => {
       const w = els.container?.querySelector('.docx-wrapper');
       if (w) w.scrollTop -= w.clientHeight * 0.8;
     }
+  }
+
+  // ========== ZONAS DE CLIQUE EXPLICITAS ==========
+  function criarZonasClique() {
+    document.getElementById('zona-clique-esquerda')?.remove();
+    document.getElementById('zona-clique-direita')?.remove();
+    atualizarCacheEls();
+    if (!els.container) return;
+
+    els.container.style.position = 'relative';
+
+    // Cria a zona da esquerda (primeiros 35% da tela)
+    const zE = document.createElement('div');
+    zE.id = 'zona-clique-esquerda';
+    zE.style.cssText = 'position:absolute; top:0; left:0; width:35%; height:100%; z-index:100; cursor:pointer;';
+
+    // Cria a zona da direita (últimos 35% da tela)
+    const zD = document.createElement('div');
+    zD.id = 'zona-clique-direita';
+    zD.style.cssText = 'position:absolute; top:0; right:0; width:35%; height:100%; z-index:100; cursor:pointer;';
+
+    els.container.appendChild(zE);
+    els.container.appendChild(zD);
+
+    zE.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      paginaAnterior();
+    });
+
+    zD.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      proximaPagina();
+    });
   }
 
   // ========== ASSOCIAÇÃO À BIBLIOTECA ==========
@@ -634,27 +663,6 @@ const Leitor = (() => {
   function pararAudioFantasma() {
     const audio = document.getElementById('audio-fantasma');
     if (audio) audio.pause();
-  }
-
-  function criarZonasClique() {
-    document.getElementById('zona-clique-esquerda')?.remove();
-    document.getElementById('zona-clique-direita')?.remove();
-    atualizarCacheEls();
-    if (!els.container) return;
-
-    const zE = document.createElement('div');
-    zE.id = 'zona-clique-esquerda';
-    zE.className = 'zona-clique zona-esquerda';
-
-    const zD = document.createElement('div');
-    zD.id = 'zona-clique-direita';
-    zD.className = 'zona-clique zona-direita';
-
-    els.container.appendChild(zE);
-    els.container.appendChild(zD);
-
-    zE.addEventListener('click', paginaAnterior);
-    zD.addEventListener('click', proximaPagina);
   }
 
   function atualizarProgresso(location) {
