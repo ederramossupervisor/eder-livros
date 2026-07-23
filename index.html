@@ -1528,23 +1528,38 @@
     </div>
   </div>
   
-  <!-- Dependências -->
+  <!-- ==================== 1. BIBLIOTECAS EXTERNAS ==================== -->
   <script src="https://unpkg.com/dexie@3.2.4/dist/dexie.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src='https://unpkg.com/tesseract.js@v5.0.4/dist/tesseract.min.js'></script>
+  <script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga2@1.8.3/dist/quagga.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+  <!-- Bibliotecas de Suporte a Ebooks (EPUB, PDF e DOCX) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/epubjs@0.3.93/dist/epub.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+
+  <!-- Elementos de Áudio/Mídia -->
+  <audio id="audio-fantasma" src="audio/silencio.wav" loop preload="auto"></audio>
+
+  <!-- ==================== 2. INFRAESTRUTURA E BANCO DE DADOS ==================== -->
   <script src="js/util.js"></script>
   <script src="js/api.js"></script>
   <script src="js/auth.js"></script>
-
-  <!-- Módulos -->
   <script src="js/db.js"></script>
+
+  <!-- ==================== 3. MÓDULOS DE RECURSOS ==================== -->
   <script src="js/livros.js"></script>
   <script src="js/ocr.js"></script>
   <script src="js/leitura.js"></script>
+  <script src="js/leitor.js"></script>
   <script src="js/dashboard.js"></script>
   <script src="js/biblioteca.js"></script>
   <script src="js/estatisticas.js"></script>
   <script src="js/calendario.js"></script>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="js/mapa.js"></script> 
   <script src="js/metas.js"></script>
   <script src="js/anotacoes.js"></script>
@@ -1553,15 +1568,7 @@
   <script src="js/configuracoes.js"></script>
   <script src="js/tema-sazonal.js"></script>  
 
-  <!-- Tesseract.js para OCR -->
-  <script src='https://unpkg.com/tesseract.js@v5.0.4/dist/tesseract.min.js'></script>
-  <!-- Controlador principal (sempre por último) -->
+  <!-- ==================== 4. CONTROLADOR PRINCIPAL (VERDADEIRAMENTE O ÚLTIMO) ==================== -->
   <script src="js/app.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga2@1.8.3/dist/quagga.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-  <audio id="audio-fantasma" src="audio/silencio.wav" loop preload="auto"></audio>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/epubjs@0.3.93/dist/epub.min.js"></script>
-  <script src="js/leitor.js"></script>
-  </body>
+</body>
 </html>
