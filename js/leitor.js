@@ -20,6 +20,7 @@ const Leitor = (() => {
   // Variáveis de Controle
   let timeoutSincronizacao = null;
   let modalAssociacaoInstancia = null;
+  let eventosConfigurados = false;
 
   // Configurações
   let config = {
@@ -31,29 +32,32 @@ const Leitor = (() => {
     modoRolagem: 'paginado'
   };
 
-  let _resizeTentativas = 0;
-
   // Cache do DOM
-  const els = {
-    container: document.getElementById('leitor-container'),
-    titulo: document.getElementById('leitor-titulo-livro'),
-    cronometro: document.getElementById('leitor-cronometro'),
-    btnIniciar: document.getElementById('btn-leitor-iniciar'),
-    btnPausar: document.getElementById('btn-leitor-pausar'),
-    btnRetomar: document.getElementById('btn-leitor-retomar'),
-    btnFinalizar: document.getElementById('btn-leitor-finalizar'),
-    progressoTexto: document.getElementById('leitor-progresso-texto'),
-    barraProgresso: document.getElementById('leitor-barra-progresso'),
-    paginaAtual: document.getElementById('leitor-pagina-atual'),
-    totalPaginas: document.getElementById('leitor-total-paginas'),
-    btnVoltar: document.getElementById('btn-voltar-biblioteca')
-  };
+  let els = {};
+
+  function atualizarCacheEls() {
+    els = {
+      container: document.getElementById('leitor-container'),
+      titulo: document.getElementById('leitor-titulo-livro'),
+      cronometro: document.getElementById('leitor-cronometro'),
+      btnIniciar: document.getElementById('btn-leitor-iniciar'),
+      btnPausar: document.getElementById('btn-leitor-pausar'),
+      btnRetomar: document.getElementById('btn-leitor-retomar'),
+      btnFinalizar: document.getElementById('btn-leitor-finalizar'),
+      progressoTexto: document.getElementById('leitor-progresso-texto'),
+      barraProgresso: document.getElementById('leitor-barra-progresso'),
+      paginaAtual: document.getElementById('leitor-pagina-atual'),
+      totalPaginas: document.getElementById('leitor-total-paginas'),
+      btnVoltar: document.getElementById('btn-voltar-biblioteca')
+    };
+  }
 
   // ========== INICIALIZAÇÃO E DEPENDÊNCIAS ==========
   async function init() {
     const page = document.getElementById('page-leitor');
     if (!page || !page.classList.contains('active')) return;
 
+    atualizarCacheEls();
     console.log('📖 Leitor Multiformato Inicializado.');
     
     const modalEl = document.getElementById('modalAssociarEpub');
@@ -118,49 +122,46 @@ const Leitor = (() => {
   }
 
   function configurarEventos() {
+    if (eventosConfigurados) return;
+
     document.addEventListener('click', (e) => {
       if (e.target.closest('#btn-abrir-epub') || e.target.closest('#btn-trocar-epub')) {
         abrirArquivo();
       }
     });
 
-    if (!tipoArquivo) mostrarTelaInicial();
-
     // Cronômetro
-    els.btnIniciar?.addEventListener('click', iniciarCronometro);
-    els.btnPausar?.addEventListener('click', pausarCronometro);
-    els.btnRetomar?.addEventListener('click', retomarCronometro);
-    els.btnFinalizar?.addEventListener('click', finalizarSessao);
-
-    // Modais e Offcanvas
-    document.getElementById('btn-ajustes-leitor')?.addEventListener('click', () => {
-      const modalEl = document.getElementById('modal-config-leitor');
-      if (modalEl) {
-        const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
-        modal.show();
-      }
+    document.addEventListener('click', (e) => {
+      if (e.target.closest('#btn-leitor-iniciar')) iniciarCronometro();
+      if (e.target.closest('#btn-leitor-pausar')) pausarCronometro();
+      if (e.target.closest('#btn-leitor-retomar')) retomarCronometro();
+      if (e.target.closest('#btn-leitor-finalizar')) finalizarSessao();
     });
 
+    // Modal de Configurações
     document.getElementById('modal-config-leitor')?.addEventListener('hidden.bs.modal', () => {
       lerConfiguracoes();
       aplicarConfigVisual();
     });
 
-    document.getElementById('btn-indice')?.addEventListener('click', () => {
+    // Validação para o botão do Índice
+    document.getElementById('btn-indice')?.addEventListener('click', (e) => {
       if (tipoArquivo !== 'epub') {
-        Util.toast('Índice interativo disponível apenas para arquivos EPUB.', 'info');
+        e.preventDefault();
+        e.stopPropagation();
+        if (typeof Util !== 'undefined' && Util.toast) {
+          Util.toast('Índice interativo disponível apenas para arquivos EPUB.', 'info');
+        }
         return;
       }
-      const offcanvasEl = document.getElementById('offcanvasIndice');
-      if (offcanvasEl) {
-        const offcanvas = bootstrap.Offcanvas.getInstance(offcanvasEl) || new bootstrap.Offcanvas(offcanvasEl);
-        carregarIndice();
-        offcanvas.show();
-      }
+      carregarIndice();
     });
 
-    els.btnVoltar?.addEventListener('click', () => {
-      document.querySelector('.nav-link[data-page="biblioteca"]')?.click();
+    // Voltar para Biblioteca
+    document.addEventListener('click', (e) => {
+      if (e.target.closest('#btn-voltar-biblioteca')) {
+        document.querySelector('.nav-link[data-page="biblioteca"]')?.click();
+      }
     });
 
     // Teclas de Atalho (Navegação)
@@ -169,9 +170,12 @@ const Leitor = (() => {
       if (e.key === 'ArrowRight') proximaPagina();
       if (e.key === 'ArrowLeft') paginaAnterior();
     });
+
+    eventosConfigurados = true;
   }
 
   function mostrarTelaInicial() {
+    atualizarCacheEls();
     if (!els.container) return;
     els.container.innerHTML = `
       <div class="d-flex flex-column align-items-center justify-content-center h-100 text-muted">
@@ -213,12 +217,15 @@ const Leitor = (() => {
     
     const disponivel = await garantirDependencias(ext);
     if (!disponivel) {
-      Util.toast(`Não foi possível carregar o leitor para o formato .${ext.toUpperCase()}`, 'danger');
+      if (typeof Util !== 'undefined' && Util.toast) {
+        Util.toast(`Não foi possível carregar o leitor para o formato .${ext.toUpperCase()}`, 'danger');
+      }
       return;
     }
 
     destruirLeitorAtual();
     tipoArquivo = ext;
+    atualizarCacheEls();
 
     if (els.container) {
       els.container.innerHTML = '<div class="d-flex justify-content-center py-5"><div class="spinner-border text-primary"></div></div>';
@@ -266,7 +273,9 @@ const Leitor = (() => {
 
     rendition.on('relocated', (location) => {
       atualizarProgresso(location);
-      DB.salvarPosicaoLeitor(location.start.cfi).catch(console.warn);
+      if (typeof DB !== 'undefined' && DB.salvarPosicaoLeitor) {
+        DB.salvarPosicaoLeitor(location.start.cfi).catch(console.warn);
+      }
       sincronizarProgresso(location);
     });
   }
@@ -284,7 +293,6 @@ const Leitor = (() => {
     if (!pdfDoc || num < 1 || num > pdfDoc.numPages) return;
     pdfNumPage = num;
 
-    const page = await pdfDoc.getPage(num);
     if (!els.container) return;
 
     els.container.innerHTML = '';
@@ -296,6 +304,7 @@ const Leitor = (() => {
     wrapper.appendChild(canvas);
     els.container.appendChild(wrapper);
 
+    const page = await pdfDoc.getPage(num);
     const viewport = page.getViewport({ scale: 1.3 });
     canvas.height = viewport.height;
     canvas.width = viewport.width;
@@ -321,14 +330,12 @@ const Leitor = (() => {
         ${result.value}
       </div>`;
 
-    // Estimativa de páginas (~2000 caracteres por página)
     const texto = els.container.textContent || '';
     const totalEstimado = Math.max(1, Math.ceil(texto.length / 2000));
 
     if (els.paginaAtual) els.paginaAtual.textContent = 1;
     if (els.totalPaginas) els.totalPaginas.textContent = totalEstimado;
 
-    // Atualiza página aproximada ao rolar
     const wrapper = els.container.querySelector('.docx-wrapper');
     wrapper?.addEventListener('scroll', () => {
       const pct = wrapper.scrollTop / (wrapper.scrollHeight - wrapper.clientHeight || 1);
@@ -360,6 +367,7 @@ const Leitor = (() => {
 
   // ========== ASSOCIAÇÃO À BIBLIOTECA ==========
   async function associarLivro(title, author) {
+    if (typeof API === 'undefined') return;
     try {
       const resp = await API.enviar({ acao: 'listAllBooks' });
       if (Array.isArray(resp)) {
@@ -423,7 +431,9 @@ const Leitor = (() => {
 
         const navAdicionar = document.querySelector('[data-page="adicionar"]') || document.querySelector('[data-page="adicionar-livro"]');
         navAdicionar?.click();
-        Util.toast('Dados importados! Conclua o cadastro na biblioteca.', 'info');
+        if (typeof Util !== 'undefined' && Util.toast) {
+          Util.toast('Dados importados! Conclua o cadastro na biblioteca.', 'info');
+        }
       });
     }
   }
@@ -450,6 +460,7 @@ const Leitor = (() => {
   // ========== CRONÔMETRO E SESSÃO ==========
   function atualizarDisplayCronometro() {
     if (!cronometroAtivo) return;
+    atualizarCacheEls();
     const agora = Date.now();
     const totalMs = tempoAcumulado + (inicioCronometro ? agora - inicioCronometro : 0);
     const totalSeg = Math.floor(totalMs / 1000);
@@ -461,6 +472,7 @@ const Leitor = (() => {
 
   function iniciarCronometro() {
     if (cronometroAtivo) return;
+    atualizarCacheEls();
     inicioCronometro = Date.now();
     cronometroAtivo = true;
 
@@ -478,6 +490,7 @@ const Leitor = (() => {
 
   function pausarCronometro() {
     if (!cronometroAtivo) return;
+    atualizarCacheEls();
     cronometroAtivo = false;
     if (animFrameId) cancelAnimationFrame(animFrameId);
     tempoAcumulado += Date.now() - inicioCronometro;
@@ -490,8 +503,10 @@ const Leitor = (() => {
 
   function retomarCronometro() {
     if (cronometroAtivo) return;
+    atualizarCacheEls();
     inicioCronometro = Date.now();
     cronometroAtivo = true;
+
     els.btnRetomar?.classList.add('d-none');
     els.btnPausar?.classList.remove('d-none');
     atualizarDisplayCronometro();
@@ -499,6 +514,7 @@ const Leitor = (() => {
   }
 
   function finalizarSessao() {
+    atualizarCacheEls();
     if (cronometroAtivo) {
       cronometroAtivo = false;
       if (animFrameId) cancelAnimationFrame(animFrameId);
@@ -521,7 +537,9 @@ const Leitor = (() => {
     if (els.cronometro) els.cronometro.textContent = '00:00';
 
     if (minutosLidos === 0) {
-      Util.toast('Sessão muito curta para ser registrada.', 'warning');
+      if (typeof Util !== 'undefined' && Util.toast) {
+        Util.toast('Sessão muito curta para ser registrada.', 'warning');
+      }
       return;
     }
 
@@ -562,7 +580,9 @@ const Leitor = (() => {
     const navSessao = document.querySelector('[data-page="sessao"]') || document.querySelector('[data-page="sessoes"]');
     navSessao?.click();
 
-    Util.toast('Sessão encerrada! Revise e registre sua leitura.', 'success');
+    if (typeof Util !== 'undefined' && Util.toast) {
+      Util.toast('Sessão encerrada! Revise e registre sua leitura.', 'success');
+    }
   }
 
   // ========== AUXILIARES E ÁUDIO FANTASMA ==========
@@ -579,6 +599,7 @@ const Leitor = (() => {
   function criarZonasClique() {
     document.getElementById('zona-clique-esquerda')?.remove();
     document.getElementById('zona-clique-direita')?.remove();
+    atualizarCacheEls();
     if (!els.container) return;
 
     const zE = document.createElement('div');
@@ -597,6 +618,7 @@ const Leitor = (() => {
   }
 
   function aplicarConfigVisual() {
+    atualizarCacheEls();
     if (!els.container) return;
     els.container.classList.remove('tema-claro', 'tema-sepia', 'tema-escuro');
     els.container.classList.add(`tema-${config.tema}`);
@@ -621,6 +643,7 @@ const Leitor = (() => {
 
   function atualizarProgresso(location) {
     if (!book) return;
+    atualizarCacheEls();
     const porcento = Math.round((location.start.percentage || 0) * 100);
     if (els.progressoTexto) els.progressoTexto.textContent = `${porcento}%`;
     if (els.barraProgresso) els.barraProgresso.style.width = `${porcento}%`;
@@ -628,7 +651,7 @@ const Leitor = (() => {
   }
 
   function sincronizarProgresso(location) {
-    if (!currentBookInfo.id || !currentBookInfo.bookData) return;
+    if (!currentBookInfo.id || !currentBookInfo.bookData || typeof API === 'undefined') return;
     const porcentagem = location.start.percentage || 0;
     const totPaginas = currentBookInfo.bookData.TotalPaginas || 0;
     let paginasLidas = totPaginas ? Math.round(porcentagem * totPaginas) : Math.round(porcentagem * 100);
@@ -642,6 +665,7 @@ const Leitor = (() => {
   }
 
   async function carregarUltimoLivro() {
+    if (typeof DB === 'undefined' || !DB.obterEstadoLeitor) return false;
     try {
       const reg = await DB.obterEstadoLeitor();
       if (reg && reg.arquivo) {
@@ -665,7 +689,9 @@ const Leitor = (() => {
         li.addEventListener('click', () => {
           rendition.display(item.href);
           const offcanvasEl = document.getElementById('offcanvasIndice');
-          if (offcanvasEl) bootstrap.Offcanvas.getInstance(offcanvasEl)?.hide();
+          if (offcanvasEl && typeof bootstrap !== 'undefined') {
+            bootstrap.Offcanvas.getInstance(offcanvasEl)?.hide();
+          }
         });
         ul.appendChild(li);
       });
