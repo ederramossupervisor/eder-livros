@@ -20,6 +20,7 @@ const Leitor = (() => {
   // Variáveis de Controle
   let timeoutSincronizacao = null;
   let modalAssociacaoInstancia = null;
+  let eventosConfigurados = false;
 
   // Configurações
   let config = {
@@ -31,29 +32,30 @@ const Leitor = (() => {
     modoRolagem: 'paginado'
   };
 
-  let _resizeTentativas = 0;
+  // Cache do DOM (Atualizado dinamicamente)
+  const els = {};
 
-  // Cache do DOM
-  const els = {
-    container: document.getElementById('leitor-container'),
-    titulo: document.getElementById('leitor-titulo-livro'),
-    cronometro: document.getElementById('leitor-cronometro'),
-    btnIniciar: document.getElementById('btn-leitor-iniciar'),
-    btnPausar: document.getElementById('btn-leitor-pausar'),
-    btnRetomar: document.getElementById('btn-leitor-retomar'),
-    btnFinalizar: document.getElementById('btn-leitor-finalizar'),
-    progressoTexto: document.getElementById('leitor-progresso-texto'),
-    barraProgresso: document.getElementById('leitor-barra-progresso'),
-    paginaAtual: document.getElementById('leitor-pagina-atual'),
-    totalPaginas: document.getElementById('leitor-total-paginas'),
-    btnVoltar: document.getElementById('btn-voltar-biblioteca')
-  };
+  function atualizarCacheDOM() {
+    els.container = document.getElementById('leitor-container');
+    els.titulo = document.getElementById('leitor-titulo-livro');
+    els.cronometro = document.getElementById('leitor-cronometro');
+    els.btnIniciar = document.getElementById('btn-leitor-iniciar');
+    els.btnPausar = document.getElementById('btn-leitor-pausar');
+    els.btnRetomar = document.getElementById('btn-leitor-retomar');
+    els.btnFinalizar = document.getElementById('btn-leitor-finalizar');
+    els.progressoTexto = document.getElementById('leitor-progresso-texto');
+    els.barraProgresso = document.getElementById('leitor-barra-progresso');
+    els.paginaAtual = document.getElementById('leitor-pagina-atual');
+    els.totalPaginas = document.getElementById('leitor-total-paginas');
+    els.btnVoltar = document.getElementById('btn-voltar-biblioteca');
+  }
 
   // ========== INICIALIZAÇÃO E DEPENDÊNCIAS ==========
   async function init() {
     const page = document.getElementById('page-leitor');
     if (!page || !page.classList.contains('active')) return;
 
+    atualizarCacheDOM();
     console.log('📖 Leitor Multiformato Inicializado.');
     
     const modalEl = document.getElementById('modalAssociarEpub');
@@ -118,60 +120,69 @@ const Leitor = (() => {
   }
 
   function configurarEventos() {
-    document.addEventListener('click', (e) => {
-      if (e.target.closest('#btn-abrir-epub') || e.target.closest('#btn-trocar-epub')) {
-        abrirArquivo();
-      }
-    });
+    atualizarCacheDOM();
+
+    if (!eventosConfigurados) {
+      document.addEventListener('click', (e) => {
+        if (e.target.closest('#btn-abrir-epub') || e.target.closest('#btn-trocar-epub')) {
+          abrirArquivo();
+        }
+      });
+
+      // Teclas de Atalho (Navegação)
+      document.addEventListener('keydown', (e) => {
+        if (!document.getElementById('page-leitor')?.classList.contains('active')) return;
+        if (e.key === 'ArrowRight') proximaPagina();
+        if (e.key === 'ArrowLeft') paginaAnterior();
+      });
+
+      eventosConfigurados = true;
+    }
 
     if (!tipoArquivo) mostrarTelaInicial();
 
-    // Cronômetro
-    els.btnIniciar?.addEventListener('click', iniciarCronometro);
-    els.btnPausar?.addEventListener('click', pausarCronometro);
-    els.btnRetomar?.addEventListener('click', retomarCronometro);
-    els.btnFinalizar?.addEventListener('click', finalizarSessao);
+    // Cronômetro (revinculação dinâmica segura)
+    els.btnIniciar?.onclick = iniciarCronometro;
+    els.btnPausar?.onclick = pausarCronometro;
+    els.btnRetomar?.onclick = retomarCronometro;
+    els.btnFinalizar?.onclick = finalizarSessao;
 
     // Modais e Offcanvas
-    document.getElementById('btn-ajustes-leitor')?.addEventListener('click', () => {
+    document.getElementById('btn-ajustes-leitor')?.onclick = () => {
       const modalEl = document.getElementById('modal-config-leitor');
-      if (modalEl) {
+      if (modalEl && typeof bootstrap !== 'undefined') {
         const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
         modal.show();
       }
-    });
+    };
 
     document.getElementById('modal-config-leitor')?.addEventListener('hidden.bs.modal', () => {
       lerConfiguracoes();
       aplicarConfigVisual();
     });
 
-    document.getElementById('btn-indice')?.addEventListener('click', () => {
+    document.getElementById('btn-indice')?.onclick = () => {
       if (tipoArquivo !== 'epub') {
-        Util.toast('Índice interativo disponível apenas para arquivos EPUB.', 'info');
+        if (typeof Util !== 'undefined') Util.toast('Índice interativo disponível apenas para arquivos EPUB.', 'info');
         return;
       }
       const offcanvasEl = document.getElementById('offcanvasIndice');
-      if (offcanvasEl) {
+      if (offcanvasEl && typeof bootstrap !== 'undefined') {
         const offcanvas = bootstrap.Offcanvas.getInstance(offcanvasEl) || new bootstrap.Offcanvas(offcanvasEl);
         carregarIndice();
         offcanvas.show();
       }
-    });
+    };
 
-    els.btnVoltar?.addEventListener('click', () => {
-      document.querySelector('.nav-link[data-page="biblioteca"]')?.click();
-    });
-
-    // Teclas de Atalho (Navegação)
-    document.addEventListener('keydown', (e) => {
-      if (!document.getElementById('page-leitor')?.classList.contains('active')) return;
-      if (e.key === 'ArrowRight') proximaPagina();
-      if (e.key === 'ArrowLeft') paginaAnterior();
-    });
+    if (els.btnVoltar) {
+      els.btnVoltar.onclick = () => {
+        document.querySelector('.nav-link[data-page="biblioteca"]')?.click();
+      };
+    }
   }
 
   function mostrarTelaInicial() {
+    atualizarCacheDOM();
     if (!els.container) return;
     els.container.innerHTML = `
       <div class="d-flex flex-column align-items-center justify-content-center h-100 text-muted">
@@ -191,13 +202,16 @@ const Leitor = (() => {
     input.style.display = 'none';
     document.body.appendChild(input);
     
-    input.click();
+    // Registra o ouvinte ANTES de disparar o clique
     input.addEventListener('change', async (e) => {
       const file = e.target.files[0];
-      if (!file) return;
+      if (file) {
+        carregarArquivo(file);
+      }
       document.body.removeChild(input);
-      carregarArquivo(file);
     });
+
+    input.click();
   }
 
   function destruirLeitorAtual() {
@@ -213,13 +227,14 @@ const Leitor = (() => {
     
     const disponivel = await garantirDependencias(ext);
     if (!disponivel) {
-      Util.toast(`Não foi possível carregar o leitor para o formato .${ext.toUpperCase()}`, 'danger');
+      if (typeof Util !== 'undefined') Util.toast(`Não foi possível carregar o leitor para o formato .${ext.toUpperCase()}`, 'danger');
       return;
     }
 
     destruirLeitorAtual();
     tipoArquivo = ext;
 
+    atualizarCacheDOM();
     if (els.container) {
       els.container.innerHTML = '<div class="d-flex justify-content-center py-5"><div class="spinner-border text-primary"></div></div>';
     }
@@ -266,7 +281,7 @@ const Leitor = (() => {
 
     rendition.on('relocated', (location) => {
       atualizarProgresso(location);
-      DB.salvarPosicaoLeitor(location.start.cfi).catch(console.warn);
+      if (typeof DB !== 'undefined') DB.salvarPosicaoLeitor(location.start.cfi).catch(console.warn);
       sincronizarProgresso(location);
     });
   }
@@ -360,6 +375,7 @@ const Leitor = (() => {
 
   // ========== ASSOCIAÇÃO À BIBLIOTECA ==========
   async function associarLivro(title, author) {
+    if (typeof API === 'undefined') return;
     try {
       const resp = await API.enviar({ acao: 'listAllBooks' });
       if (Array.isArray(resp)) {
@@ -423,7 +439,7 @@ const Leitor = (() => {
 
         const navAdicionar = document.querySelector('[data-page="adicionar"]') || document.querySelector('[data-page="adicionar-livro"]');
         navAdicionar?.click();
-        Util.toast('Dados importados! Conclua o cadastro na biblioteca.', 'info');
+        if (typeof Util !== 'undefined') Util.toast('Dados importados! Conclua o cadastro na biblioteca.', 'info');
       });
     }
   }
@@ -455,7 +471,11 @@ const Leitor = (() => {
     const totalSeg = Math.floor(totalMs / 1000);
     const mins = Math.floor(totalSeg / 60);
     const secs = totalSeg % 60;
-    if (els.cronometro) els.cronometro.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    
+    atualizarCacheDOM();
+    if (els.cronometro) {
+      els.cronometro.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
     animFrameId = requestAnimationFrame(atualizarDisplayCronometro);
   }
 
@@ -464,6 +484,7 @@ const Leitor = (() => {
     inicioCronometro = Date.now();
     cronometroAtivo = true;
 
+    atualizarCacheDOM();
     horaInicioSessao = new Date().toTimeString().slice(0, 5);
     paginaInicialCronometro = parseInt(els.paginaAtual?.textContent || '1') || 1;
 
@@ -483,6 +504,7 @@ const Leitor = (() => {
     tempoAcumulado += Date.now() - inicioCronometro;
     inicioCronometro = null;
 
+    atualizarCacheDOM();
     els.btnPausar?.classList.add('d-none');
     els.btnRetomar?.classList.remove('d-none');
     pararAudioFantasma();
@@ -492,6 +514,8 @@ const Leitor = (() => {
     if (cronometroAtivo) return;
     inicioCronometro = Date.now();
     cronometroAtivo = true;
+
+    atualizarCacheDOM();
     els.btnRetomar?.classList.add('d-none');
     els.btnPausar?.classList.remove('d-none');
     atualizarDisplayCronometro();
@@ -506,6 +530,7 @@ const Leitor = (() => {
       inicioCronometro = null;
     }
 
+    atualizarCacheDOM();
     els.btnIniciar?.classList.remove('d-none');
     els.btnPausar?.classList.add('d-none');
     els.btnRetomar?.classList.add('d-none');
@@ -521,7 +546,7 @@ const Leitor = (() => {
     if (els.cronometro) els.cronometro.textContent = '00:00';
 
     if (minutosLidos === 0) {
-      Util.toast('Sessão muito curta para ser registrada.', 'warning');
+      if (typeof Util !== 'undefined') Util.toast('Sessão muito curta para ser registrada.', 'warning');
       return;
     }
 
@@ -562,7 +587,7 @@ const Leitor = (() => {
     const navSessao = document.querySelector('[data-page="sessao"]') || document.querySelector('[data-page="sessoes"]');
     navSessao?.click();
 
-    Util.toast('Sessão encerrada! Revise e registre sua leitura.', 'success');
+    if (typeof Util !== 'undefined') Util.toast('Sessão encerrada! Revise e registre sua leitura.', 'success');
   }
 
   // ========== AUXILIARES E ÁUDIO FANTASMA ==========
@@ -579,6 +604,7 @@ const Leitor = (() => {
   function criarZonasClique() {
     document.getElementById('zona-clique-esquerda')?.remove();
     document.getElementById('zona-clique-direita')?.remove();
+    atualizarCacheDOM();
     if (!els.container) return;
 
     const zE = document.createElement('div');
@@ -597,6 +623,7 @@ const Leitor = (() => {
   }
 
   function aplicarConfigVisual() {
+    atualizarCacheDOM();
     if (!els.container) return;
     els.container.classList.remove('tema-claro', 'tema-sepia', 'tema-escuro');
     els.container.classList.add(`tema-${config.tema}`);
@@ -621,6 +648,7 @@ const Leitor = (() => {
 
   function atualizarProgresso(location) {
     if (!book) return;
+    atualizarCacheDOM();
     const porcento = Math.round((location.start.percentage || 0) * 100);
     if (els.progressoTexto) els.progressoTexto.textContent = `${porcento}%`;
     if (els.barraProgresso) els.barraProgresso.style.width = `${porcento}%`;
@@ -628,7 +656,7 @@ const Leitor = (() => {
   }
 
   function sincronizarProgresso(location) {
-    if (!currentBookInfo.id || !currentBookInfo.bookData) return;
+    if (!currentBookInfo.id || !currentBookInfo.bookData || typeof API === 'undefined') return;
     const porcentagem = location.start.percentage || 0;
     const totPaginas = currentBookInfo.bookData.TotalPaginas || 0;
     let paginasLidas = totPaginas ? Math.round(porcentagem * totPaginas) : Math.round(porcentagem * 100);
@@ -642,6 +670,7 @@ const Leitor = (() => {
   }
 
   async function carregarUltimoLivro() {
+    if (typeof DB === 'undefined') return false;
     try {
       const reg = await DB.obterEstadoLeitor();
       if (reg && reg.arquivo) {
@@ -665,7 +694,9 @@ const Leitor = (() => {
         li.addEventListener('click', () => {
           rendition.display(item.href);
           const offcanvasEl = document.getElementById('offcanvasIndice');
-          if (offcanvasEl) bootstrap.Offcanvas.getInstance(offcanvasEl)?.hide();
+          if (offcanvasEl && typeof bootstrap !== 'undefined') {
+            bootstrap.Offcanvas.getInstance(offcanvasEl)?.hide();
+          }
         });
         ul.appendChild(li);
       });
@@ -683,9 +714,11 @@ const Leitor = (() => {
     if (e.detail === 'leitor') init();
   });
 
-  if (document.getElementById('page-leitor')?.classList.contains('active')) {
-    init();
-  }
+  document.addEventListener('DOMContentLoaded', () => {
+    if (document.getElementById('page-leitor')?.classList.contains('active')) {
+      init();
+    }
+  });
 
   return { init };
 })();
