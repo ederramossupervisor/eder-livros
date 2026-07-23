@@ -122,57 +122,54 @@ const Leitor = (() => {
   }
 
   function configurarEventos() {
-    if (eventosConfigurados) return;
-
-    document.addEventListener('click', (e) => {
-      if (e.target.closest('#btn-abrir-epub') || e.target.closest('#btn-trocar-epub')) {
-        abrirArquivo();
+  // 1. Evento de Seleção de Arquivo (Input oculto)
+  const inputArquivo = document.getElementById('input-leitor-arquivo');
+  if (inputArquivo) {
+    inputArquivo.onchange = (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        carregarArquivo(file);
+        inputArquivo.value = ''; // Limpa para permitir reabrir o mesmo arquivo se necessário
       }
-    });
+    };
+  }
 
-    // Cronômetro
-    document.addEventListener('click', (e) => {
-      if (e.target.closest('#btn-leitor-iniciar')) iniciarCronometro();
-      if (e.target.closest('#btn-leitor-pausar')) pausarCronometro();
-      if (e.target.closest('#btn-leitor-retomar')) retomarCronometro();
-      if (e.target.closest('#btn-leitor-finalizar')) finalizarSessao();
-    });
+  // 2. Botões de Abrir Arquivo
+  document.querySelectorAll('#btn-abrir-epub, #btn-trocar-epub').forEach(btn => {
+    btn.onclick = (e) => {
+      e.preventDefault();
+      document.getElementById('input-leitor-arquivo')?.click();
+    };
+  });
 
-    // Modal de Configurações
-    document.getElementById('modal-config-leitor')?.addEventListener('hidden.bs.modal', () => {
-      lerConfiguracoes();
-      aplicarConfigVisual();
-    });
+  // 3. Botões do Cronômetro
+  document.getElementById('btn-leitor-iniciar')?.onclick = (e) => { e.preventDefault(); iniciarCronometro(); };
+  document.getElementById('btn-leitor-pausar')?.onclick = (e) => { e.preventDefault(); pausarCronometro(); };
+  document.getElementById('btn-leitor-retomar')?.onclick = (e) => { e.preventDefault(); retomarCronometro(); };
+  document.getElementById('btn-leitor-finalizar')?.onclick = (e) => { e.preventDefault(); finalizarSessao(); };
 
-    // Validação para o botão do Índice
-    document.getElementById('btn-indice')?.addEventListener('click', (e) => {
-      if (tipoArquivo !== 'epub') {
-        e.preventDefault();
-        e.stopPropagation();
-        if (typeof Util !== 'undefined' && Util.toast) {
-          Util.toast('Índice interativo disponível apenas para arquivos EPUB.', 'info');
-        }
-        return;
-      }
-      carregarIndice();
-    });
+  // 4. Configurações & Modal
+  document.getElementById('modal-config-leitor')?.addEventListener('hidden.bs.modal', () => {
+    lerConfiguracoes();
+    aplicarConfigVisual();
+  });
 
-    // Voltar para Biblioteca
-    document.addEventListener('click', (e) => {
-      if (e.target.closest('#btn-voltar-biblioteca')) {
-        document.querySelector('.nav-link[data-page="biblioteca"]')?.click();
-      }
-    });
+  // 5. Botão Voltar para Biblioteca
+  document.getElementById('btn-voltar-biblioteca')?.onclick = (e) => {
+    e.preventDefault();
+    document.querySelector('.nav-link[data-page="biblioteca"]')?.click();
+  };
 
-    // Teclas de Atalho (Navegação)
+  // 6. Navegação por Teclas (Seta Esquerda / Direita)
+  if (!window.leitorAtalhosTeclado) {
     document.addEventListener('keydown', (e) => {
       if (!document.getElementById('page-leitor')?.classList.contains('active')) return;
       if (e.key === 'ArrowRight') proximaPagina();
       if (e.key === 'ArrowLeft') paginaAnterior();
     });
-
-    eventosConfigurados = true;
+    window.leitorAtalhosTeclado = true;
   }
+}
 
   function mostrarTelaInicial() {
     atualizarCacheEls();
@@ -189,20 +186,8 @@ const Leitor = (() => {
   }
 
   function abrirArquivo() {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.epub,.pdf,.docx';
-    input.style.display = 'none';
-    document.body.appendChild(input);
-    
-    input.click();
-    input.addEventListener('change', async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      document.body.removeChild(input);
-      carregarArquivo(file);
-    });
-  }
+  document.getElementById('input-leitor-arquivo')?.click();
+}
 
   function destruirLeitorAtual() {
     if (rendition) { try { rendition.destroy(); } catch(e){} rendition = null; }
