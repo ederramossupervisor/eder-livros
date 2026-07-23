@@ -76,6 +76,9 @@ function activatePageGlobal(pageName) {
     case 'anotacoes':
       if (typeof Anotacoes !== 'undefined' && Anotacoes.init) Anotacoes.init();
       break;
+    case 'leitor':
+      if (typeof Leitor !== 'undefined' && Leitor.init) Leitor.init();
+      break;
     case 'desejos':
       if (typeof DesejosEmprestimos !== 'undefined' && DesejosEmprestimos.init) DesejosEmprestimos.init();
       break;
@@ -116,7 +119,7 @@ function activatePageGlobal(pageName) {
       h1.innerHTML = `<i class="fas ${iconesPaginas[pageName]} me-2"></i>${h1.textContent}`;
     }
   }
-}   // ← Faltava esta chave! Ela fecha a função activatePageGlobal
+}  
 
 // Gerencia a navegação entre páginas
 function initNavegacao() {
