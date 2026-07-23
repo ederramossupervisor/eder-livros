@@ -1257,7 +1257,10 @@
       </div>
     </div>
   </div>
-  <!-- Barra superior do Leitor -->
+  <!-- ==================== PÁGINA: Leitor ==================== -->
+    <div id="page-leitor" class="page d-flex flex-column" style="height: 100%;">
+
+      <!-- Barra superior do Leitor -->
       <div class="leitor-topbar d-flex justify-content-between align-items-center px-3 py-2 bg-white border-bottom">
         <div class="d-flex align-items-center">
           <button class="btn btn-sm btn-outline-secondary me-2" id="btn-voltar-biblioteca" title="Voltar">
@@ -1272,7 +1275,7 @@
           <button class="btn btn-sm btn-warning d-none" id="btn-leitor-pausar" title="Pausar"><i class="fas fa-pause"></i></button>
           <button class="btn btn-sm btn-info d-none" id="btn-leitor-retomar" title="Retomar"><i class="fas fa-play"></i></button>
           <button class="btn btn-sm btn-danger d-none" id="btn-leitor-finalizar" title="Finalizar leitura"><i class="fas fa-stop"></i></button>
-          
+
           <!-- Configurações (Ajustes) -->
           <button class="btn btn-sm btn-outline-secondary" id="btn-ajustes-leitor" data-bs-toggle="modal" data-bs-target="#modal-config-leitor" title="Ajustar visualização">
             <i class="fas fa-text-height"></i>
@@ -1289,9 +1292,9 @@
           </button>
         </div>
       </div>
+
       <!-- Área de leitura -->
-      <div id="leitor-container" class="flex-grow-1">
-      </div>
+      <div id="leitor-container" class="flex-grow-1"></div>
 
       <!-- Barra inferior de progresso -->
       <div class="leitor-bottombar bg-white border-top px-3 py-2">
@@ -1303,9 +1306,12 @@
           <small><span id="leitor-pagina-atual">0</span> / <span id="leitor-total-paginas">0</span></small>
         </div>
       </div>
+
+      <!-- Input de arquivo oculto (necessário para os botões abrirem o seletor de arquivos) -->
+      <input type="file" id="input-leitor-arquivo" accept=".epub,.pdf,.docx" class="d-none">
     </div>
   </main>
-
+  
   <!-- Offcanvas de índice do leitor (FORA do main) -->
   <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasIndice">
     <div class="offcanvas-header">
