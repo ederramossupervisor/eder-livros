@@ -146,6 +146,17 @@ const Leitor = (() => {
   }
 
   function configurarEventos() {
+    // 1. Delegação Global de Clique para Seleção de Arquivo (Funciona mesmo para botões criados dinamicamente)
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('#btn-abrir-epub, #btn-trocar-epub');
+      if (btn) {
+        e.preventDefault();
+        const input = document.getElementById('input-leitor-arquivo');
+        if (input) input.click();
+      }
+    });
+
+    // 2. Evento do Input File
     const inputArquivo = document.getElementById('input-leitor-arquivo');
     if (inputArquivo) {
       inputArquivo.onchange = (e) => {
@@ -157,23 +168,19 @@ const Leitor = (() => {
       };
     }
 
-    document.querySelectorAll('#btn-abrir-epub, #btn-trocar-epub').forEach(btn => {
-      btn.onclick = (e) => {
-        e.preventDefault();
-        document.getElementById('input-leitor-arquivo')?.click();
-      };
-    });
-
+    // 3. Eventos do Cronômetro
     document.getElementById('btn-leitor-iniciar')?.addEventListener('click', (e) => { e.preventDefault(); iniciarCronometro(); });
     document.getElementById('btn-leitor-pausar')?.addEventListener('click', (e) => { e.preventDefault(); pausarCronometro(); });
     document.getElementById('btn-leitor-retomar')?.addEventListener('click', (e) => { e.preventDefault(); retomarCronometro(); });
     document.getElementById('btn-leitor-finalizar')?.addEventListener('click', (e) => { e.preventDefault(); finalizarSessao(); });
 
+    // 4. Modal de Configurações
     document.getElementById('modal-config-leitor')?.addEventListener('hidden.bs.modal', () => {
       lerConfiguracoes();
       aplicarConfigVisual();
     });
 
+    // 5. Botão Índice
     document.getElementById('btn-indice')?.addEventListener('click', (e) => {
       if (tipoArquivo !== 'epub') {
         e.preventDefault();
@@ -186,11 +193,13 @@ const Leitor = (() => {
       carregarIndice();
     });
 
+    // 6. Voltar para Biblioteca
     document.getElementById('btn-voltar-biblioteca')?.addEventListener('click', (e) => {
       e.preventDefault();
       document.querySelector('.nav-link[data-page="biblioteca"]')?.click();
     });
 
+    // 7. Navegação por Teclado
     if (!window.leitorAtalhosTeclado) {
       document.addEventListener('keydown', (e) => {
         if (!document.getElementById('page-leitor')?.classList.contains('active')) return;
@@ -266,8 +275,7 @@ const Leitor = (() => {
       height: '100%',
       spread: 'none',
       flow: 'paginated',
-      manager: 'default',
-      allowScriptedContent: true
+      manager: 'default'
     });
 
     criarTemasRendition();
@@ -276,15 +284,25 @@ const Leitor = (() => {
     if (metadata?.creator) currentBookInfo.author = metadata.creator;
     if (els.titulo) els.titulo.textContent = currentBookInfo.title;
 
-    await book.locations.generate(1024);
-    if (els.totalPaginas) els.totalPaginas.textContent = book.locations.length();
-
+    // 1. Exibe a página IMEDIATAMENTE sem esperar pelo cálculo completo de páginas
     aplicarConfigVisual();
     await rendition.display(cfiSalvo || undefined);
 
-    // Captura cliques direto dentro do iframe do EPUB
+    // 2. Redimensiona o canvas para garantir que o layout renderize com a altura correta
+    setTimeout(() => {
+      if (rendition) rendition.resize();
+    }, 150);
+
+    // 3. Calcula total de localizações em segundo plano sem travar a interface
+    book.locations.generate(1024).then(() => {
+      if (els.totalPaginas && book.locations) {
+        els.totalPaginas.textContent = book.locations.length();
+      }
+    }).catch(console.warn);
+
+    // 4. Captura cliques direto no iframe do EPUB
     rendition.on('click', (e) => {
-      const width = els.container.clientWidth;
+      const width = els.container?.clientWidth || window.innerWidth;
       const clickX = e.clientX;
       if (clickX < width * 0.3) {
         paginaAnterior();
@@ -425,6 +443,7 @@ const Leitor = (() => {
         btn.className = 'list-group-item list-group-item-action d-flex justify-content-between align-items-center';
         btn.innerHTML = `<div><strong>${livro.Título || livro.titulo}</strong><br><small class="text-muted">${livro.Autor || livro.autor}</small></div>`;
         btn.onclick = () => {
+          if (document.activeElement) document.activeElement.blur();
           efetivarVinculo(livro);
           modalAssociacaoInstancia?.hide();
         };
@@ -439,6 +458,7 @@ const Leitor = (() => {
 
       novoBtn.addEventListener('click', (e) => {
         e.preventDefault();
+        if (document.activeElement) document.activeElement.blur();
         modalAssociacaoInstancia?.hide();
 
         preencherFormularioAdicionarLivro({
